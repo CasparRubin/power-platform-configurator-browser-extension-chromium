@@ -1,4 +1,4 @@
-const PREFIX = "[power-automate-editor-version-enforcer] [popup]";
+const PREFIX = "[power-platform-configurator] [popup]";
 
 /** DEV-only structured logs for preference save / tab reload debugging. */
 export function policyPopupLog(message: string, extra?: Record<string, unknown>): void {

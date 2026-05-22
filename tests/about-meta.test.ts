@@ -14,9 +14,9 @@ describe("about-meta", () => {
   });
 
   it("keeps official extension title and source repo URL in sync with shipped constants", () => {
-    expect(EXTENSION_DISPLAY_NAME).toBe("Power Automate Editor Version Enforcer");
+    expect(EXTENSION_DISPLAY_NAME).toBe("Power Platform Configurator");
     expect(SOURCE_REPO_URL).toBe(
-      "https://github.com/CasparRubin/power-automate-editor-version-enforcer",
+      "https://github.com/CasparRubin/power-platform-configurator",
     );
   });
 });

@@ -23,7 +23,7 @@ import {
 import { buildUpdateRulesetOptions } from "./dnr-rulesets";
 import { isMainFrameTabNavigation } from "./navigation-guards";
 import { createPolicyLoadQueue } from "./policy-load-queue";
-import { isEnforcerSyncChange } from "./storage-sync";
+import { isConfiguratorSyncChange } from "./storage-sync";
 import { PowerAutomateUrlPolicy } from "./url-policy";
 
 /**
@@ -85,7 +85,7 @@ async function applyRulesetsForPreference(mode: EnforcementPreference): Promise<
     await chrome.declarativeNetRequest.updateEnabledRulesets(options);
   } catch (error) {
     console.error(
-      "[power-automate-editor-version-enforcer] declarativeNetRequest.updateEnabledRulesets failed",
+      "[power-platform-configurator] declarativeNetRequest.updateEnabledRulesets failed",
       { mode, options, error },
     );
     throw error;
@@ -101,7 +101,7 @@ async function reconcileFromStorage(): Promise<void> {
     applyToolbarBadgeForEnforcement(preference);
     await applyRulesetsForPreference(preference);
   } catch (error) {
-    console.error("[power-automate-editor-version-enforcer] reconcileFromStorage failed", error);
+    console.error("[power-platform-configurator] reconcileFromStorage failed", error);
   }
 }
 
@@ -134,7 +134,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (!isEnforcerSyncChange(areaName, changes as Record<string, unknown>)) {
+  if (!isConfiguratorSyncChange(areaName, changes as Record<string, unknown>)) {
     return;
   }
   policyQueue.scheduleReconcile();
@@ -161,7 +161,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       await reconcileFromStorage();
     } catch (error) {
       console.error(
-        "[power-automate-editor-version-enforcer] onInstalled policy chain failed",
+        "[power-platform-configurator] onInstalled policy chain failed",
         error,
       );
     }

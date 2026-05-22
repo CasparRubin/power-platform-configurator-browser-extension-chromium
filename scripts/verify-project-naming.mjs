@@ -17,6 +17,18 @@ const forbidden = [
   { label: "legacy repo slug power_automate_v3_false", re: /power_automate_v3_false/i },
   { label: "legacy package name power-automate-v3-enforcer", re: /power-automate-v3-enforcer/i },
   { label: 'legacy display title "Power Automate v3 enforcer"', re: /Power Automate v3 enforcer/i },
+  {
+    label: "retired repo slug power-automate-editor-version-enforcer",
+    re: /power-automate-editor-version-enforcer/i,
+  },
+  {
+    label: 'retired display title "Power Automate Editor Version Enforcer"',
+    re: /Power Automate Editor Version Enforcer/i,
+  },
+  {
+    label: "retired copy module power-automate-editor-enforcer-copy",
+    re: /power-automate-editor-enforcer-copy/i,
+  },
 ];
 
 const scanExtensions = new Set([

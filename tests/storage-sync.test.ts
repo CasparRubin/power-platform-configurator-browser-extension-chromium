@@ -1,65 +1,67 @@
 import { describe, expect, it } from "vitest";
-import { STORAGE_KEY_ENFORCED_V3, STORAGE_KEY_V3SURVEY_ENABLED } from "../src/constants";
-import { isEnforcerSyncChange } from "../src/storage-sync";
 
-describe("isEnforcerSyncChange", () => {
-  it("is true when enforcedV3 changes", () => {
+import { isConfiguratorSyncChange } from "../src/storage-sync";
+
+describe("isConfiguratorSyncChange", () => {
+  it("returns true when enforcedV3 changes in sync", () => {
     expect(
-      isEnforcerSyncChange("sync", {
-        [STORAGE_KEY_ENFORCED_V3]: { oldValue: "false", newValue: "true" },
-      }),
+      isConfiguratorSyncChange("sync", {
+        enforcedV3: { newValue: "true" },
+      })
     ).toBe(true);
   });
 
-  it("is true when enforcedV3 changes to paused (off)", () => {
+  it("returns true when v3surveyEnabled changes in sync", () => {
     expect(
-      isEnforcerSyncChange("sync", {
-        [STORAGE_KEY_ENFORCED_V3]: { oldValue: "true", newValue: "off" },
-      }),
+      isConfiguratorSyncChange("sync", {
+        v3surveyEnabled: { newValue: "false" },
+      })
     ).toBe(true);
   });
 
-  it("is true when v3surveyEnabled (Survey tab preference) changes alone", () => {
+  it("returns true when both policy keys change in sync", () => {
     expect(
-      isEnforcerSyncChange("sync", {
-        [STORAGE_KEY_V3SURVEY_ENABLED]: { oldValue: "false", newValue: "true" },
-      }),
+      isConfiguratorSyncChange("sync", {
+        enforcedV3: { newValue: "false" },
+        v3surveyEnabled: { newValue: "true" },
+      })
     ).toBe(true);
   });
 
-  it("is true when both policy keys appear in one sync change payload", () => {
+  it("returns true when enforcedV3 is removed from sync", () => {
     expect(
-      isEnforcerSyncChange("sync", {
-        [STORAGE_KEY_ENFORCED_V3]: { oldValue: "false", newValue: "true" },
-        [STORAGE_KEY_V3SURVEY_ENABLED]: { oldValue: "false", newValue: "true" },
-      }),
+      isConfiguratorSyncChange("sync", {
+        enforcedV3: { oldValue: "true" },
+      })
     ).toBe(true);
   });
 
-  it("is false for local namespace", () => {
+  it("returns false for local area even when keys match", () => {
     expect(
-      isEnforcerSyncChange("local", {
-        [STORAGE_KEY_ENFORCED_V3]: { oldValue: "false", newValue: "true" },
-      }),
+      isConfiguratorSyncChange("local", {
+        enforcedV3: { newValue: "true" },
+      })
     ).toBe(false);
     expect(
-      isEnforcerSyncChange("local", {
-        [STORAGE_KEY_V3SURVEY_ENABLED]: { oldValue: "false", newValue: "true" },
-      }),
+      isConfiguratorSyncChange("local", {
+        v3surveyEnabled: { newValue: "false" },
+      })
     ).toBe(false);
   });
 
-  it("is false when sync omits both keys", () => {
-    expect(isEnforcerSyncChange("sync", { otherKey: {} })).toBe(false);
+  it("returns false for unrelated sync keys", () => {
+    expect(isConfiguratorSyncChange("sync", { otherKey: {} })).toBe(false);
   });
 
-  it("is false for an empty sync change object", () => {
-    expect(isEnforcerSyncChange("sync", {})).toBe(false);
+  it("returns false for empty changes", () => {
+    expect(isConfiguratorSyncChange("sync", {})).toBe(false);
   });
 
-  it("is true when a policy key is present on a null-prototype changes object", () => {
-    const changes = Object.create(null) as Record<string, unknown>;
-    changes[STORAGE_KEY_ENFORCED_V3] = { oldValue: "false", newValue: "true" };
-    expect(isEnforcerSyncChange("sync", changes)).toBe(true);
+  it("returns true when only one of multiple changes is a policy key", () => {
+    const changes = {
+      enforcedV3: { newValue: "off" },
+      unrelated: { newValue: 1 },
+    };
+    expect(isConfiguratorSyncChange("sync", changes)).toBe(true);
   });
 });

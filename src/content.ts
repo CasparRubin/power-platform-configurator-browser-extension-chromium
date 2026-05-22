@@ -17,7 +17,7 @@ import {
   STORAGE_KEY_V3SURVEY_ENABLED,
   SYNC_POLICY_KEYS,
 } from "./constants";
-import { isEnforcerSyncChange } from "./storage-sync";
+import { isConfiguratorSyncChange } from "./storage-sync";
 import { PowerAutomateUrlPolicy } from "./url-policy";
 
 (
@@ -187,7 +187,7 @@ void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {
 });
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (!isEnforcerSyncChange(areaName, changes as Record<string, unknown>)) {
+  if (!isConfiguratorSyncChange(areaName, changes as Record<string, unknown>)) {
     return;
   }
   void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {

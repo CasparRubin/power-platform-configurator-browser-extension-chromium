@@ -1,10 +1,10 @@
 {
-  "name": "power-automate-editor-version-enforcer",
+  "name": "power-platform-configurator",
   "private": true,
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CasparRubin/power-automate-editor-version-enforcer.git"
+    "url": "https://github.com/CasparRubin/power-platform-configurator.git"
   },
   "scripts": {
     "prebuild": "node scripts/prebuild-copy-public.mjs",
