@@ -139,6 +139,11 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     expect(manifest.name).toBe(EXTENSION_DISPLAY_NAME);
   });
 
+  it("default_title matches EXTENSION_DISPLAY_NAME", () => {
+    const manifest = readPublicManifest();
+    expect(manifest.action?.default_title).toBe(EXTENSION_DISPLAY_NAME);
+  });
+
   it("description matches canonical public summary (Helvety shared copy module)", () => {
     const manifest = readPublicManifest();
     expect(manifest.description).toBe(EXPECTED_MANIFEST_DESCRIPTION);

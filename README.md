@@ -64,7 +64,7 @@ Source lives under `src/`. The loadable extension is produced in **`dist/`** aft
 | `npm run format`        | Prettier `--write` on the repo (respects `.prettierignore`).                                                                                                                         |
 | `npm run format:check`  | Prettier `--check` (CI-style).                                                                                                                                                       |
 | `npm run verify:naming` | Fails if strings in `scripts/verify-project-naming.mjs` `forbidden` (retired Helvety store slug fragment, legacy repo slugs, retired display title, etc.) appear in scanned sources. |
-| `npm run predeploy`     | `verify:naming` → `format:check` → `lint` → `typecheck` → **`test:coverage`** → `build` (run before releases).                                                                       |
+| `npm run predeploy`     | `verify:naming` → `format:check` → `lint` → `typecheck` → **`test:coverage`** → `build` (local release gate; includes coverage thresholds).                                          |
 
 ## Unit tests
 
@@ -86,6 +86,8 @@ Tests run **locally** with [Vitest](https://vitest.dev/) **4.x** (see `package.j
 | [`tests/theme-preference.test.ts`](./tests/theme-preference.test.ts)                   | `parseThemePreference`, `defaultThemeFromSystem`, `resolveIsDark`, `prefersDarkFromSystem`, `applyThemeClassToDocument`.                                                                                                                                                                                           |
 | [`tests/utils.test.ts`](./tests/utils.test.ts)                                         | `cn()` (clsx + tailwind-merge) used by popup components.                                                                                                                                                                                                                                                           |
 | [`tests/about-meta.test.ts`](./tests/about-meta.test.ts)                               | Public URLs, **`EXTENSION_DISPLAY_NAME`**, and canonical **`SOURCE_REPO_URL`**; `manifest.json` `name` is drift-checked against `EXTENSION_DISPLAY_NAME` in [`tests/constants.test.ts`](./tests/constants.test.ts).                                                                                                |
+| [`tests/ci-workflow.test.ts`](./tests/ci-workflow.test.ts)                             | GitHub Actions [**CI**](.github/workflows/ci.yml) and [**Release**](.github/workflows/release.yml) workflows run `verify:naming`, lint, typecheck, and tests before `build`.                                                                                                                                       |
+| [`tests/readme-release-docs.test.ts`](./tests/readme-release-docs.test.ts)             | README **GitHub Releases** / **Continuous integration** sections stay aligned with workflow files (no stale “skips tests” wording).                                                                                                                                                                                |
 
 **Service worker and content** still call Chromium extension APIs at runtime; unit tests target **pure helpers**, **URL policy**, and **small chrome-stubbed flows** so we do not need Playwright or a headed browser for CI.
 
@@ -153,6 +155,7 @@ The manifest `description` is the same string as the **Public summary** at the t
 ## Lightweight regression checks
 
 ```bash
+npm run verify:naming
 npm run format:check
 npm run lint
 npm run test
@@ -162,7 +165,12 @@ npm run build
 # npm run test:coverage
 ```
 
-For a release-style gate (naming scan + the above **including coverage thresholds**), use **`npm run predeploy`**.
+For a local release gate with coverage thresholds, use **`npm run predeploy`**.
+
+## Continuous integration
+
+- [**CI**](.github/workflows/ci.yml) runs on pushes to `main` and on pull requests: `verify:naming`, `lint`, `typecheck`, `test`, then `build`.
+- [**Release**](.github/workflows/release.yml) runs the same checks when you push a version tag (see below), then zips **`dist/`** for the GitHub Release asset.
 
 ## GitHub Releases
 
@@ -175,7 +183,7 @@ For a release-style gate (naming scan + the above **including coverage threshold
    git push origin vX.Y.Z
    ```
 
-3. The [**Release** workflow](.github/workflows/release.yml) runs on every pushed tag `v*.*.*`: it installs dependencies, runs **`npm run build`**, zips the **`dist/`** folder, and attaches the zip to a [GitHub Release](https://github.com/CasparRubin/power-platform-configurator-browser-extension-chromium/releases) for that tag (Chrome Web Store / Edge uploads are still manual). It does **not** run tests or lint—run **`npm run predeploy`** on the commit you are tagging if you want that full gate before publishing.
+3. The [**Release** workflow](.github/workflows/release.yml) runs on every pushed tag `v*.*.*`: it installs dependencies, runs **`verify:naming`**, **`lint`**, **`typecheck`**, **`test`**, then **`build`**, zips the **`dist/`** folder, and attaches the zip to a [GitHub Release](https://github.com/CasparRubin/power-platform-configurator-browser-extension-chromium/releases) for that tag (Chrome Web Store / Edge uploads are still manual). It does **not** run **`test:coverage`** or Prettier **`format:check`**; use **`npm run predeploy`** locally when you want those extra gates before tagging.
 
 ## Validation checklist
 

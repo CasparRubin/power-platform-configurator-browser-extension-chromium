@@ -19,9 +19,13 @@ jobs:
           node-version: "22"
           cache: npm
 
-      - name: Install and build
+      - name: Install, verify, and build
         run: |
           npm ci
+          npm run verify:naming
+          npm run lint
+          npm run typecheck
+          npm run test
           npm run build
 
       - name: Package dist as zip
