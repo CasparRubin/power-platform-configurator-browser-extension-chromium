@@ -17,7 +17,10 @@ import {
   SYNC_POLICY_KEYS,
 } from "../src/constants";
 import { EXTENSION_DISPLAY_NAME } from "../src/popup/about-meta";
-import { EXPECTED_MANIFEST_DESCRIPTION } from "./expected-manifest-description";
+import {
+  EXPECTED_MANIFEST_DESCRIPTION,
+  MANIFEST_DESCRIPTION_MAX_LENGTH,
+} from "./expected-manifest-description";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -147,6 +150,15 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
   it("description matches canonical public summary (Helvety shared copy module)", () => {
     const manifest = readPublicManifest();
     expect(manifest.description).toBe(EXPECTED_MANIFEST_DESCRIPTION);
+  });
+
+  it("description stays within Chrome / Edge manifest length limit", () => {
+    const manifest = readPublicManifest();
+    const description = manifest.description ?? "";
+    expect(description.length).toBeLessThanOrEqual(MANIFEST_DESCRIPTION_MAX_LENGTH);
+    expect(EXPECTED_MANIFEST_DESCRIPTION.length).toBeLessThanOrEqual(
+      MANIFEST_DESCRIPTION_MAX_LENGTH,
+    );
   });
 
   it("is MV3 with expected API permissions (host access via host_permissions, not broad tabs)", () => {

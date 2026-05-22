@@ -1,6 +1,6 @@
 # Power Platform Configurator
 
-**Public summary** (matches manifest `description`): Configure Microsoft Power Automate Cloud Flows: choose Classic or New Designer (`v3=false` or `v3=true`), and optionally hide the Microsoft survey prompt asking why you made your selection.
+**Public summary** (matches manifest `description`, max 132 characters): Configure Power Automate cloud flows: Classic or New Designer. Hide the survey prompt by default. Pause anytime. Survey **Hide** / **Show**, `v3` flags, and full behavior are documented below and on the Helvety Store listing (`POWER_PLATFORM_CONFIGURATOR_STORE_SHORT_DESCRIPTION`).
 
 That one-line blurb stresses the **default** survey experience (Hide). The popup **Survey** tab still supports **Show**, which normalizes an existing `v3survey` key on the URL to `true` without adding the parameter when it is absent—see **What it does** and **Known limitations** for the full rules.
 

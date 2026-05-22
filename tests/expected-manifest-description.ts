@@ -4,9 +4,11 @@
  * (`packages/shared/src/power-platform-configurator-copy.ts`), synced with this repo’s
  * `public/manifest.json` in `CasparRubin/power-platform-configurator-browser-extension-chromium`.
  *
- * Note: this line is long on purpose; some store dashboards suggest a shorter listing field than
- * the shipped manifest uses—use a shorter dashboard description if required, but keep this file
- * and the manifest in sync with the Helvety constant for the actual package.
+ * Chrome / Edge cap manifest `description` at **132** characters. Store listing cards use the
+ * longer {@link POWER_PLATFORM_CONFIGURATOR_STORE_SHORT_DESCRIPTION} in the Helvety monorepo.
  */
 export const EXPECTED_MANIFEST_DESCRIPTION =
-  "Configure Microsoft Power Automate Cloud Flows: choose Classic or New Designer (v3=false or v3=true), and optionally hide the Microsoft survey prompt asking why you made your selection." as const;
+  "Configure Power Automate cloud flows: Classic or New Designer. Hide the survey prompt by default. Pause anytime." as const;
+
+/** Chrome Web Store / Edge Add-ons manifest `description` maximum length. */
+export const MANIFEST_DESCRIPTION_MAX_LENGTH = 132 as const;
