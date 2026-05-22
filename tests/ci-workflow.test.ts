@@ -17,6 +17,7 @@ describe("GitHub Actions CI workflow", () => {
     expect(workflow).toContain("npm run typecheck");
     expect(workflow).toContain("npm run test");
     expect(workflow).toContain("npm run build");
+    expect(workflow).toContain("npm run test:dist");
     expect(workflow).toMatch(/pull_request|push/);
   });
 
@@ -25,6 +26,7 @@ describe("GitHub Actions CI workflow", () => {
     const workflow = readFileSync(releasePath, "utf8");
     expect(workflow).toContain("npm run verify:naming");
     expect(workflow).toContain("npm run test");
+    expect(workflow).toContain("npm run test:dist");
     expect(workflow).toContain("power-platform-configurator-");
   });
 });

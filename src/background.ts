@@ -107,24 +107,30 @@ async function reconcileFromStorage(): Promise<void> {
 
 const policyQueue = createPolicyLoadQueue(reconcileFromStorage);
 
+async function handleMainFrameNavigation(
+  details: chrome.webNavigation.WebNavigationFramedCallbackDetails,
+): Promise<void> {
+  await policyQueue.awaitReconcileCaughtUp();
+  if (!isMainFrameTabNavigation(details)) {
+    return;
+  }
+  enforceCanonicalOnTab(details.tabId, details.url);
+}
+
 chrome.webNavigation.onCommitted.addListener(
-  async (details) => {
-    await policyQueue.awaitReconcileCaughtUp();
-    if (!isMainFrameTabNavigation(details)) {
-      return;
-    }
-    enforceCanonicalOnTab(details.tabId, details.url);
+  (details) => {
+    void handleMainFrameNavigation(details).catch((error) => {
+      console.error("[power-platform-configurator] onCommitted handler failed", error);
+    });
   },
   { url: POWER_AUTOMATE_URL_FILTERS },
 );
 
 chrome.webNavigation.onHistoryStateUpdated.addListener(
-  async (details) => {
-    await policyQueue.awaitReconcileCaughtUp();
-    if (!isMainFrameTabNavigation(details)) {
-      return;
-    }
-    enforceCanonicalOnTab(details.tabId, details.url);
+  (details) => {
+    void handleMainFrameNavigation(details).catch((error) => {
+      console.error("[power-platform-configurator] onHistoryStateUpdated handler failed", error);
+    });
   },
   { url: POWER_AUTOMATE_URL_FILTERS },
 );

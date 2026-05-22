@@ -186,19 +186,49 @@ void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {
   startCanonicalizer();
 });
 
+function afterPolicyAppliedFromStorage(): void {
+  lastEnforcedHref = "";
+  lastEnforcedCanonicalKey = "";
+  if (PowerAutomateUrlPolicy.isEnforcementPaused()) {
+    stopShortLivedFallback();
+  } else {
+    enforceCanonicalUrlOnCurrentPage();
+    startShortLivedFallback();
+  }
+}
+
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (!isConfiguratorSyncChange(areaName, changes as Record<string, unknown>)) {
     return;
   }
+  const syncChanges = changes as Record<string, chrome.storage.StorageChange>;
+  const hasEnforcedChange = Object.prototype.hasOwnProperty.call(
+    syncChanges,
+    STORAGE_KEY_ENFORCED_V3,
+  );
+  const hasSurveyChange = Object.prototype.hasOwnProperty.call(
+    syncChanges,
+    STORAGE_KEY_V3SURVEY_ENABLED,
+  );
+
+  if (hasEnforcedChange && hasSurveyChange) {
+    applyPolicyFromSyncResult({
+      [STORAGE_KEY_ENFORCED_V3]: syncChanges[STORAGE_KEY_ENFORCED_V3]?.newValue,
+      [STORAGE_KEY_V3SURVEY_ENABLED]: syncChanges[STORAGE_KEY_V3SURVEY_ENABLED]?.newValue,
+    });
+    afterPolicyAppliedFromStorage();
+    return;
+  }
+
   void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {
-    applyPolicyFromSyncResult(result);
-    lastEnforcedHref = "";
-    lastEnforcedCanonicalKey = "";
-    if (PowerAutomateUrlPolicy.isEnforcementPaused()) {
-      stopShortLivedFallback();
-    } else {
-      enforceCanonicalUrlOnCurrentPage();
-      startShortLivedFallback();
+    const merged = { ...result };
+    if (hasEnforcedChange) {
+      merged[STORAGE_KEY_ENFORCED_V3] = syncChanges[STORAGE_KEY_ENFORCED_V3]?.newValue;
     }
+    if (hasSurveyChange) {
+      merged[STORAGE_KEY_V3SURVEY_ENABLED] = syncChanges[STORAGE_KEY_V3SURVEY_ENABLED]?.newValue;
+    }
+    applyPolicyFromSyncResult(merged);
+    afterPolicyAppliedFromStorage();
   });
 });

@@ -27,6 +27,7 @@ jobs:
           npm run typecheck
           npm run test
           npm run build
+          npm run test:dist
 
       - name: Package dist as zip
         run: (cd dist && zip -r "../power-platform-configurator-${{ github.ref_name }}.zip" .)

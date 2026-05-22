@@ -1,5 +1,5 @@
 /** Minimal shape for `webNavigation` callback details (main frame only). */
-export type MainFrameDetailsLike = {
+type MainFrameDetailsLike = {
   frameId?: number;
   tabId?: number;
 };

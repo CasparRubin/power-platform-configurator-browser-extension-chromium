@@ -14,6 +14,7 @@
     "build": "npm run prebuild && npm run build:sw && npm run build:content && npm run build:popup",
     "watch": "vite build --config vite.popup.config.ts --watch",
     "test": "vitest run",
+    "test:dist": "vitest run tests/dist-bundle.test.ts tests/dnr-static-rules.test.ts",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -21,7 +22,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "verify:naming": "node scripts/verify-project-naming.mjs",
-    "predeploy": "npm run verify:naming && npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build"
+    "predeploy": "npm run verify:naming && npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run test:dist"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

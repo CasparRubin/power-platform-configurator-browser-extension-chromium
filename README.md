@@ -90,6 +90,8 @@ Tests run **locally** with [Vitest](https://vitest.dev/) **4.x** (see `package.j
 | [`tests/ci-workflow.test.ts`](./tests/ci-workflow.test.ts)                             | GitHub Actions [**CI**](.github/workflows/ci.yml) and [**Release**](.github/workflows/release.yml) workflows run `verify:naming`, lint, typecheck, and tests before `build`.                                                                                                                                       |
 | [`tests/readme-release-docs.test.ts`](./tests/readme-release-docs.test.ts)             | README **GitHub Releases** / **Continuous integration** sections stay aligned with workflow files (no stale “skips tests” wording).                                                                                                                                                                                |
 | [`tests/readme-popup-docs.test.ts`](./tests/readme-popup-docs.test.ts)                 | README **What it does** / layout table document `ppconfigurator_*` icons, popup header chrome, and the About **Developer** section.                                                                                                                                                                                |
+| [`tests/dnr-static-rules.test.ts`](./tests/dnr-static-rules.test.ts)                   | Static DNR JSON: globally unique rule ids, `main_frame` + `v3`-only redirects, host regex alignment with manifest.                                                                                                                                                                                                 |
+| [`tests/dist-bundle.test.ts`](./tests/dist-bundle.test.ts)                             | Post-build (`npm run test:dist`): `dist/` exists, popup CSP (no inline/remote scripts), packaged DNR/manifest, hashed popup icon asset.                                                                                                                                                                            |
 
 **Service worker and content** still call Chromium extension APIs at runtime; unit tests target **pure helpers**, **URL policy**, and **small chrome-stubbed flows** so we do not need Playwright or a headed browser for CI.
 
@@ -172,8 +174,12 @@ For a local release gate with coverage thresholds, use **`npm run predeploy`**.
 
 ## Continuous integration
 
-- [**CI**](.github/workflows/ci.yml) runs on pushes to `main` and on pull requests: `verify:naming`, `lint`, `typecheck`, `test`, then `build`.
+- [**CI**](.github/workflows/ci.yml) runs on pushes to `main` and on pull requests: `verify:naming`, `lint`, `typecheck`, `test`, `build`, then **`test:dist`** (post-build CSP and `dist/` artifact guards).
 - [**Release**](.github/workflows/release.yml) runs the same checks when you push a version tag (see below), then zips **`dist/`** for the GitHub Release asset.
+
+## Chrome Web Store
+
+See [**docs/chrome-web-store.md**](docs/chrome-web-store.md) for dashboard fields, permission justifications, marketing assets, and pre-submit smoke tests before uploading to Chrome Web Store or Edge Add-ons.
 
 ## GitHub Releases
 

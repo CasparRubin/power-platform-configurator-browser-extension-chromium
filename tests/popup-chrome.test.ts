@@ -59,14 +59,11 @@ describe("popup chrome (header + About developer section)", () => {
   });
 });
 
-describe("built popup bundle (when dist/ exists)", () => {
+describe("built popup bundle (when dist/ exists; enforced in test:dist)", () => {
   const popupAssetsDir = join(repoRoot, "dist", "popup-assets");
   const hasPopupAssets = existsSync(popupAssetsDir);
 
-  it("includes hashed ppconfigurator icon asset after vite build", () => {
-    if (!hasPopupAssets) {
-      return;
-    }
+  it.skipIf(!hasPopupAssets)("includes hashed ppconfigurator icon asset after vite build", () => {
     const assets = readdirSync(popupAssetsDir);
     expect(assets.some((name) => name.includes("ppconfigurator"))).toBe(true);
   });
