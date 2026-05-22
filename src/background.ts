@@ -160,10 +160,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       }
       await reconcileFromStorage();
     } catch (error) {
-      console.error(
-        "[power-platform-configurator] onInstalled policy chain failed",
-        error,
-      );
+      console.error("[power-platform-configurator] onInstalled policy chain failed", error);
     }
   });
 });

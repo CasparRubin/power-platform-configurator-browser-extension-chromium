@@ -7,7 +7,7 @@ describe("isConfiguratorSyncChange", () => {
     expect(
       isConfiguratorSyncChange("sync", {
         enforcedV3: { newValue: "true" },
-      })
+      }),
     ).toBe(true);
   });
 
@@ -15,7 +15,7 @@ describe("isConfiguratorSyncChange", () => {
     expect(
       isConfiguratorSyncChange("sync", {
         v3surveyEnabled: { newValue: "false" },
-      })
+      }),
     ).toBe(true);
   });
 
@@ -24,7 +24,7 @@ describe("isConfiguratorSyncChange", () => {
       isConfiguratorSyncChange("sync", {
         enforcedV3: { newValue: "false" },
         v3surveyEnabled: { newValue: "true" },
-      })
+      }),
     ).toBe(true);
   });
 
@@ -32,7 +32,7 @@ describe("isConfiguratorSyncChange", () => {
     expect(
       isConfiguratorSyncChange("sync", {
         enforcedV3: { oldValue: "true" },
-      })
+      }),
     ).toBe(true);
   });
 
@@ -40,12 +40,12 @@ describe("isConfiguratorSyncChange", () => {
     expect(
       isConfiguratorSyncChange("local", {
         enforcedV3: { newValue: "true" },
-      })
+      }),
     ).toBe(false);
     expect(
       isConfiguratorSyncChange("local", {
         v3surveyEnabled: { newValue: "false" },
-      })
+      }),
     ).toBe(false);
   });
 

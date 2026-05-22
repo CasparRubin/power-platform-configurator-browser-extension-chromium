@@ -6,7 +6,7 @@ import { STORAGE_KEY_ENFORCED_V3, STORAGE_KEY_V3SURVEY_ENABLED } from "./constan
  */
 export function isConfiguratorSyncChange(
   areaName: string,
-  changes: Record<string, unknown>
+  changes: Record<string, unknown>,
 ): boolean {
   if (areaName !== "sync") {
     return false;
