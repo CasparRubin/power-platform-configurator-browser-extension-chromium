@@ -1,6 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
@@ -14,16 +13,17 @@ function readSource(relativePath: string): string {
 }
 
 describe("popup chrome (header + About developer section)", () => {
-  it("ExtensionMark bundles the ppconfigurator toolbar artwork from assets/", () => {
-    const source = readSource("src/popup/components/ExtensionMark.tsx");
-    expect(source).toContain("ppconfigurator_48.png");
+  it("PopupHeader bundles the ppconfigurator toolbar artwork from assets/", () => {
+    const header = readSource("src/popup/components/PopupHeader.tsx");
+    expect(header).toContain("ppconfigurator_48.png");
     expect(existsSync(join(repoRoot, "assets", "ppconfigurator_48.png"))).toBe(true);
   });
 
   it("PopupHeader shows the extension product name and icon, not the developer mark", () => {
     const header = readSource("src/popup/components/PopupHeader.tsx");
-    expect(header).toContain("ExtensionMark");
+    expect(header).toContain("ppconfigurator_48.png");
     expect(header).toContain("EXTENSION_DISPLAY_NAME");
+    expect(header).toContain("@helvety/extension-chrome/popup-header");
     expect(header).not.toContain("HelvetyMark");
     expect(header).not.toContain("DEVELOPER_NAME");
   });
@@ -42,6 +42,22 @@ describe("popup chrome (header + About developer section)", () => {
     expect(DEVELOPER_NAME).toBe("Helvety");
     expect(DEVELOPER_URL).toBe("https://helvety.com");
     expect(EXTENSION_DISPLAY_NAME).toBe("Power Platform Configurator");
+  });
+
+  it("popup entry imports shared theme-boot and App uses usePopupTheme", () => {
+    const main = readSource("src/popup/main.tsx");
+    expect(main).toContain("@helvety/extension-chrome/theme-boot");
+    expect(main).not.toContain("./theme-boot");
+
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain("usePopupTheme");
+    expect(app).toContain("STORAGE_KEY_POPUP_THEME");
+    expect(app).toContain("@helvety/extension-chrome/use-popup-theme");
+  });
+
+  it("does not keep local popup theme modules (shared package owns them)", () => {
+    expect(existsSync(join(repoRoot, "src/popup/theme-preference.ts"))).toBe(false);
+    expect(existsSync(join(repoRoot, "src/popup/theme-boot.ts"))).toBe(false);
   });
 
   it("does not ship legacy icon_* filenames under public/icons/", () => {

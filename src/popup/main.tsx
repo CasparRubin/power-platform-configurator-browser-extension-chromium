@@ -1,4 +1,4 @@
-import "./theme-boot";
+import "@helvety/extension-chrome/theme-boot";
 import "./index.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

@@ -14,7 +14,8 @@ describe("README popup and icon documentation", () => {
     const section = readme.slice(readme.indexOf("## What it does"));
     expect(section).toContain("ppconfigurator");
     expect(section).toContain("PopupHeader");
-    expect(section).toContain("ExtensionMark");
+    expect(section).toContain("@helvety/extension-chrome");
+    expect(section).toContain("usePopupTheme");
     expect(section).toMatch(/About.*Developer/i);
   });
 
@@ -25,7 +26,8 @@ describe("README popup and icon documentation", () => {
 
     const layout = readme.slice(readme.indexOf("## Repository layout"));
     expect(layout).toContain("ppconfigurator_{16,32,48,128}.png");
-    expect(layout).toContain("ExtensionMark");
+    expect(layout).toContain("@helvety/extension-chrome");
+    expect(layout).not.toContain("ExtensionMark");
     expect(layout).toContain("HelvetyMark");
     expect(readme).not.toMatch(/icon_\d+\.png/);
     expect(readme).not.toContain("v3False");

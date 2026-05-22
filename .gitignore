@@ -3,6 +3,7 @@
 _metadata/
 AGENT_RELEASE_NOTES.local.md
 node_modules/
+.helvety/
 dist/
 .vite/
 coverage/

@@ -2,10 +2,11 @@ import { defineConfig } from "vitest/config";
 
 /**
  * Coverage is scoped to modules exercised by unit tests. Entry points (`background`, `content`),
- * the React popup shell, `persist-policy-preference.ts`, `policy-popup-log.ts`, and shadcn UI
+ * the React popup shell, `persist-policy-preference.ts`, `policy-popup-log.ts`, and `@helvety/ui`
  * primitives are excluded so thresholds reflect logic we test in Node rather than E2E browser
- * targets (those pieces have dedicated tests or are DEV-only / UI glue). Popup layout contracts
- * are guarded by `tests/popup-chrome.test.ts` (source/structure checks). Smaller modules such as
+ * targets (those pieces have dedicated tests or are DEV-only / UI glue). Popup chrome and theme
+ * live in `@helvety/extension-chrome`; layout contracts are guarded by `tests/popup-chrome.test.ts`.
+ * Smaller modules such as
  * `action-badge.ts` stay included (stubbed `chrome` in tests).
  */
 export default defineConfig({
@@ -23,7 +24,6 @@ export default defineConfig({
         "src/content.ts",
         "src/popup/App.tsx",
         "src/popup/main.tsx",
-        "src/popup/theme-boot.ts",
         "src/popup/persist-policy-preference.ts",
         "src/popup/policy-popup-log.ts",
         "src/components/**",

@@ -12,12 +12,20 @@ import {
   Sun,
   Workflow,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { readExtensionVersion } from "@helvety/extension-chrome/extension-version";
+import {
+  POPUP_SHELL_CLASS,
+  POPUP_WIDTH_CLASS,
+  popupChoiceRowClass,
+  TAB_PANEL_CLASS,
+} from "@helvety/extension-chrome/popup-shell";
+import { usePopupTheme } from "@helvety/extension-chrome/use-popup-theme";
+import { cn } from "@helvety/shared/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@helvety/ui/card";
+import { Label } from "@helvety/ui/label";
+import { RadioGroup, RadioGroupItem } from "@helvety/ui/radio-group";
+import { Separator } from "@helvety/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@helvety/ui/tabs";
 import {
   DEFAULT_ENFORCEMENT_PREFERENCE,
   parseEnforcementPreference,
@@ -38,19 +46,9 @@ import { HelvetyMark } from "./components/HelvetyMark";
 import { PopupHeader } from "./components/PopupHeader";
 import { persistPolicyPreferenceAndOptionalReload } from "./persist-policy-preference";
 import { createAsyncQueue } from "./sync-write-queue";
-import {
-  applyThemeClassToDocument,
-  defaultThemeFromSystem,
-  parseThemePreference,
-  resolveIsDark,
-  type ThemePreference,
-} from "./theme-preference";
+import type { ThemePreference } from "@helvety/extension-chrome/theme-preference";
 
 type SurveyEnabledSync = "true" | "false";
-
-/** Tab body: native scroll + `.popup-tab-scroll` themed scrollbar (see index.css). */
-const TAB_PANEL_CLASS =
-  "popup-tab-scroll min-h-40 max-h-72 w-full overflow-y-auto overflow-x-hidden pr-1 [scrollbar-gutter:stable]";
 
 function PolicyPanelBusyHint({
   isPolicySyncBusy,
@@ -70,21 +68,13 @@ function PolicyPanelBusyHint({
   return null;
 }
 
-function readExtensionVersion(): string {
-  if (typeof chrome !== "undefined" && chrome.runtime?.getManifest) {
-    return chrome.runtime.getManifest().version;
-  }
-  return "—";
-}
-
 export default function App() {
   const [value, setValue] = useState<EnforcementPreference>(DEFAULT_ENFORCEMENT_PREFERENCE);
   /** Sync `v3surveyEnabled`: `"false"` = Hide (default, `v3survey=false` on URLs, adds if missing); `"true"` = Show (normalize in-URL `v3survey` to `true` only). */
   const [surveyMode, setSurveyMode] = useState<SurveyEnabledSync>("false");
-  const [themePreference, setThemePreference] = useState<ThemePreference>(() =>
-    defaultThemeFromSystem(),
-  );
-  const [loaded, setLoaded] = useState(false);
+  const { themePreference, themeLoaded, saveTheme } = usePopupTheme(STORAGE_KEY_POPUP_THEME);
+  const [policyLoaded, setPolicyLoaded] = useState(false);
+  const loaded = themeLoaded && policyLoaded;
   const [status, setStatus] = useState<string>("");
   /** True while `chrome.storage.sync.set` is in flight for editor or survey policy keys. */
   const [isPolicySyncBusy, setIsPolicySyncBusy] = useState(false);
@@ -129,11 +119,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    void Promise.all([
-      chrome.storage.sync.get([...SYNC_POLICY_KEYS]),
-      chrome.storage.local.get(STORAGE_KEY_POPUP_THEME),
-    ])
-      .then(([syncResult, localResult]) => {
+    void chrome.storage.sync
+      .get([...SYNC_POLICY_KEYS])
+      .then((syncResult) => {
         if (!mountedRef.current) {
           return;
         }
@@ -141,14 +129,7 @@ export default function App() {
         setSurveyMode(
           parseV3SurveyEnabled(syncResult[STORAGE_KEY_V3SURVEY_ENABLED]) ? "true" : "false",
         );
-        const raw = localResult[STORAGE_KEY_POPUP_THEME];
-        const theme = parseThemePreference(raw);
-        setThemePreference(theme);
-        applyThemeClassToDocument(resolveIsDark(theme));
-        if (raw !== theme) {
-          void chrome.storage.local.set({ [STORAGE_KEY_POPUP_THEME]: theme });
-        }
-        setLoaded(true);
+        setPolicyLoaded(true);
       })
       .catch(() => {
         if (!mountedRef.current) {
@@ -156,16 +137,9 @@ export default function App() {
         }
         setValue(DEFAULT_ENFORCEMENT_PREFERENCE);
         setSurveyMode("false");
-        const theme = parseThemePreference(undefined);
-        setThemePreference(theme);
-        applyThemeClassToDocument(resolveIsDark(theme));
-        setLoaded(true);
+        setPolicyLoaded(true);
       });
   }, []);
-
-  useEffect(() => {
-    applyThemeClassToDocument(resolveIsDark(themePreference));
-  }, [themePreference]);
 
   const clearPendingStatusDismiss = useCallback(() => {
     if (statusClearTimerRef.current !== null) {
@@ -194,11 +168,12 @@ export default function App() {
     setSurveyMode(parseV3SurveyEnabled(result[STORAGE_KEY_V3SURVEY_ENABLED]) ? "true" : "false");
   }, []);
 
-  const onSaveTheme = useCallback((next: ThemePreference) => {
-    setThemePreference(next);
-    applyThemeClassToDocument(resolveIsDark(next));
-    void chrome.storage.local.set({ [STORAGE_KEY_POPUP_THEME]: next });
-  }, []);
+  const onSaveTheme = useCallback(
+    (next: ThemePreference) => {
+      saveTheme(next);
+    },
+    [saveTheme],
+  );
 
   const onSave = useCallback(
     (next: EnforcementPreference) => {
@@ -268,21 +243,15 @@ export default function App() {
 
   if (!loaded) {
     return (
-      <div className="flex w-[320px] flex-col gap-2 px-3 py-3 text-sm leading-snug text-foreground">
+      <div className={`flex ${POPUP_WIDTH_CLASS} ${POPUP_SHELL_CLASS} text-foreground`}>
         <PopupHeader version={extensionVersion} />
         <p className="text-xs text-muted-foreground">Loading…</p>
       </div>
     );
   }
 
-  const choiceRow = (selected: boolean) =>
-    cn(
-      "flex cursor-pointer items-start gap-2 rounded-none p-2 transition-colors",
-      selected ? "bg-muted" : "hover:bg-muted/60",
-    );
-
   return (
-    <div className="flex w-[320px] flex-col gap-2 px-3 py-3 text-sm leading-snug text-foreground">
+    <div className={`flex ${POPUP_WIDTH_CLASS} ${POPUP_SHELL_CLASS} text-foreground`}>
       <Tabs defaultValue="editor" className="flex flex-col gap-0">
         <PopupHeader version={extensionVersion} />
         <TabsList className="grid h-auto w-full grid-cols-3 gap-0.5 bg-muted p-1 text-xs">
@@ -353,7 +322,7 @@ export default function App() {
                   }
                 }}
               >
-                <div className={choiceRow(value === "false")}>
+                <div className={popupChoiceRowClass(value === "false")}>
                   <RadioGroupItem value="false" id="mode-false" className="mt-0.5 shrink-0" />
                   <div className="flex min-w-0 flex-col gap-0">
                     <Label htmlFor="mode-false" className="cursor-pointer text-sm font-medium">
@@ -369,7 +338,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={choiceRow(value === "true")}>
+                <div className={popupChoiceRowClass(value === "true")}>
                   <RadioGroupItem value="true" id="mode-true" className="mt-0.5 shrink-0" />
                   <div className="flex min-w-0 flex-col gap-0">
                     <Label htmlFor="mode-true" className="cursor-pointer text-sm font-medium">
@@ -385,7 +354,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={choiceRow(value === "off")}>
+                <div className={popupChoiceRowClass(value === "off")}>
                   <RadioGroupItem value="off" id="mode-off" className="mt-0.5 shrink-0" />
                   <div className="flex min-w-0 flex-col gap-0">
                     <Label htmlFor="mode-off" className="cursor-pointer text-sm font-medium">
@@ -448,7 +417,7 @@ export default function App() {
                     }
                   }}
                 >
-                  <div className={choiceRow(surveyMode === "false")}>
+                  <div className={popupChoiceRowClass(surveyMode === "false")}>
                     <RadioGroupItem value="false" id="survey-off" className="mt-0.5 shrink-0" />
                     <div className="flex min-w-0 flex-col gap-0">
                       <Label htmlFor="survey-off" className="cursor-pointer text-sm font-medium">
@@ -463,7 +432,7 @@ export default function App() {
                       </p>
                     </div>
                   </div>
-                  <div className={choiceRow(surveyMode === "true")}>
+                  <div className={popupChoiceRowClass(surveyMode === "true")}>
                     <RadioGroupItem value="true" id="survey-on" className="mt-0.5 shrink-0" />
                     <div className="flex min-w-0 flex-col gap-0">
                       <Label htmlFor="survey-on" className="cursor-pointer text-sm font-medium">
@@ -521,7 +490,7 @@ export default function App() {
                         }
                       }}
                     >
-                      <div className={choiceRow(themePreference === "light")}>
+                      <div className={popupChoiceRowClass(themePreference === "light")}>
                         <RadioGroupItem
                           value="light"
                           id="theme-light"
@@ -546,7 +515,7 @@ export default function App() {
                           </p>
                         </div>
                       </div>
-                      <div className={choiceRow(themePreference === "dark")}>
+                      <div className={popupChoiceRowClass(themePreference === "dark")}>
                         <RadioGroupItem value="dark" id="theme-dark" className="mt-0.5 shrink-0" />
                         <Moon
                           className={cn(

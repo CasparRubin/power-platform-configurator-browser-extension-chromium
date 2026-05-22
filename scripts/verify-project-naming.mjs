@@ -1,6 +1,7 @@
 /**
  * Fail the build if superseded name strings appear anywhere under the repo
- * (excluding node_modules, dist, .git). Patterns include a retired Helvety Store slug fragment,
+ * (excluding node_modules, dist, .git, .helvety vendor copy). Patterns include a retired Helvety
+ * Store slug fragment,
  * legacy GitHub/repo slugs, and a retired browser display title — see the `forbidden` list.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -8,7 +9,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const skipDirNames = new Set(["node_modules", "dist", ".git"]);
+const skipDirNames = new Set(["node_modules", "dist", ".git", ".helvety"]);
 
 /** @type {{ label: string; re: RegExp }[]} */
 const forbidden = [

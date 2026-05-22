@@ -6,7 +6,7 @@ import {
   prefersDarkFromSystem,
   resolveIsDark,
   type ThemePreference,
-} from "../src/popup/theme-preference";
+} from "@helvety/extension-chrome/theme-preference";
 
 function stubWindowWithMatchMedia(matches: boolean) {
   vi.stubGlobal("window", {
@@ -107,14 +107,20 @@ describe("applyThemeClassToDocument", () => {
     vi.unstubAllGlobals();
   });
 
-  it("toggles dark class on documentElement", () => {
+  it("toggles dark class and color-scheme on documentElement", () => {
     const toggle = vi.fn();
+    const element = {
+      classList: { toggle },
+      style: { colorScheme: "" },
+    };
     vi.stubGlobal("document", {
-      documentElement: { classList: { toggle } },
+      documentElement: element,
     } as unknown as Document);
     applyThemeClassToDocument(true);
     expect(toggle).toHaveBeenCalledWith("dark", true);
+    expect(element.style.colorScheme).toBe("dark");
     applyThemeClassToDocument(false);
     expect(toggle).toHaveBeenCalledWith("dark", false);
+    expect(element.style.colorScheme).toBe("light");
   });
 });

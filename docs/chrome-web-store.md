@@ -37,6 +37,7 @@ The manifest does **not** request `tabs`; `chrome.tabs.update` / `reload` are us
 | Asset                           | Path                                             |
 | ------------------------------- | ------------------------------------------------ |
 | Extension icons                 | `public/icons/ppconfigurator_{16,32,48,128}.png` |
+| Popup header icon (48px source) | `assets/ppconfigurator_48.png` via `PopupHeader` |
 | Marquee promo (1400×560)        | `assets/MarqueePromoTile_1400x560.png`           |
 | Small promo (440×280)           | `assets/SmallPromoTile_440x280.png`              |
 | Store screenshot (640×400)      | `assets/Screenshot_640x400.png`                  |

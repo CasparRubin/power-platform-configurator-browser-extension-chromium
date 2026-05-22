@@ -13,6 +13,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(repoRoot, "src"),
+      "@helvety/shared": resolve(repoRoot, "node_modules/@helvety/shared/src"),
     },
   },
   plugins: [
