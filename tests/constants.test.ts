@@ -182,6 +182,7 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
       const rel = icons![size];
       expect(rel).toBe(`icons/ppconfigurator_${size}.png`);
       expect(existsSync(join(repoRoot, "public", rel))).toBe(true);
+      expect(existsSync(join(repoRoot, "assets", `ppconfigurator_${size}.png`))).toBe(true);
     }
   });
 

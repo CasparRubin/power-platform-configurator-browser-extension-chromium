@@ -8,9 +8,9 @@ import {
 
 describe("about-meta", () => {
   it("exposes stable public links and display name", () => {
-    expect(DEVELOPER_URL).toMatch(/^https:\/\//);
+    expect(DEVELOPER_URL).toBe("https://helvety.com");
+    expect(DEVELOPER_NAME).toBe("Helvety");
     expect(SOURCE_REPO_URL).toMatch(/^https:\/\/github\.com\//);
-    expect(DEVELOPER_NAME.length).toBeGreaterThan(0);
   });
 
   it("keeps official extension title and source repo URL in sync with shipped constants", () => {

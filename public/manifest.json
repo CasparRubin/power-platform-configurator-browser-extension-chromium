@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Power Platform Configurator",
-  "version": "2.8.2",
+  "version": "2.8.3",
   "description": "Configure Microsoft Power Automate Cloud Flows: choose Classic or New Designer (v3=false or v3=true), and optionally hide the Microsoft survey prompt asking why you made your selection.",
   "homepage_url": "https://helvety.com",
   "permissions": ["declarativeNetRequest", "webNavigation", "storage"],

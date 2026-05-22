@@ -3,7 +3,6 @@ import {
   BadgeInfo,
   ExternalLink,
   GitBranch,
-  Globe,
   Loader2,
   MessageSquare,
   Moon,
@@ -36,6 +35,7 @@ import {
   SOURCE_REPO_URL,
 } from "./about-meta";
 import { HelvetyMark } from "./components/HelvetyMark";
+import { PopupHeader } from "./components/PopupHeader";
 import { persistPolicyPreferenceAndOptionalReload } from "./persist-policy-preference";
 import { createAsyncQueue } from "./sync-write-queue";
 import {
@@ -269,17 +269,7 @@ export default function App() {
   if (!loaded) {
     return (
       <div className="flex w-[320px] flex-col gap-2 px-3 py-3 text-sm leading-snug text-foreground">
-        <header className="flex select-none items-center gap-2.5 border-b border-border/60 pb-2">
-          <HelvetyMark />
-          <div className="flex min-w-0 flex-1 flex-col gap-0">
-            <span className="text-sm font-semibold tracking-tight text-foreground">
-              {DEVELOPER_NAME}
-            </span>
-            <span className="text-[11px] leading-tight text-muted-foreground">
-              {EXTENSION_DISPLAY_NAME}
-            </span>
-          </div>
-        </header>
+        <PopupHeader version={extensionVersion} />
         <p className="text-xs text-muted-foreground">Loading…</p>
       </div>
     );
@@ -294,17 +284,7 @@ export default function App() {
   return (
     <div className="flex w-[320px] flex-col gap-2 px-3 py-3 text-sm leading-snug text-foreground">
       <Tabs defaultValue="editor" className="flex flex-col gap-0">
-        <header className="mb-2 flex select-none items-center gap-2.5 border-b border-border/60 pb-2">
-          <HelvetyMark />
-          <div className="flex min-w-0 flex-1 flex-col gap-0">
-            <span className="text-sm font-semibold tracking-tight text-foreground">
-              {DEVELOPER_NAME}
-            </span>
-            <span className="text-[11px] leading-tight text-muted-foreground">
-              {EXTENSION_DISPLAY_NAME}
-            </span>
-          </div>
-        </header>
+        <PopupHeader version={extensionVersion} />
         <TabsList className="grid h-auto w-full grid-cols-3 gap-0.5 bg-muted p-1 text-xs">
           <TabsTrigger
             value="editor"
@@ -662,19 +642,37 @@ export default function App() {
                     />
                     <span className="font-medium text-foreground">Version:</span> {extensionVersion}
                   </p>
-                  <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                    <span className="font-medium text-foreground">Developer:</span>
+
+                  <Separator className="bg-foreground/10" />
+
+                  <section
+                    className="flex flex-col gap-2"
+                    aria-labelledby="about-developer-heading"
+                  >
+                    <p id="about-developer-heading" className="text-xs font-medium text-foreground">
+                      Developer
+                    </p>
                     <a
-                      className="inline-flex items-center gap-1.5 text-primary underline underline-offset-2"
+                      className="-mx-1 flex items-center gap-2.5 rounded-sm p-1.5 transition-colors hover:bg-muted/60"
                       href={DEVELOPER_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Globe className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      {DEVELOPER_NAME}
-                      <ExternalLink className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
+                      <HelvetyMark className="h-7 w-7" />
+                      <span className="flex min-w-0 flex-1 flex-col gap-0">
+                        <span className="text-sm font-medium text-foreground">
+                          {DEVELOPER_NAME}
+                        </span>
+                        <span className="text-[11px] leading-tight text-muted-foreground">
+                          helvety.com
+                        </span>
+                      </span>
+                      <ExternalLink
+                        className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-70"
+                        aria-hidden
+                      />
                     </a>
-                  </p>
+                  </section>
                 </CardContent>
               </Card>
             </div>

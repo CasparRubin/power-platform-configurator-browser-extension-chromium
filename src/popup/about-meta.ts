@@ -2,12 +2,12 @@
 export const DEVELOPER_URL = "https://helvety.com";
 
 /**
- * Shown under {@link DEVELOPER_NAME} in the popup header. Must match `name` in
+ * Shown in the popup header title and About card heading. Must match `name` in
  * `public/manifest.json` (see `tests/constants.test.ts` manifest drift guard).
  */
 export const EXTENSION_DISPLAY_NAME = "Power Platform Configurator" as const;
 
-/** Display name shown in the About tab. */
+/** Developer link label in the About tab **Developer** section (paired with `HelvetyMark`). */
 export const DEVELOPER_NAME = "Helvety";
 
 /** Public Git repository for this extension (issues, PRs). Slug: `power-platform-configurator-browser-extension-chromium`. */

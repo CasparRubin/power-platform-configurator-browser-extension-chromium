@@ -1,7 +1,7 @@
 import identifierWhiteBgUrl from "../../../assets/Identifier_whiteBg.svg?url";
 import { cn } from "@/lib/utils";
 
-/** Helvety identifier mark (`assets/Identifier_whiteBg.svg`). */
+/** Helvety identifier mark for the About tab **Developer** section (`assets/Identifier_whiteBg.svg`). */
 export function HelvetyMark({ className }: { className?: string }) {
   return (
     <img
