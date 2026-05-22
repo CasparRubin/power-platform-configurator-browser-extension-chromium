@@ -180,7 +180,7 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     expect(icons).toBeDefined();
     for (const size of ["16", "32", "48", "128"] as const) {
       const rel = icons![size];
-      expect(rel).toBe(`icons/icon_${size}.png`);
+      expect(rel).toBe(`icons/ppconfigurator_${size}.png`);
       expect(existsSync(join(repoRoot, "public", rel))).toBe(true);
     }
   });
