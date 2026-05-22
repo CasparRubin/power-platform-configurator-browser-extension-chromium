@@ -17,7 +17,7 @@ Chrome/Edge extension (Manifest V3) that **keeps flow and run links opening in t
   - Terms of Service: [https://helvety.com/terms](https://helvety.com/terms)
   - Impressum / Legal Notice: [https://helvety.com/impressum](https://helvety.com/impressum)
 - Chrome Web Store / Edge Add-ons note: set the privacy policy URL in the store listing to `https://helvety.com/privacy`.
-- **Helvety monorepo:** keep `public/manifest.json` `description` identical to `POWER_PLATFORM_CONFIGURATOR_PUBLIC_SUMMARY` in [`helvety/packages/shared/src/power-platform-configurator-copy.ts`](https://github.com/CasparRubin/helvety/blob/main/packages/shared/src/power-platform-configurator-copy.ts). The store card / `llms` line uses `POWER_PLATFORM_CONFIGURATOR_STORE_SHORT_DESCRIPTION` in the same file (summary + Survey/Paused suffix). [`tests/expected-manifest-description.ts`](./tests/expected-manifest-description.ts) mirrors the summary for extension-only CI.
+- **Helvety monorepo:** keep `public/manifest.json` `description` identical to `POWER_PLATFORM_CONFIGURATOR_PUBLIC_SUMMARY` in [`helvety/packages/shared/src/power-platform-configurator-copy.ts`](https://github.com/CasparRubin/helvety/blob/main/packages/shared/src/power-platform-configurator-copy.ts). The store card / `llms` line uses `POWER_PLATFORM_CONFIGURATOR_STORE_SHORT_DESCRIPTION` in the same file (summary + Survey/Paused suffix). [`tests/expected-manifest-description.ts`](./tests/expected-manifest-description.ts) mirrors the summary for extension-only CI. Source repo: [`CasparRubin/power-platform-configurator-browser-extension-chromium`](https://github.com/CasparRubin/power-platform-configurator-browser-extension-chromium) (npm package name remains `power-platform-configurator`).
 
 ## What it does
 

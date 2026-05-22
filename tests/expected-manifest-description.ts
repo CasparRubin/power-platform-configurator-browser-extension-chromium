@@ -1,7 +1,8 @@
 /**
  * Expected `description` in `public/manifest.json` (Edge/Chrome installed-extensions blurb).
  * Keep identical to `POWER_PLATFORM_CONFIGURATOR_PUBLIC_SUMMARY` in the Helvety monorepo
- * (`packages/shared/src/power-platform-configurator-copy.ts`).
+ * (`packages/shared/src/power-platform-configurator-copy.ts`), synced with this repo’s
+ * `public/manifest.json` in `CasparRubin/power-platform-configurator-browser-extension-chromium`.
  *
  * Note: this line is long on purpose; some store dashboards suggest a shorter listing field than
  * the shipped manifest uses—use a shorter dashboard description if required, but keep this file
