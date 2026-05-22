@@ -10,6 +10,6 @@ export const EXTENSION_DISPLAY_NAME = "Power Platform Configurator" as const;
 /** Display name shown in the About tab. */
 export const DEVELOPER_NAME = "Helvety";
 
-/** Public Git repository for this extension (issues, PRs). Slug: `power-platform-configurator`. */
+/** Public Git repository for this extension (issues, PRs). Slug: `power-platform-configurator-browser-extension-chromium`. */
 export const SOURCE_REPO_URL =
-  "https://github.com/CasparRubin/power-platform-configurator";
+  "https://github.com/CasparRubin/power-platform-configurator-browser-extension-chromium";

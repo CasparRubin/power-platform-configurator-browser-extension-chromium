@@ -175,7 +175,7 @@ For a release-style gate (naming scan + the above **including coverage threshold
    git push origin vX.Y.Z
    ```
 
-3. The [**Release** workflow](.github/workflows/release.yml) runs on every pushed tag `v*.*.*`: it installs dependencies, runs **`npm run build`**, zips the **`dist/`** folder, and attaches the zip to a [GitHub Release](https://github.com/CasparRubin/power-platform-configurator/releases) for that tag (Chrome Web Store / Edge uploads are still manual). It does **not** run tests or lint—run **`npm run predeploy`** on the commit you are tagging if you want that full gate before publishing.
+3. The [**Release** workflow](.github/workflows/release.yml) runs on every pushed tag `v*.*.*`: it installs dependencies, runs **`npm run build`**, zips the **`dist/`** folder, and attaches the zip to a [GitHub Release](https://github.com/CasparRubin/power-platform-configurator-browser-extension-chromium/releases) for that tag (Chrome Web Store / Edge uploads are still manual). It does **not** run tests or lint—run **`npm run predeploy`** on the commit you are tagging if you want that full gate before publishing.
 
 ## Validation checklist
 
