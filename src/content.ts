@@ -17,218 +17,234 @@ import {
   STORAGE_KEY_V3SURVEY_ENABLED,
   SYNC_POLICY_KEYS,
 } from "./constants";
+import { installContentBridge } from "./inspector/content-bridge";
 import { isConfiguratorSyncChange } from "./storage-sync";
 import { PowerAutomateUrlPolicy } from "./url-policy";
 
-(
-  globalThis as typeof globalThis & { PowerAutomateUrlPolicy?: typeof PowerAutomateUrlPolicy }
-).PowerAutomateUrlPolicy = PowerAutomateUrlPolicy;
+const CONTENT_BOOTSTRAP_KEY = "__ppConfiguratorContentBootstrapped";
 
-let isHistoryPatched = false;
-let fallbackTimerId: number | null = null;
-let fallbackStopTimerId: number | null = null;
-let fallbackObserver: MutationObserver | null = null;
-/** Coalesces MutationObserver callbacks to one canonicalization per animation frame (main-thread). */
-let observerCanonicalRafId: number | null = null;
-let lastEnforcedHref = "";
-let lastEnforcedCanonicalKey = "";
+const globalScope = globalThis as typeof globalThis & {
+  [CONTENT_BOOTSTRAP_KEY]?: boolean;
+};
 
-function scheduleCanonicalFromMutationObserver(): void {
-  if (observerCanonicalRafId !== null) {
-    return;
-  }
-  observerCanonicalRafId = window.requestAnimationFrame(() => {
-    observerCanonicalRafId = null;
-    enforceCanonicalUrlOnCurrentPage();
-  });
-}
+if (globalScope[CONTENT_BOOTSTRAP_KEY]) {
+  installContentBridge();
+} else {
+  globalScope[CONTENT_BOOTSTRAP_KEY] = true;
+  installContentBridge();
 
-function enforceCanonicalUrlOnCurrentPage(): boolean {
-  const currentHref = window.location.href;
-  if (currentHref === lastEnforcedHref) {
-    return false;
-  }
+  (
+    globalThis as typeof globalThis & { PowerAutomateUrlPolicy?: typeof PowerAutomateUrlPolicy }
+  ).PowerAutomateUrlPolicy = PowerAutomateUrlPolicy;
 
-  if (!PowerAutomateUrlPolicy.isTargetUrl(currentHref)) {
-    lastEnforcedHref = currentHref;
-    lastEnforcedCanonicalKey = "";
-    return false;
-  }
+  let isHistoryPatched = false;
+  let fallbackTimerId: number | null = null;
+  let fallbackStopTimerId: number | null = null;
+  let fallbackObserver: MutationObserver | null = null;
+  /** Coalesces MutationObserver callbacks to one canonicalization per animation frame (main-thread). */
+  let observerCanonicalRafId: number | null = null;
+  let lastEnforcedHref = "";
+  let lastEnforcedCanonicalKey = "";
 
-  const currentCanonicalKey = PowerAutomateUrlPolicy.getCanonicalKey(currentHref);
-  if (currentCanonicalKey && currentCanonicalKey === lastEnforcedCanonicalKey) {
-    lastEnforcedHref = currentHref;
-    return false;
-  }
-
-  const nextUrl = PowerAutomateUrlPolicy.canonicalizeToEnforced(currentHref);
-  if (!nextUrl) {
-    lastEnforcedHref = currentHref;
-    lastEnforcedCanonicalKey = currentCanonicalKey || "";
-    return false;
-  }
-
-  lastEnforcedHref = nextUrl;
-  lastEnforcedCanonicalKey = PowerAutomateUrlPolicy.getCanonicalKey(nextUrl) || "";
-
-  window.history.replaceState(window.history.state, "", nextUrl);
-  return true;
-}
-
-function patchHistoryApi(): void {
-  if (isHistoryPatched) {
-    return;
-  }
-  isHistoryPatched = true;
-
-  const originalPushState = window.history.pushState.bind(window.history);
-  const originalReplaceState = window.history.replaceState.bind(window.history);
-
-  window.history.pushState = function pushStateWrapper(...args: Parameters<History["pushState"]>) {
-    const result = originalPushState(...args);
-    enforceCanonicalUrlOnCurrentPage();
-    return result;
-  };
-
-  window.history.replaceState = function replaceStateWrapper(
-    ...args: Parameters<History["replaceState"]>
-  ) {
-    const result = originalReplaceState(...args);
-    enforceCanonicalUrlOnCurrentPage();
-    return result;
-  };
-}
-
-function stopShortLivedFallback(): void {
-  if (fallbackTimerId !== null) {
-    window.clearInterval(fallbackTimerId);
-    fallbackTimerId = null;
-  }
-  if (fallbackStopTimerId !== null) {
-    window.clearTimeout(fallbackStopTimerId);
-    fallbackStopTimerId = null;
-  }
-  if (fallbackObserver) {
-    fallbackObserver.disconnect();
-    fallbackObserver = null;
-  }
-  if (observerCanonicalRafId !== null) {
-    window.cancelAnimationFrame(observerCanonicalRafId);
-    observerCanonicalRafId = null;
-  }
-}
-
-function startShortLivedFallback(): void {
-  stopShortLivedFallback();
-
-  fallbackTimerId = window.setInterval(() => {
-    enforceCanonicalUrlOnCurrentPage();
-  }, 400);
-
-  fallbackStopTimerId = window.setTimeout(() => {
-    stopShortLivedFallback();
-  }, 6000);
-
-  try {
-    fallbackObserver = new MutationObserver(() => {
-      scheduleCanonicalFromMutationObserver();
-    });
-
-    if (document.documentElement) {
-      fallbackObserver.observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-      });
-    } else {
-      window.addEventListener("DOMContentLoaded", function onDomContentLoaded() {
-        window.removeEventListener("DOMContentLoaded", onDomContentLoaded);
-        if (fallbackObserver && document.documentElement) {
-          fallbackObserver.observe(document.documentElement, {
-            childList: true,
-            subtree: true,
-          });
-        }
-      });
+  function scheduleCanonicalFromMutationObserver(): void {
+    if (observerCanonicalRafId !== null) {
+      return;
     }
-  } catch {
-    fallbackObserver = null;
-  }
-}
-
-function startCanonicalizer(): void {
-  enforceCanonicalUrlOnCurrentPage();
-  if (!PowerAutomateUrlPolicy.isEnforcementPaused()) {
-    startShortLivedFallback();
+    observerCanonicalRafId = window.requestAnimationFrame(() => {
+      observerCanonicalRafId = null;
+      enforceCanonicalUrlOnCurrentPage();
+    });
   }
 
-  window.addEventListener("popstate", () => {
+  function enforceCanonicalUrlOnCurrentPage(): boolean {
+    const currentHref = window.location.href;
+    if (currentHref === lastEnforcedHref) {
+      return false;
+    }
+
+    if (!PowerAutomateUrlPolicy.isTargetUrl(currentHref)) {
+      lastEnforcedHref = currentHref;
+      lastEnforcedCanonicalKey = "";
+      return false;
+    }
+
+    const currentCanonicalKey = PowerAutomateUrlPolicy.getCanonicalKey(currentHref);
+    if (currentCanonicalKey && currentCanonicalKey === lastEnforcedCanonicalKey) {
+      lastEnforcedHref = currentHref;
+      return false;
+    }
+
+    const nextUrl = PowerAutomateUrlPolicy.canonicalizeToEnforced(currentHref);
+    if (!nextUrl) {
+      lastEnforcedHref = currentHref;
+      lastEnforcedCanonicalKey = currentCanonicalKey || "";
+      return false;
+    }
+
+    lastEnforcedHref = nextUrl;
+    lastEnforcedCanonicalKey = PowerAutomateUrlPolicy.getCanonicalKey(nextUrl) || "";
+
+    window.history.replaceState(window.history.state, "", nextUrl);
+    return true;
+  }
+
+  function patchHistoryApi(): void {
+    if (isHistoryPatched) {
+      return;
+    }
+    isHistoryPatched = true;
+
+    const originalPushState = window.history.pushState.bind(window.history);
+    const originalReplaceState = window.history.replaceState.bind(window.history);
+
+    window.history.pushState = function pushStateWrapper(
+      ...args: Parameters<History["pushState"]>
+    ) {
+      const result = originalPushState(...args);
+      enforceCanonicalUrlOnCurrentPage();
+      return result;
+    };
+
+    window.history.replaceState = function replaceStateWrapper(
+      ...args: Parameters<History["replaceState"]>
+    ) {
+      const result = originalReplaceState(...args);
+      enforceCanonicalUrlOnCurrentPage();
+      return result;
+    };
+  }
+
+  function stopShortLivedFallback(): void {
+    if (fallbackTimerId !== null) {
+      window.clearInterval(fallbackTimerId);
+      fallbackTimerId = null;
+    }
+    if (fallbackStopTimerId !== null) {
+      window.clearTimeout(fallbackStopTimerId);
+      fallbackStopTimerId = null;
+    }
+    if (fallbackObserver) {
+      fallbackObserver.disconnect();
+      fallbackObserver = null;
+    }
+    if (observerCanonicalRafId !== null) {
+      window.cancelAnimationFrame(observerCanonicalRafId);
+      observerCanonicalRafId = null;
+    }
+  }
+
+  function startShortLivedFallback(): void {
+    stopShortLivedFallback();
+
+    fallbackTimerId = window.setInterval(() => {
+      enforceCanonicalUrlOnCurrentPage();
+    }, 400);
+
+    fallbackStopTimerId = window.setTimeout(() => {
+      stopShortLivedFallback();
+    }, 6000);
+
+    try {
+      fallbackObserver = new MutationObserver(() => {
+        scheduleCanonicalFromMutationObserver();
+      });
+
+      if (document.documentElement) {
+        fallbackObserver.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+        });
+      } else {
+        window.addEventListener("DOMContentLoaded", function onDomContentLoaded() {
+          window.removeEventListener("DOMContentLoaded", onDomContentLoaded);
+          if (fallbackObserver && document.documentElement) {
+            fallbackObserver.observe(document.documentElement, {
+              childList: true,
+              subtree: true,
+            });
+          }
+        });
+      }
+    } catch {
+      fallbackObserver = null;
+    }
+  }
+
+  function startCanonicalizer(): void {
     enforceCanonicalUrlOnCurrentPage();
     if (!PowerAutomateUrlPolicy.isEnforcementPaused()) {
       startShortLivedFallback();
     }
-  });
 
-  patchHistoryApi();
-}
-
-function applyPolicyFromSyncResult(result: {
-  [STORAGE_KEY_ENFORCED_V3]?: unknown;
-  [STORAGE_KEY_V3SURVEY_ENABLED]?: unknown;
-}): void {
-  PowerAutomateUrlPolicy.configure({
-    preference: parseEnforcementPreference(result[STORAGE_KEY_ENFORCED_V3]),
-    v3surveyEnabled: parseV3SurveyEnabled(result[STORAGE_KEY_V3SURVEY_ENABLED]),
-  });
-}
-
-void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {
-  applyPolicyFromSyncResult(result);
-  startCanonicalizer();
-});
-
-function afterPolicyAppliedFromStorage(): void {
-  lastEnforcedHref = "";
-  lastEnforcedCanonicalKey = "";
-  if (PowerAutomateUrlPolicy.isEnforcementPaused()) {
-    stopShortLivedFallback();
-  } else {
-    enforceCanonicalUrlOnCurrentPage();
-    startShortLivedFallback();
-  }
-}
-
-chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (!isConfiguratorSyncChange(areaName, changes as Record<string, unknown>)) {
-    return;
-  }
-  const syncChanges = changes as Record<string, chrome.storage.StorageChange>;
-  const hasEnforcedChange = Object.prototype.hasOwnProperty.call(
-    syncChanges,
-    STORAGE_KEY_ENFORCED_V3,
-  );
-  const hasSurveyChange = Object.prototype.hasOwnProperty.call(
-    syncChanges,
-    STORAGE_KEY_V3SURVEY_ENABLED,
-  );
-
-  if (hasEnforcedChange && hasSurveyChange) {
-    applyPolicyFromSyncResult({
-      [STORAGE_KEY_ENFORCED_V3]: syncChanges[STORAGE_KEY_ENFORCED_V3]?.newValue,
-      [STORAGE_KEY_V3SURVEY_ENABLED]: syncChanges[STORAGE_KEY_V3SURVEY_ENABLED]?.newValue,
+    window.addEventListener("popstate", () => {
+      enforceCanonicalUrlOnCurrentPage();
+      if (!PowerAutomateUrlPolicy.isEnforcementPaused()) {
+        startShortLivedFallback();
+      }
     });
-    afterPolicyAppliedFromStorage();
-    return;
+
+    patchHistoryApi();
+  }
+
+  function applyPolicyFromSyncResult(result: {
+    [STORAGE_KEY_ENFORCED_V3]?: unknown;
+    [STORAGE_KEY_V3SURVEY_ENABLED]?: unknown;
+  }): void {
+    PowerAutomateUrlPolicy.configure({
+      preference: parseEnforcementPreference(result[STORAGE_KEY_ENFORCED_V3]),
+      v3surveyEnabled: parseV3SurveyEnabled(result[STORAGE_KEY_V3SURVEY_ENABLED]),
+    });
   }
 
   void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {
-    const merged = { ...result };
-    if (hasEnforcedChange) {
-      merged[STORAGE_KEY_ENFORCED_V3] = syncChanges[STORAGE_KEY_ENFORCED_V3]?.newValue;
-    }
-    if (hasSurveyChange) {
-      merged[STORAGE_KEY_V3SURVEY_ENABLED] = syncChanges[STORAGE_KEY_V3SURVEY_ENABLED]?.newValue;
-    }
-    applyPolicyFromSyncResult(merged);
-    afterPolicyAppliedFromStorage();
+    applyPolicyFromSyncResult(result);
+    startCanonicalizer();
   });
-});
+
+  function afterPolicyAppliedFromStorage(): void {
+    lastEnforcedHref = "";
+    lastEnforcedCanonicalKey = "";
+    if (PowerAutomateUrlPolicy.isEnforcementPaused()) {
+      stopShortLivedFallback();
+    } else {
+      enforceCanonicalUrlOnCurrentPage();
+      startShortLivedFallback();
+    }
+  }
+
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (!isConfiguratorSyncChange(areaName, changes as Record<string, unknown>)) {
+      return;
+    }
+    const syncChanges = changes as Record<string, chrome.storage.StorageChange>;
+    const hasEnforcedChange = Object.prototype.hasOwnProperty.call(
+      syncChanges,
+      STORAGE_KEY_ENFORCED_V3,
+    );
+    const hasSurveyChange = Object.prototype.hasOwnProperty.call(
+      syncChanges,
+      STORAGE_KEY_V3SURVEY_ENABLED,
+    );
+
+    if (hasEnforcedChange && hasSurveyChange) {
+      applyPolicyFromSyncResult({
+        [STORAGE_KEY_ENFORCED_V3]: syncChanges[STORAGE_KEY_ENFORCED_V3]?.newValue,
+        [STORAGE_KEY_V3SURVEY_ENABLED]: syncChanges[STORAGE_KEY_V3SURVEY_ENABLED]?.newValue,
+      });
+      afterPolicyAppliedFromStorage();
+      return;
+    }
+
+    void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {
+      const merged = { ...result };
+      if (hasEnforcedChange) {
+        merged[STORAGE_KEY_ENFORCED_V3] = syncChanges[STORAGE_KEY_ENFORCED_V3]?.newValue;
+      }
+      if (hasSurveyChange) {
+        merged[STORAGE_KEY_V3SURVEY_ENABLED] = syncChanges[STORAGE_KEY_V3SURVEY_ENABLED]?.newValue;
+      }
+      applyPolicyFromSyncResult(merged);
+      afterPolicyAppliedFromStorage();
+    });
+  });
+}

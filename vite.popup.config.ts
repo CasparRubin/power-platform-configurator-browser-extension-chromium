@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { renameSync, existsSync } from "node:fs";
+import { extensionHtmlPlugin } from "./scripts/vite-extension-html-plugin.mjs";
+import { extensionResolve } from "./scripts/vite-extension-resolve.mjs";
 
 const repoRoot = fileURLToPath(new URL(".", import.meta.url));
 const popupRoot = resolve(repoRoot, "src", "popup");
@@ -10,14 +12,10 @@ const popupRoot = resolve(repoRoot, "src", "popup");
 export default defineConfig({
   root: popupRoot,
   base: "./",
-  resolve: {
-    alias: {
-      "@": resolve(repoRoot, "src"),
-      "@helvety/shared": resolve(repoRoot, "node_modules/@helvety/shared/src"),
-    },
-  },
+  resolve: extensionResolve(repoRoot),
   plugins: [
     react(),
+    extensionHtmlPlugin(),
     {
       name: "rename-popup-html",
       closeBundle() {

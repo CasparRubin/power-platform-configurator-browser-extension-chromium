@@ -106,3 +106,18 @@ declare module "@helvety/ui/tabs" {
   export const TabsTrigger: (props: ComponentProps<"button"> & { value: string }) => JSX.Element;
   export const TabsContent: (props: ComponentProps<"div"> & { value: string }) => JSX.Element;
 }
+
+declare module "@helvety/ui/button" {
+  import type { ComponentProps, JSX } from "react";
+  export function Button(
+    props: ComponentProps<"button"> & {
+      variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+      size?: "default" | "sm" | "lg" | "icon";
+    },
+  ): JSX.Element;
+}
+
+declare module "@helvety/ui/input" {
+  import type { ComponentProps, JSX } from "react";
+  export function Input(props: ComponentProps<"input">): JSX.Element;
+}

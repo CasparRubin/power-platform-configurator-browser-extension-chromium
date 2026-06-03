@@ -4,11 +4,9 @@ import {
   ExternalLink,
   GitBranch,
   Loader2,
-  MessageSquare,
   Moon,
   Package,
   Palette,
-  PenLine,
   Sun,
   Workflow,
 } from "lucide-react";
@@ -44,41 +42,23 @@ import {
 } from "./about-meta";
 import { HelvetyMark } from "./components/HelvetyMark";
 import { PopupHeader } from "./components/PopupHeader";
+import { TabProductIcon } from "./components/TabProductIcon";
+import { PowerAppsPanel } from "./components/PowerAppsPanel";
+import { PowerAutomatePanel } from "./components/PowerAutomatePanel";
 import { persistPolicyPreferenceAndOptionalReload } from "./persist-policy-preference";
 import { createAsyncQueue } from "./sync-write-queue";
 import type { ThemePreference } from "@helvety/extension-chrome/theme-preference";
 
 type SurveyEnabledSync = "true" | "false";
 
-function PolicyPanelBusyHint({
-  isPolicySyncBusy,
-  isTargetTabReloadBusy,
-}: {
-  isPolicySyncBusy: boolean;
-  isTargetTabReloadBusy: boolean;
-}) {
-  if (isPolicySyncBusy) {
-    return <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Saving…</span>;
-  }
-  if (isTargetTabReloadBusy) {
-    return (
-      <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Reloading tab…</span>
-    );
-  }
-  return null;
-}
-
 export default function App() {
   const [value, setValue] = useState<EnforcementPreference>(DEFAULT_ENFORCEMENT_PREFERENCE);
-  /** Sync `v3surveyEnabled`: `"false"` = Hide (default, `v3survey=false` on URLs, adds if missing); `"true"` = Show (normalize in-URL `v3survey` to `true` only). */
   const [surveyMode, setSurveyMode] = useState<SurveyEnabledSync>("false");
   const { themePreference, themeLoaded, saveTheme } = usePopupTheme(STORAGE_KEY_POPUP_THEME);
   const [policyLoaded, setPolicyLoaded] = useState(false);
   const loaded = themeLoaded && policyLoaded;
   const [status, setStatus] = useState<string>("");
-  /** True while `chrome.storage.sync.set` is in flight for editor or survey policy keys. */
   const [isPolicySyncBusy, setIsPolicySyncBusy] = useState(false);
-  /** True while `chrome.tabs.reload` runs for a flow/run tab (inputs stay enabled). */
   const [isTargetTabReloadBusy, setIsTargetTabReloadBusy] = useState(false);
   const [extensionVersion, setExtensionVersion] = useState<string>("");
   const statusClearTimerRef = useRef<number | null>(null);
@@ -252,22 +232,22 @@ export default function App() {
 
   return (
     <div className={`flex ${POPUP_WIDTH_CLASS} ${POPUP_SHELL_CLASS} text-foreground`}>
-      <Tabs defaultValue="editor" className="flex flex-col gap-0">
+      <Tabs defaultValue="power-automate" className="flex flex-col gap-0">
         <PopupHeader version={extensionVersion} />
         <TabsList className="grid h-auto w-full grid-cols-3 gap-0.5 bg-muted p-1 text-xs">
           <TabsTrigger
-            value="editor"
+            value="power-automate"
             className="flex flex-col gap-0.5 px-2 py-2 text-xs shadow-none"
           >
-            <PenLine className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span>Editor</span>
+            <TabProductIcon product="power-automate" />
+            <span>Power Automate</span>
           </TabsTrigger>
           <TabsTrigger
-            value="survey"
+            value="power-apps"
             className="flex flex-col gap-0.5 px-2 py-2 text-xs shadow-none"
           >
-            <MessageSquare className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span>Survey</span>
+            <TabProductIcon product="power-apps" />
+            <span>Power Apps</span>
           </TabsTrigger>
           <TabsTrigger
             value="about"
@@ -294,167 +274,19 @@ export default function App() {
           </div>
         ) : null}
 
-        <TabsContent value="editor" className="mt-2 outline-none">
-          <div className={TAB_PANEL_CLASS} aria-busy={isPolicySyncBusy || isTargetTabReloadBusy}>
-            <div className="flex flex-col gap-3 pr-2">
-              <div className="flex flex-col gap-0.5">
-                <div className="flex min-h-[1.25rem] items-baseline justify-between gap-2">
-                  <h1 className="text-sm font-semibold tracking-tight text-foreground">Editor</h1>
-                  <PolicyPanelBusyHint
-                    isPolicySyncBusy={isPolicySyncBusy}
-                    isTargetTabReloadBusy={isTargetTabReloadBusy}
-                  />
-                </div>
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  Choose how flow and run links open in Power Automate: classic designer, new
-                  designer, or paused. Paused turns off link changes until you pick an editor again.
-                </p>
-              </div>
-
-              <RadioGroup
-                className="flex flex-col gap-1.5"
-                aria-label="Editor for flow and run links"
-                disabled={isPolicySyncBusy}
-                value={value}
-                onValueChange={(v) => {
-                  if (v === "true" || v === "false" || v === "off") {
-                    onSave(v);
-                  }
-                }}
-              >
-                <div className={popupChoiceRowClass(value === "false")}>
-                  <RadioGroupItem value="false" id="mode-false" className="mt-0.5 shrink-0" />
-                  <div className="flex min-w-0 flex-col gap-0">
-                    <Label htmlFor="mode-false" className="cursor-pointer text-sm font-medium">
-                      Classic Designer
-                    </Label>
-                    <p className="text-xs leading-relaxed text-muted-foreground">
-                      Rewritten links use{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        v3=false
-                      </code>
-                      .
-                    </p>
-                  </div>
-                </div>
-
-                <div className={popupChoiceRowClass(value === "true")}>
-                  <RadioGroupItem value="true" id="mode-true" className="mt-0.5 shrink-0" />
-                  <div className="flex min-w-0 flex-col gap-0">
-                    <Label htmlFor="mode-true" className="cursor-pointer text-sm font-medium">
-                      New Designer
-                    </Label>
-                    <p className="text-xs leading-relaxed text-muted-foreground">
-                      Rewritten links use{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        v3=true
-                      </code>
-                      .
-                    </p>
-                  </div>
-                </div>
-
-                <div className={popupChoiceRowClass(value === "off")}>
-                  <RadioGroupItem value="off" id="mode-off" className="mt-0.5 shrink-0" />
-                  <div className="flex min-w-0 flex-col gap-0">
-                    <Label htmlFor="mode-off" className="cursor-pointer text-sm font-medium">
-                      Paused
-                    </Label>
-                    <p className="text-xs leading-relaxed text-muted-foreground">Pause extension</p>
-                  </div>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
+        <TabsContent value="power-automate" className="mt-2 outline-none">
+          <PowerAutomatePanel
+            value={value}
+            surveyMode={surveyMode}
+            isPolicySyncBusy={isPolicySyncBusy}
+            isTargetTabReloadBusy={isTargetTabReloadBusy}
+            onSave={onSave}
+            onSaveSurvey={onSaveSurvey}
+          />
         </TabsContent>
 
-        <TabsContent value="survey" className="mt-2 outline-none">
-          <div className={TAB_PANEL_CLASS} aria-busy={isPolicySyncBusy || isTargetTabReloadBusy}>
-            <div className="flex flex-col gap-3 pr-2">
-              <div className="flex flex-col gap-1.5">
-                <div className="flex min-h-[1.25rem] items-baseline justify-between gap-2">
-                  <h2 className="text-sm font-semibold text-foreground">
-                    Survey (<code className="text-[11px]">v3survey</code>)
-                  </h2>
-                  <PolicyPanelBusyHint
-                    isPolicySyncBusy={isPolicySyncBusy}
-                    isTargetTabReloadBusy={isTargetTabReloadBusy}
-                  />
-                </div>
-                <div className="flex flex-col gap-1 text-xs leading-relaxed text-muted-foreground">
-                  <p>
-                    Microsoft may tie a short in-product survey to the{" "}
-                    <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                      v3survey
-                    </code>{" "}
-                    query flag on flow and run URLs when you use the classic designer.
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">Hide</span> (default) always sets{" "}
-                    <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                      v3survey=false
-                    </code>{" "}
-                    when the extension rewrites a link.{" "}
-                    <span className="font-medium text-foreground">Show</span> only applies when{" "}
-                    <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                      v3survey
-                    </code>{" "}
-                    is already on the URL: it is normalized to{" "}
-                    <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                      v3survey=true
-                    </code>
-                    . Nothing is added if the flag is missing.
-                  </p>
-                </div>
-                <RadioGroup
-                  className="flex flex-col gap-1.5"
-                  aria-label="Survey visibility (v3survey)"
-                  disabled={isPolicySyncBusy}
-                  value={surveyMode}
-                  onValueChange={(v) => {
-                    if (v === "true" || v === "false") {
-                      onSaveSurvey(v);
-                    }
-                  }}
-                >
-                  <div className={popupChoiceRowClass(surveyMode === "false")}>
-                    <RadioGroupItem value="false" id="survey-off" className="mt-0.5 shrink-0" />
-                    <div className="flex min-w-0 flex-col gap-0">
-                      <Label htmlFor="survey-off" className="cursor-pointer text-sm font-medium">
-                        Hide <span className="text-muted-foreground">(default)</span>
-                      </Label>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
-                        Use{" "}
-                        <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                          v3survey=false
-                        </code>{" "}
-                        on rewrites so the survey prompt stays off.
-                      </p>
-                    </div>
-                  </div>
-                  <div className={popupChoiceRowClass(surveyMode === "true")}>
-                    <RadioGroupItem value="true" id="survey-on" className="mt-0.5 shrink-0" />
-                    <div className="flex min-w-0 flex-col gap-0">
-                      <Label htmlFor="survey-on" className="cursor-pointer text-sm font-medium">
-                        Show
-                      </Label>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
-                        If the URL already has{" "}
-                        <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                          v3survey
-                        </code>
-                        , normalize it to{" "}
-                        <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                          true
-                        </code>
-                        . Does not add the flag when it is missing.
-                      </p>
-                    </div>
-                  </div>
-                </RadioGroup>
-              </div>
-            </div>
-          </div>
+        <TabsContent value="power-apps" className="mt-2 outline-none">
+          <PowerAppsPanel />
         </TabsContent>
 
         <TabsContent value="about" className="mt-2 outline-none">
@@ -464,10 +296,10 @@ export default function App() {
                 <CardHeader className="flex flex-col gap-1 p-3 pb-2">
                   <CardTitle className="text-sm">{EXTENSION_DISPLAY_NAME}</CardTitle>
                   <CardDescription className="text-xs leading-relaxed">
-                    Aligns Microsoft Power Automate flow and run URLs with the classic or new
-                    designer, optional <span className="font-medium text-foreground">v3survey</span>{" "}
-                    Hide/Show from the Survey tab, and pause (no rewrites while the extension stays
-                    installed).
+                    Power Automate: align flow and run URLs with the classic or new designer,
+                    optional <span className="font-medium text-foreground">v3survey</span>{" "}
+                    Hide/Show, and pause. Power Apps: unhide hidden fields or unlock read-only
+                    controls on model-driven record forms (client-side only).
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
@@ -547,7 +379,8 @@ export default function App() {
                   </p>
                   <ul className="flex list-disc flex-col gap-1 pl-4">
                     <li>
-                      Rewrites only URLs on Power Automate hosts whose path contains{" "}
+                      <span className="font-medium text-foreground">Power Automate</span> rewrites
+                      only URLs on Power Automate hosts whose path contains{" "}
                       <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
                         /flows/
                       </code>{" "}
@@ -558,11 +391,8 @@ export default function App() {
                       , and only while enforcement is not paused.
                     </li>
                     <li>
-                      Adjusts the{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        v3
-                      </code>{" "}
-                      query flag to match your editor choice. The Survey tab sets{" "}
+                      The <span className="font-medium text-foreground">v3</span> query flag matches
+                      your flow designer choice. Survey prompt settings use{" "}
                       <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
                         v3survey
                       </code>
@@ -578,8 +408,21 @@ export default function App() {
                       and never adds it when absent.
                     </li>
                     <li>
-                      Uses layered enforcement: declarative net request rules, background navigation
-                      listeners, and a content script for SPA-style navigations.
+                      <span className="font-medium text-foreground">Power Apps</span> actions use
+                      the Xrm Client API on an open model-driven form (
+                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
+                        *.crm.dynamics.com
+                      </code>
+                      ,{" "}
+                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
+                        apps.powerapps.com
+                      </code>
+                      ). Canvas apps are not supported.
+                    </li>
+                    <li>
+                      Power Automate uses layered enforcement: declarative net request rules,
+                      background navigation listeners, and a content script for SPA-style
+                      navigations.
                     </li>
                     <li>
                       The toolbar icon shows a small badge:{" "}

@@ -1,8 +1,8 @@
 import { STORAGE_KEY_ENFORCED_V3, STORAGE_KEY_V3SURVEY_ENABLED } from "./constants";
 
 /**
- * True when `chrome.storage.sync` changed for a key the extension reads for URL policy: editor mode
- * (`enforcedV3`) or Survey policy (`v3surveyEnabled`, string `"true"` / `"false"` in storage).
+ * True when `chrome.storage.sync` changed for a key the extension reads for URL policy: flow
+ * designer mode (`enforcedV3`) or survey prompt (`v3surveyEnabled`, `"true"` / `"false"` in storage).
  */
 export function isConfiguratorSyncChange(
   areaName: string,

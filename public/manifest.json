@@ -1,11 +1,27 @@
 {
   "manifest_version": 3,
   "name": "Power Platform Configurator",
-  "version": "2.8.7",
-  "description": "Configure Power Automate cloud flows: Classic or New Designer. Hide the survey prompt by default. Pause anytime.",
+  "version": "2.10.0",
+  "description": "Power Automate flow URLs (classic/new, survey). Unhide or unlock fields on model-driven Power Apps forms.",
   "homepage_url": "https://helvety.com",
-  "permissions": ["declarativeNetRequest", "webNavigation", "storage"],
-  "host_permissions": ["https://*.powerautomate.com/*", "https://flow.microsoft.com/*"],
+  "permissions": [
+    "declarativeNetRequest",
+    "webNavigation",
+    "scripting",
+    "storage",
+    "sidePanel",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.powerautomate.com/*",
+    "https://flow.microsoft.com/*",
+    "https://api.powerplatform.com/*",
+    "https://api.bap.microsoft.com/*",
+    "https://api.flow.microsoft.com/*",
+    "https://*.api.crm.dynamics.com/*",
+    "https://*.crm.dynamics.com/*",
+    "https://apps.powerapps.com/*"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -13,6 +29,9 @@
   "action": {
     "default_popup": "popup.html",
     "default_title": "Power Platform Configurator"
+  },
+  "side_panel": {
+    "default_path": "inspector.html"
   },
   "declarative_net_request": {
     "rule_resources": [
@@ -37,8 +56,22 @@
   "content_scripts": [
     {
       "matches": ["https://*.powerautomate.com/*", "https://flow.microsoft.com/*"],
+      "js": ["content-main-hook.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://*.powerautomate.com/*", "https://flow.microsoft.com/*"],
       "js": ["content.js"],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://*.crm.dynamics.com/*", "https://apps.powerapps.com/*"],
+      "js": ["content-powerapps.js"],
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ]
 }

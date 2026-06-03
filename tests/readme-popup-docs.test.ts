@@ -17,6 +17,9 @@ describe("README popup and icon documentation", () => {
     expect(section).toContain("@helvety/extension-chrome");
     expect(section).toContain("usePopupTheme");
     expect(section).toMatch(/About.*Developer/i);
+    expect(section).toContain("Power Automate");
+    expect(section).toContain("Power Apps");
+    expect(section).not.toMatch(/Tabs:\s*\*\*Editor\*\*/);
   });
 
   it("layout and unit-test tables document popup components and icon paths", () => {
@@ -26,10 +29,14 @@ describe("README popup and icon documentation", () => {
 
     const layout = readme.slice(readme.indexOf("## Repository layout"));
     expect(layout).toContain("ppconfigurator_{16,32,48,128}.png");
+    expect(layout).toContain("TabProductIcon");
+    expect(layout).toContain("Power_Automate_Scalable.svg");
+    expect(layout).toContain("content-powerapps.ts");
     expect(layout).toContain("@helvety/extension-chrome");
     expect(layout).not.toContain("ExtensionMark");
     expect(layout).toContain("HelvetyMark");
     expect(readme).not.toMatch(/icon_\d+\.png/);
     expect(readme).not.toContain("v3False");
+    expect(readme).toContain("docs/chrome-web-store.md");
   });
 });

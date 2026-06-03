@@ -1,7 +1,7 @@
 /**
  * Serializes async work per queue instance so overlapping `chrome.storage.sync.set` calls for that
- * stream cannot reorder. The popup uses one queue for editor (`enforcedV3`) saves and a separate
- * queue for survey (`v3surveyEnabled`) saves (`App.tsx`).
+ * stream cannot reorder. The popup uses one queue for flow designer (`enforcedV3`) saves and a
+ * separate queue for survey prompt (`v3surveyEnabled`) saves on the Power Automate tab (`App.tsx`).
  */
 export function createAsyncQueue(): {
   enqueue: <T>(work: () => Promise<T>) => Promise<T>;

@@ -32,11 +32,18 @@ type PublicManifest = {
   host_permissions?: string[];
   background?: { service_worker?: string; type?: string };
   action?: { default_popup?: string; default_title?: string };
-  content_scripts?: Array<{ matches?: string[]; js?: string[]; run_at?: string }>;
+  content_scripts?: Array<{
+    matches?: string[];
+    js?: string[];
+    run_at?: string;
+    world?: string;
+    all_frames?: boolean;
+  }>;
   declarative_net_request?: {
     rule_resources?: Array<{ id: string; path: string; enabled?: boolean }>;
   };
   icons?: Record<string, string>;
+  side_panel?: { default_path?: string };
 };
 
 function readPublicManifest(): PublicManifest {
@@ -161,15 +168,32 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     );
   });
 
-  it("is MV3 with expected API permissions (host access via host_permissions, not broad tabs)", () => {
+  it("is MV3 with expected API permissions", () => {
     const manifest = readPublicManifest();
     expect(manifest.manifest_version).toBe(3);
     expect([...(manifest.permissions ?? [])].sort()).toEqual(
-      ["declarativeNetRequest", "storage", "webNavigation"].sort(),
+      [
+        "declarativeNetRequest",
+        "scripting",
+        "sidePanel",
+        "storage",
+        "tabs",
+        "webNavigation",
+      ].sort(),
     );
     expect(manifest.host_permissions?.sort()).toEqual(
-      ["https://*.powerautomate.com/*", "https://flow.microsoft.com/*"].sort(),
+      [
+        "https://*.api.crm.dynamics.com/*",
+        "https://*.crm.dynamics.com/*",
+        "https://*.powerautomate.com/*",
+        "https://api.bap.microsoft.com/*",
+        "https://api.flow.microsoft.com/*",
+        "https://api.powerplatform.com/*",
+        "https://apps.powerapps.com/*",
+        "https://flow.microsoft.com/*",
+      ].sort(),
     );
+    expect(manifest.side_panel?.default_path).toBe("inspector.html");
   });
 
   it("declarative_net_request rulesets use the same ids and paths as constants", () => {
@@ -208,11 +232,23 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     expect(manifest.background?.service_worker).toBe("background.js");
     expect(manifest.background?.type).toBe("module");
     expect(manifest.action?.default_popup).toBe("popup.html");
-    const cs = manifest.content_scripts?.[0];
-    expect(cs?.js).toEqual(["content.js"]);
-    expect(cs?.run_at).toBe("document_start");
-    expect(cs?.matches?.sort()).toEqual(
+    const scripts = manifest.content_scripts ?? [];
+    expect(scripts).toHaveLength(3);
+    const mainHook = scripts.find((s) => s.js?.includes("content-main-hook.js"));
+    const isolated = scripts.find((s) => s.js?.includes("content.js"));
+    const powerApps = scripts.find((s) => s.js?.includes("content-powerapps.js"));
+    expect(mainHook?.world).toBe("MAIN");
+    expect(mainHook?.run_at).toBe("document_start");
+    expect(mainHook?.all_frames).toBe(true);
+    expect(isolated?.run_at).toBe("document_start");
+    expect(isolated?.all_frames).toBe(true);
+    expect(powerApps?.run_at).toBe("document_idle");
+    expect(powerApps?.all_frames).toBe(true);
+    expect(mainHook?.matches?.sort()).toEqual(
       ["https://*.powerautomate.com/*", "https://flow.microsoft.com/*"].sort(),
+    );
+    expect(powerApps?.matches?.sort()).toEqual(
+      ["https://*.crm.dynamics.com/*", "https://apps.powerapps.com/*"].sort(),
     );
   });
 });

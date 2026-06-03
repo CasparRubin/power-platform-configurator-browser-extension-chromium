@@ -5,8 +5,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { DEVELOPER_NAME, DEVELOPER_URL, EXTENSION_DISPLAY_NAME } from "../src/popup/about-meta";
+import { expectIconExists, extractPublicIconImports } from "./test-helpers/icon-paths";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+const publicIconsDir = join(repoRoot, "public", "icons");
 
 function readSource(relativePath: string): string {
   return readFileSync(join(repoRoot, relativePath), "utf8");
@@ -38,6 +40,27 @@ describe("popup chrome (header + About developer section)", () => {
     expect(app).not.toMatch(/<header[^>]*>[\s\S]*<HelvetyMark/);
   });
 
+  it("popup tabs are Power Automate, Power Apps, and About (not legacy Editor/Survey triggers)", () => {
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain("Power Automate");
+    expect(app).toContain("Power Apps");
+    expect(app).toContain('value="power-automate"');
+    expect(app).toContain('value="power-apps"');
+    expect(app).toContain("<PowerAutomatePanel");
+    expect(app).toContain("<PowerAppsPanel");
+    expect(app).not.toMatch(/<TabsTrigger[^>]*value="editor"/);
+    expect(app).not.toMatch(/<TabsTrigger[^>]*value="survey"/);
+  });
+
+  it("product tab triggers use TabProductIcon, not legacy Lucide product icons", () => {
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain('import { TabProductIcon } from "./components/TabProductIcon"');
+    expect(app).toContain('<TabProductIcon product="power-automate" />');
+    expect(app).toContain('<TabProductIcon product="power-apps" />');
+    expect(app).not.toMatch(/<Workflow[^/]*\/>\s*\n\s*<span>Power Automate/);
+    expect(app).not.toMatch(/<AppWindow[^/]*\/>\s*\n\s*<span>Power Apps/);
+  });
+
   it("about-meta developer constants match the About developer link", () => {
     expect(DEVELOPER_NAME).toBe("Helvety");
     expect(DEVELOPER_URL).toBe("https://helvety.com");
@@ -60,10 +83,8 @@ describe("popup chrome (header + About developer section)", () => {
     expect(existsSync(join(repoRoot, "src/popup/theme-boot.ts"))).toBe(false);
   });
 
-  it("does not ship legacy icon_* filenames under public/icons/", () => {
-    const iconDir = join(repoRoot, "public", "icons");
-    const names = readdirSync(iconDir);
-    expect(names.every((name) => name.startsWith("ppconfigurator_"))).toBe(true);
+  it("ships ppconfigurator PNGs and product tab SVGs under public/icons/", () => {
+    const names = readdirSync(publicIconsDir);
     expect(names).toEqual(
       expect.arrayContaining([
         "ppconfigurator_16.png",
@@ -72,6 +93,12 @@ describe("popup chrome (header + About developer section)", () => {
         "ppconfigurator_128.png",
       ]),
     );
+    const tabIconSource = readSource("src/popup/components/TabProductIcon.tsx");
+    const importedSvgs = extractPublicIconImports(tabIconSource);
+    expect(importedSvgs).toHaveLength(2);
+    for (const svgName of importedSvgs) {
+      expectIconExists(publicIconsDir, svgName);
+    }
   });
 });
 
@@ -82,5 +109,15 @@ describe("built popup bundle (when dist/ exists; enforced in test:dist)", () => 
   it.skipIf(!hasPopupAssets)("includes hashed ppconfigurator icon asset after vite build", () => {
     const assets = readdirSync(popupAssetsDir);
     expect(assets.some((name) => name.includes("ppconfigurator"))).toBe(true);
+  });
+
+  it.skipIf(!hasPopupAssets)("bundles product tab SVGs into the popup JS asset", () => {
+    const jsFiles = readdirSync(popupAssetsDir).filter((name) => name.endsWith(".js"));
+    expect(jsFiles.length).toBeGreaterThan(0);
+    const bundled = jsFiles
+      .map((name) => readFileSync(join(popupAssetsDir, name), "utf8"))
+      .join("\n");
+    expect(bundled).toMatch(/Power_Automate_Scalable\.svg|data:image\/svg\+xml/i);
+    expect(bundled).toMatch(/Power_Apps_Scalable\.svg|data:image\/svg\+xml/i);
   });
 });

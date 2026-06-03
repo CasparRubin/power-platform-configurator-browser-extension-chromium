@@ -145,7 +145,7 @@ describe("persistPolicyPreferenceAndOptionalReload", () => {
     expect(scheduleClear).toHaveBeenCalledWith(2000);
   });
 
-  it("persists v3surveyEnabled patch (survey tab sync key)", async () => {
+  it("persists v3surveyEnabled patch (Power Automate survey sync key)", async () => {
     await persistPolicyPreferenceAndOptionalReload({
       storagePatch: { [STORAGE_KEY_V3SURVEY_ENABLED]: "true" },
       logLabel: "v3survey",

@@ -21,35 +21,37 @@ Use this when uploading **Power Platform Configurator** from a tagged release (`
 
 ## Permission justifications (single purpose)
 
-Explain that the extension only adjusts **Power Automate flow/run URLs** on permitted hosts:
+Explain that the extension adjusts **Power Automate flow/run URLs** on permitted hosts and offers optional **model-driven Power Apps** form helpers:
 
-| Permission                                                       | Why it is needed                                                                                                                  |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `declarativeNetRequest`                                          | Redirect **main-frame** navigations to add/replace the `v3` query flag (classic vs new designer) on `/flows/` and `/runs/` paths. |
-| `webNavigation`                                                  | Apply the same URL policy when SPAs change history without a full navigation (History API).                                       |
-| `storage`                                                        | Save user choices: editor mode (`enforcedV3`), survey Hide/Show (`v3surveyEnabled`), and local popup theme.                       |
-| `host_permissions` (`*.powerautomate.com`, `flow.microsoft.com`) | Run only on Microsoft Power Automate hosts; no broad `<all_urls>` access.                                                         |
-
-The manifest does **not** request `tabs`; `chrome.tabs.update` / `reload` are used only for permitted origins where Chromium allows it without the `tabs` permission.
+| Permission                                                    | Why it is needed                                                                                                                  |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `declarativeNetRequest`                                       | Redirect **main-frame** navigations to add/replace the `v3` query flag (classic vs new designer) on `/flows/` and `/runs/` paths. |
+| `webNavigation`                                               | Apply the same URL policy when SPAs change history without a full navigation (History API).                                       |
+| `scripting`                                                   | Run MAIN-world helpers on CRM / Power Apps tabs to unhide fields or unlock read-only controls via the Xrm Client API.             |
+| `sidePanel`                                                   | Optional **Flow Inspector** side panel (environments, flows, runs) beside the user’s Power Automate tab.                          |
+| `storage`                                                     | Save user choices: flow designer mode (`enforcedV3`), survey Hide/Show (`v3surveyEnabled`), and local popup theme.                |
+| `tabs`                                                        | Reload the focused flow/run tab after policy saves; query tabs for Flow Inspector and Power Apps actions.                         |
+| `host_permissions` (Power Automate, Power Platform APIs, CRM) | Power Automate hosts, inspector APIs, and model-driven apps (`*.crm.dynamics.com`, `apps.powerapps.com`); no `<all_urls>`.        |
 
 ## Marketing assets (repo)
 
-| Asset                           | Path                                             |
-| ------------------------------- | ------------------------------------------------ |
-| Extension icons                 | `public/icons/ppconfigurator_{16,32,48,128}.png` |
-| Popup header icon (48px source) | `assets/ppconfigurator_48.png` via `PopupHeader` |
-| Marquee promo (1400×560)        | `assets/MarqueePromoTile_1400x560.png`           |
-| Small promo (440×280)           | `assets/SmallPromoTile_440x280.png`              |
-| Store screenshot (640×400)      | `assets/Screenshot_640x400.png`                  |
-| Small promo HTML reference      | `assets/chrome web store/smallPromoTile.html`    |
-| Developer mark (About tab only) | `assets/Identifier_whiteBg.svg`                  |
+| Asset                           | Path                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| Extension icons                 | `public/icons/ppconfigurator_{16,32,48,128}.png`                                           |
+| Popup tab product marks         | `public/icons/Power_Automate_Scalable.svg`, `Power_Apps_Scalable.svg` via `TabProductIcon` |
+| Popup header icon (48px source) | `assets/ppconfigurator_48.png` via `PopupHeader`                                           |
+| Marquee promo (1400×560)        | `assets/MarqueePromoTile_1400x560.png`                                                     |
+| Small promo (440×280)           | `assets/SmallPromoTile_440x280.png`                                                        |
+| Store screenshot (640×400)      | `assets/Screenshot_640x400.png`                                                            |
+| Small promo HTML reference      | `assets/chrome web store/smallPromoTile.html`                                              |
+| Developer mark (About tab only) | `assets/Identifier_whiteBg.svg`                                                            |
 
 ## Pre-submit smoke test
 
 After `npm run build`, load unpacked **`dist/`** and verify:
 
-1. **Editor:** Classic / New Designer / Paused — toolbar badge **C** / **N** / cleared.
-2. **Survey:** Hide (default) vs Show on a flow/run URL.
+1. **Power Automate tab:** Flow designer Classic / New / Paused — toolbar badge **C** / **N** / cleared; survey Hide (default) vs Show on flow/run URLs; open Flow Inspector side panel.
+2. **Power Apps tab:** On an open model-driven form (`*.crm.dynamics.com` or `apps.powerapps.com`), **Unhide hidden fields** and **Unlock read-only fields** apply client-side via Xrm.
 3. **About:** Developer link to Helvety; Appearance theme persists locally.
 4. **DNR:** After reload, ruleset enablement matches saved preference (classic vs new ruleset ids in service worker console should show no static-rule errors).
 

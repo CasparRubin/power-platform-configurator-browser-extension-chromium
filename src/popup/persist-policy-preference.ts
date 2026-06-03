@@ -6,13 +6,13 @@ export type PersistPolicyMountRef = { current: boolean };
 
 /**
  * Writes policy keys to `chrome.storage.sync`, then optionally reloads the focused flow/run tab.
- * Used by the popup for editor (`enforcedV3`) and survey (`v3surveyEnabled`) saves — keeps one
- * implementation for status, busy flags, logging, and error handling.
+ * Used by the Power Automate popup tab for flow designer (`enforcedV3`) and survey (`v3surveyEnabled`)
+ * saves — keeps one implementation for status, busy flags, logging, and error handling.
  */
 export async function persistPolicyPreferenceAndOptionalReload(options: {
   storagePatch: Record<string, string>;
   logLabel: string;
-  /** Called after a successful sync write, so survey saves see up-to-date editor mode from refs. */
+  /** Called after a successful sync write, so survey saves see up-to-date flow designer mode from refs. */
   getReloadPreference: () => EnforcementPreference;
   mountedRef: PersistPolicyMountRef;
   beginSyncWrite: () => void;
