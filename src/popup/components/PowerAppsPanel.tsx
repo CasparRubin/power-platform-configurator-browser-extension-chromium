@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Eye, Loader2, LockOpen } from "lucide-react";
-import { TAB_PANEL_CLASS } from "@helvety/extension-chrome/popup-shell";
+import { TAB_PANEL_CLASS } from "../popup-layout";
 import { Button } from "@helvety/ui/button";
 import type { PowerAppsFormAction } from "../../powerapps/constants";
 import {

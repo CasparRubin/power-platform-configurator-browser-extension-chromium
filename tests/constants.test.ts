@@ -43,7 +43,6 @@ type PublicManifest = {
     rule_resources?: Array<{ id: string; path: string; enabled?: boolean }>;
   };
   icons?: Record<string, string>;
-  side_panel?: { default_path?: string };
 };
 
 function readPublicManifest(): PublicManifest {
@@ -172,28 +171,27 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     const manifest = readPublicManifest();
     expect(manifest.manifest_version).toBe(3);
     expect([...(manifest.permissions ?? [])].sort()).toEqual(
-      [
-        "declarativeNetRequest",
-        "scripting",
-        "sidePanel",
-        "storage",
-        "tabs",
-        "webNavigation",
-      ].sort(),
+      ["declarativeNetRequest", "scripting", "storage", "tabs", "webNavigation"].sort(),
     );
     expect(manifest.host_permissions?.sort()).toEqual(
       [
         "https://*.api.crm.dynamics.com/*",
         "https://*.crm.dynamics.com/*",
         "https://*.powerautomate.com/*",
-        "https://api.bap.microsoft.com/*",
-        "https://api.flow.microsoft.com/*",
-        "https://api.powerplatform.com/*",
         "https://apps.powerapps.com/*",
         "https://flow.microsoft.com/*",
       ].sort(),
     );
-    expect(manifest.side_panel?.default_path).toBe("inspector.html");
+    const raw = JSON.parse(readFileSync(join(repoRoot, "public", "manifest.json"), "utf8")) as {
+      side_panel?: unknown;
+    };
+    expect(raw.side_panel).toBeUndefined();
+  });
+
+  it("does not export or reference Flow Inspector panel path in constants", () => {
+    const constants = readFileSync(join(repoRoot, "src/constants.ts"), "utf8");
+    expect(constants).not.toContain("INSPECTOR_PANEL_PATH");
+    expect(constants).not.toContain("inspector.html");
   });
 
   it("declarative_net_request rulesets use the same ids and paths as constants", () => {
@@ -233,18 +231,15 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     expect(manifest.background?.type).toBe("module");
     expect(manifest.action?.default_popup).toBe("popup.html");
     const scripts = manifest.content_scripts ?? [];
-    expect(scripts).toHaveLength(3);
-    const mainHook = scripts.find((s) => s.js?.includes("content-main-hook.js"));
+    expect(scripts).toHaveLength(2);
     const isolated = scripts.find((s) => s.js?.includes("content.js"));
     const powerApps = scripts.find((s) => s.js?.includes("content-powerapps.js"));
-    expect(mainHook?.world).toBe("MAIN");
-    expect(mainHook?.run_at).toBe("document_start");
-    expect(mainHook?.all_frames).toBe(true);
     expect(isolated?.run_at).toBe("document_start");
     expect(isolated?.all_frames).toBe(true);
     expect(powerApps?.run_at).toBe("document_idle");
     expect(powerApps?.all_frames).toBe(true);
-    expect(mainHook?.matches?.sort()).toEqual(
+    expect(isolated?.world).toBeUndefined();
+    expect(isolated?.matches?.sort()).toEqual(
       ["https://*.powerautomate.com/*", "https://flow.microsoft.com/*"].sort(),
     );
     expect(powerApps?.matches?.sort()).toEqual(

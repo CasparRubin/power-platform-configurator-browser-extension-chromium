@@ -20,9 +20,6 @@ export const SYNC_POLICY_KEYS = [STORAGE_KEY_ENFORCED_V3, STORAGE_KEY_V3SURVEY_E
 /** Local storage key for popup UI theme (`"light"` | `"dark"`). */
 export const STORAGE_KEY_POPUP_THEME = "popupThemePreference" as const;
 
-/** Side panel HTML entry (manifest `side_panel.default_path`). */
-export const INSPECTOR_PANEL_PATH = "inspector.html" as const;
-
 export const DNR_RULESET_CLASSIC_EDITOR_ID = "dnr-classic-editor" as const;
 export const DNR_RULESET_NEW_DESIGNER_ID = "dnr-new-designer" as const;
 

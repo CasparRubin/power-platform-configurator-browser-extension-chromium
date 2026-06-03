@@ -11,12 +11,8 @@ import {
   Workflow,
 } from "lucide-react";
 import { readExtensionVersion } from "@helvety/extension-chrome/extension-version";
-import {
-  POPUP_SHELL_CLASS,
-  POPUP_WIDTH_CLASS,
-  popupChoiceRowClass,
-  TAB_PANEL_CLASS,
-} from "@helvety/extension-chrome/popup-shell";
+import { popupChoiceRowClass } from "@helvety/extension-chrome/popup-shell";
+import { POPUP_ROOT_CLASS, TAB_PANEL_CLASS } from "./popup-layout";
 import { usePopupTheme } from "@helvety/extension-chrome/use-popup-theme";
 import { cn } from "@helvety/shared/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@helvety/ui/card";
@@ -223,7 +219,7 @@ export default function App() {
 
   if (!loaded) {
     return (
-      <div className={`flex ${POPUP_WIDTH_CLASS} ${POPUP_SHELL_CLASS} text-foreground`}>
+      <div className={`${POPUP_ROOT_CLASS} text-foreground`}>
         <PopupHeader version={extensionVersion} />
         <p className="text-xs text-muted-foreground">Loading…</p>
       </div>
@@ -231,8 +227,8 @@ export default function App() {
   }
 
   return (
-    <div className={`flex ${POPUP_WIDTH_CLASS} ${POPUP_SHELL_CLASS} text-foreground`}>
-      <Tabs defaultValue="power-automate" className="flex flex-col gap-0">
+    <div className={`${POPUP_ROOT_CLASS} text-foreground`}>
+      <Tabs defaultValue="power-automate" className="flex min-h-0 flex-1 flex-col gap-0">
         <PopupHeader version={extensionVersion} />
         <TabsList className="grid h-auto w-full grid-cols-3 gap-0.5 bg-muted p-1 text-xs">
           <TabsTrigger
@@ -274,7 +270,10 @@ export default function App() {
           </div>
         ) : null}
 
-        <TabsContent value="power-automate" className="mt-2 outline-none">
+        <TabsContent
+          value="power-automate"
+          className="mt-2 flex min-h-0 flex-1 flex-col outline-none"
+        >
           <PowerAutomatePanel
             value={value}
             surveyMode={surveyMode}
@@ -285,11 +284,11 @@ export default function App() {
           />
         </TabsContent>
 
-        <TabsContent value="power-apps" className="mt-2 outline-none">
+        <TabsContent value="power-apps" className="mt-2 flex min-h-0 flex-1 flex-col outline-none">
           <PowerAppsPanel />
         </TabsContent>
 
-        <TabsContent value="about" className="mt-2 outline-none">
+        <TabsContent value="about" className="mt-2 flex min-h-0 flex-1 flex-col outline-none">
           <div className={TAB_PANEL_CLASS}>
             <div className="pr-2">
               <Card className="bg-transparent">

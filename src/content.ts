@@ -17,7 +17,6 @@ import {
   STORAGE_KEY_V3SURVEY_ENABLED,
   SYNC_POLICY_KEYS,
 } from "./constants";
-import { installContentBridge } from "./inspector/content-bridge";
 import { isConfiguratorSyncChange } from "./storage-sync";
 import { PowerAutomateUrlPolicy } from "./url-policy";
 
@@ -27,11 +26,8 @@ const globalScope = globalThis as typeof globalThis & {
   [CONTENT_BOOTSTRAP_KEY]?: boolean;
 };
 
-if (globalScope[CONTENT_BOOTSTRAP_KEY]) {
-  installContentBridge();
-} else {
+if (!globalScope[CONTENT_BOOTSTRAP_KEY]) {
   globalScope[CONTENT_BOOTSTRAP_KEY] = true;
-  installContentBridge();
 
   (
     globalThis as typeof globalThis & { PowerAutomateUrlPolicy?: typeof PowerAutomateUrlPolicy }

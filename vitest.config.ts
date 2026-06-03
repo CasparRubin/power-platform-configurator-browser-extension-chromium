@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 
 /**
  * Coverage is scoped to modules exercised by unit tests. Entry points (`background`, `content`),
- * browser-only bundles (Flow Inspector, Power Apps MAIN-world inject, content hooks), the React
+ * browser-only bundles (Power Apps MAIN-world inject), the React
  * popup shell, `persist-policy-preference.ts`, `policy-popup-log.ts`, and `@helvety/ui` primitives
  * are excluded so thresholds reflect logic we test in Node. Popup chrome is guarded by
  * `tests/popup-chrome.test.ts`; Power Apps helpers by `tests/powerapps-*.test.ts`.
@@ -21,14 +21,11 @@ export default defineConfig({
         "src/background.ts",
         "src/background/**",
         "src/content.ts",
-        "src/content-main-hook.ts",
         "src/content-powerapps.ts",
-        "src/inspector/**",
         "src/popup/App.tsx",
         "src/popup/main.tsx",
         "src/popup/persist-policy-preference.ts",
         "src/popup/policy-popup-log.ts",
-        "src/popup/open-inspector-side-panel.ts",
         "src/popup/powerapps-client.ts",
         "src/powerapps/apply-form-actions.ts",
         "src/powerapps/xrm-page-script.ts",

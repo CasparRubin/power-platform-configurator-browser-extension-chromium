@@ -19,5 +19,8 @@ describe("powerapps background router", () => {
     const background = readFileSync(join(repoRoot, "src/background.ts"), "utf8");
     expect(background).toContain('from "./background/powerapps-router"');
     expect(background).toContain("installPowerAppsRouter()");
+    expect(background).not.toContain("installInspectorRouter");
+    expect(background).not.toContain("inspector-router");
+    expect(background).not.toContain("sidePanel");
   });
 });

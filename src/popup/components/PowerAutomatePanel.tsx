@@ -1,9 +1,9 @@
-import { popupChoiceRowClass, TAB_PANEL_CLASS } from "@helvety/extension-chrome/popup-shell";
+import { popupChoiceRowClass } from "@helvety/extension-chrome/popup-shell";
 import { Label } from "@helvety/ui/label";
 import { RadioGroup, RadioGroupItem } from "@helvety/ui/radio-group";
 import { Separator } from "@helvety/ui/separator";
 import type { EnforcementPreference } from "../../constants";
-import { FlowInspectorLauncherCard } from "./FlowInspectorLauncherCard";
+import { TAB_PANEL_CLASS } from "../popup-layout";
 import { PolicyPanelBusyHint } from "./PolicyPanelBusyHint";
 
 type SurveyEnabledSync = "true" | "false";
@@ -46,8 +46,6 @@ export function PowerAutomatePanel({
               or paused. Paused turns off link changes until you pick a designer again.
             </p>
           </div>
-
-          <FlowInspectorLauncherCard />
 
           <RadioGroup
             className="flex flex-col gap-1.5"

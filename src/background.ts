@@ -8,9 +8,7 @@
  * policy is never applied from stale default module state ahead of the first `chrome.storage.sync`-backed
  * `reconcileFromStorage` (see `src/policy-load-queue.ts`, Chrome MV3 storage preload pattern).
  */
-import { installInspectorRouter } from "./background/inspector-router";
 import { installPowerAppsRouter } from "./background/powerapps-router";
-import { INSPECTOR_PANEL_PATH } from "./constants";
 import { applyToolbarBadgeForEnforcement } from "./action-badge";
 import {
   DEFAULT_ENFORCED_V3,
@@ -110,25 +108,7 @@ async function reconcileFromStorage(): Promise<void> {
 
 const policyQueue = createPolicyLoadQueue(reconcileFromStorage);
 
-installInspectorRouter();
 installPowerAppsRouter();
-
-async function configureInspectorSidePanel(): Promise<void> {
-  try {
-    await chrome.sidePanel.setOptions({
-      path: INSPECTOR_PANEL_PATH,
-      enabled: true,
-    });
-  } catch (error) {
-    console.error("[power-platform-configurator] sidePanel.setOptions failed", error);
-  }
-}
-
-void configureInspectorSidePanel();
-
-void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false }).catch((error) => {
-  console.error("[power-platform-configurator] sidePanel.setPanelBehavior failed", error);
-});
 
 async function handleMainFrameNavigation(
   details: chrome.webNavigation.WebNavigationFramedCallbackDetails,
@@ -188,7 +168,6 @@ chrome.runtime.onInstalled.addListener((details) => {
         }
       }
       await reconcileFromStorage();
-      await configureInspectorSidePanel();
     } catch (error) {
       console.error("[power-platform-configurator] onInstalled policy chain failed", error);
     }

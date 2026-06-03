@@ -52,6 +52,35 @@ describe("popup chrome (header + About developer section)", () => {
     expect(app).not.toMatch(/<TabsTrigger[^>]*value="survey"/);
   });
 
+  it("uses Chrome maximum popup dimensions via popup-layout (not legacy 320px shell)", () => {
+    const layout = readSource("src/popup/popup-layout.ts");
+    expect(layout).toContain("w-[800px]");
+    expect(layout).toContain("h-[600px]");
+    expect(layout).toContain("TAB_PANEL_CLASS");
+    expect(layout).not.toContain("max-h-72");
+
+    const indexHtml = readSource("src/popup/index.html");
+    expect(indexHtml).toContain("w-[800px]");
+    expect(indexHtml).toContain("h-[600px]");
+    expect(indexHtml).not.toContain("320px");
+
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain("POPUP_ROOT_CLASS");
+    expect(app).toContain("./popup-layout");
+    expect(app).not.toContain("POPUP_WIDTH_CLASS");
+
+    const paPanel = readSource("src/popup/components/PowerAutomatePanel.tsx");
+    const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
+    expect(paPanel).toContain("../popup-layout");
+    expect(appsPanel).toContain("../popup-layout");
+    expect(paPanel).not.toContain("FlowInspectorLauncherCard");
+    expect(paPanel).not.toContain("max-h-72");
+    expect(existsSync(join(repoRoot, "src/popup/components/FlowInspectorLauncherCard.tsx"))).toBe(
+      false,
+    );
+    expect(existsSync(join(repoRoot, "src/popup/open-inspector-side-panel.ts"))).toBe(false);
+  });
+
   it("product tab triggers use TabProductIcon, not legacy Lucide product icons", () => {
     const app = readSource("src/popup/App.tsx");
     expect(app).toContain('import { TabProductIcon } from "./components/TabProductIcon"');

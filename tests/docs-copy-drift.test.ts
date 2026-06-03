@@ -23,17 +23,42 @@ const LEGACY_POPUP_TAB_PHRASES = [
   /Sync key for the popup Survey tab/i,
 ];
 
+/** Flow Inspector / side panel copy must not return in user-facing docs (not the unit-test index table). */
+const FLOW_INSPECTOR_PHRASES = [
+  /## Flow Inspector/i,
+  /Open Flow Inspector/i,
+  /inspector\.html/i,
+  /content-main-hook/i,
+  /`sidePanel`/i,
+  /api\.powerplatform\.com/i,
+  /api\.bap\.microsoft\.com/i,
+];
+
+function readmeSection(readme: string, heading: string): string {
+  const start = readme.indexOf(heading);
+  if (start === -1) {
+    return "";
+  }
+  const after = readme.slice(start + heading.length);
+  const nextHeading = after.search(/\n## /);
+  return nextHeading === -1 ? after : after.slice(0, nextHeading);
+}
+
 const DOC_PATHS = [
   "README.md",
   "docs/chrome-web-store.md",
   "src/constants.ts",
+  "src/background.ts",
+  "src/content.ts",
   "src/popup/sync-write-queue.ts",
   "src/popup/persist-policy-preference.ts",
   "src/popup/reload-focused-target-tab.ts",
+  "src/popup/popup-layout.ts",
   "src/storage-sync.ts",
+  "vitest.config.ts",
 ] as const;
 
-describe("documentation and comment copy (no legacy Editor/Survey tabs)", () => {
+describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow Inspector)", () => {
   it.each(DOC_PATHS)("%s avoids legacy popup tab naming", (relativePath) => {
     const text = readRepoFile(relativePath);
     for (const pattern of LEGACY_POPUP_TAB_PHRASES) {
@@ -49,6 +74,27 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs)", () => 
     expect(readme).toContain("content-powerapps.ts");
   });
 
+  it("README user-facing sections avoid Flow Inspector and retired API permission copy", () => {
+    const readme = readRepoFile("README.md");
+    for (const heading of [
+      "## What it does",
+      "## Browser compatibility",
+      "## Store listing vs manifest",
+    ]) {
+      const section = readmeSection(readme, heading);
+      for (const pattern of FLOW_INSPECTOR_PHRASES) {
+        expect(section).not.toMatch(pattern);
+      }
+    }
+  });
+
+  it("chrome-web-store.md avoids Flow Inspector and retired API permission copy", () => {
+    const text = readRepoFile("docs/chrome-web-store.md");
+    for (const pattern of FLOW_INSPECTOR_PHRASES) {
+      expect(text).not.toMatch(pattern);
+    }
+  });
+
   it("chrome-web-store checklist matches current popup and permissions", () => {
     const doc = readRepoFile("docs/chrome-web-store.md");
     expect(doc).toContain("Power Automate tab");
@@ -56,6 +102,8 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs)", () => 
     expect(doc).toContain("TabProductIcon");
     expect(doc).toContain("`scripting`");
     expect(doc).toContain("*.crm.dynamics.com");
+    expect(doc).not.toContain("`sidePanel`");
+    expect(doc).not.toMatch(/Flow Inspector/i);
     expect(doc).not.toMatch(/^\d+\.\s+\*\*Editor:\*\*/m);
   });
 

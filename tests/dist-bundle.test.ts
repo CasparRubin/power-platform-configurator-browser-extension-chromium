@@ -13,18 +13,22 @@ import { expectIconExists } from "./test-helpers/icon-paths";
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const popupHtmlPath = join(repoRoot, "dist", "popup.html");
-const inspectorHtmlPath = join(repoRoot, "dist", "inspector.html");
 const popupAssetsDir = join(repoRoot, "dist", "popup-assets");
-const inspectorAssetsDir = join(repoRoot, "dist", "inspector-assets");
 
 describe("dist/ bundle (post-build)", () => {
   it("exists and includes packaged static assets", () => {
     expect(existsSync(popupHtmlPath)).toBe(true);
-    expect(existsSync(inspectorHtmlPath)).toBe(true);
     expect(existsSync(join(repoRoot, "dist", "dnr-classic-editor.json"))).toBe(true);
     expect(existsSync(join(repoRoot, "dist", "dnr-new-designer.json"))).toBe(true);
     expect(existsSync(join(repoRoot, "dist", "manifest.json"))).toBe(true);
     expect(existsSync(join(repoRoot, "dist", "content-powerapps.js"))).toBe(true);
+    expect(existsSync(join(repoRoot, "dist", "content.js"))).toBe(true);
+  });
+
+  it("does not ship Flow Inspector or content-main-hook artifacts", () => {
+    expect(existsSync(join(repoRoot, "dist", "inspector.html"))).toBe(false);
+    expect(existsSync(join(repoRoot, "dist", "inspector-assets"))).toBe(false);
+    expect(existsSync(join(repoRoot, "dist", "content-main-hook.js"))).toBe(false);
   });
 
   it("copies product tab SVGs from public/icons into dist/icons", () => {
@@ -39,25 +43,37 @@ describe("dist/ bundle (post-build)", () => {
     const scriptWithoutSrc = /<script(?![^>]*\bsrc=)[^>]*>/i;
     expect(html).not.toMatch(scriptWithoutSrc);
     expect(html).not.toMatch(/<script[^>]+src=["'](https?:)/i);
+    expect(html).toMatch(/w-\[800px\]/);
+    expect(html).toMatch(/h-\[600px\]/);
+  });
+
+  it("dist manifest matches public manifest (no side panel or inspector hosts)", () => {
+    const distManifest = JSON.parse(
+      readFileSync(join(repoRoot, "dist", "manifest.json"), "utf8"),
+    ) as {
+      permissions?: string[];
+      host_permissions?: string[];
+      side_panel?: unknown;
+      content_scripts?: Array<{ js?: string[]; world?: string }>;
+    };
+    expect(distManifest.side_panel).toBeUndefined();
+    expect(distManifest.permissions).not.toContain("sidePanel");
+    expect(distManifest.host_permissions).not.toEqual(
+      expect.arrayContaining([
+        "https://api.powerplatform.com/*",
+        "https://api.bap.microsoft.com/*",
+        "https://api.flow.microsoft.com/*",
+      ]),
+    );
+    const scripts = distManifest.content_scripts ?? [];
+    expect(scripts).toHaveLength(2);
+    expect(scripts.some((s) => s.js?.includes("content-main-hook.js"))).toBe(false);
+    expect(scripts.every((s) => s.world !== "MAIN")).toBe(true);
   });
 
   it("popup-assets includes hashed ppconfigurator icon from vite build", () => {
     expect(existsSync(popupAssetsDir)).toBe(true);
     const assets = readdirSync(popupAssetsDir);
     expect(assets.some((name) => name.includes("ppconfigurator"))).toBe(true);
-  });
-
-  it("inspector.html inlines CSS and uses a local module script (side panel)", () => {
-    const html = readFileSync(inspectorHtmlPath, "utf8");
-    expect(html).not.toMatch(/ crossorigin/i);
-    expect(html).toContain("<style>");
-    expect(html).not.toMatch(/<link rel="stylesheet" href="\.\/inspector-assets\//);
-    expect(html).toMatch(/<script type="module" src="\.\/inspector-assets\//);
-    expect(html).not.toMatch(/<script[^>]+src=["'](https?:)/i);
-    expect(html).not.toMatch(/name="viewport"/i);
-  });
-
-  it("inspector-assets exists after vite build", () => {
-    expect(existsSync(inspectorAssetsDir)).toBe(true);
   });
 });
