@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -56,9 +56,19 @@ describe("README and docs accuracy (current product scope)", () => {
   it("What it does describes 800×600 popup and four core settings only", () => {
     const section = readmeSection(readme, "## What it does");
     expect(section).toMatch(/800\s*[×x]\s*600|800×600/i);
+    expect(section).toContain("SettingsChoiceRow");
+    expect(section).toContain("TAB_PANEL_HOST_CLASS");
     expect(section).toContain("Power Automate");
     expect(section).toContain("Power Apps");
     expect(section).toContain("v3survey");
+    expect(section).toMatch(
+      /Hide hidden fields|Show hidden fields|\*\*Hide\*\*.*hidden fields|\*\*Show\*\*.*hidden fields/i,
+    );
+    expect(section).toMatch(
+      /Lock read-only|Unlock read-only|\*\*Lock\*\*.*read-only|\*\*Unlock\*\*.*read-only/i,
+    );
+    expect(section).not.toMatch(/one-shot/i);
+    expect(section).not.toMatch(/action buttons on an open model-driven/i);
     expect(section).not.toContain("Flow Inspector");
     expect(section).not.toContain("side panel");
     expect(section).not.toContain("inspector.html");
@@ -85,21 +95,30 @@ describe("README and docs accuracy (current product scope)", () => {
   it("repository layout documents popup-layout.ts and omits removed inspector paths", () => {
     const layout = readmeSection(readme, "## Repository layout");
     expect(layout).toContain("popup-layout.ts");
+    expect(layout).toContain("SettingsChoiceRow");
     expect(layout).not.toContain("src/inspector");
     expect(layout).not.toContain("FlowInspectorLauncherCard");
     expect(layout).not.toContain("content-main-hook");
     expect(layout).not.toContain("vite.inspector.config");
+  });
+
+  it("popup settings components exist on disk", () => {
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsChoiceRow.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsSectionHeader.tsx"))).toBe(true);
   });
 });
 
 describe("chrome-web-store.md accuracy", () => {
   const doc = readRepoFile("docs/chrome-web-store.md");
 
-  it("smoke test steps match three popup tabs and four settings", () => {
+  it("smoke test steps match three popup tabs and radio-style Power Apps settings", () => {
     expect(doc).toContain("Power Automate tab");
     expect(doc).toContain("Power Apps tab");
     expect(doc).toContain("About");
     expect(doc).not.toMatch(/Flow Inspector/i);
+    expect(doc).toMatch(/Show hidden fields/i);
+    expect(doc).toMatch(/Unlock read-only/i);
+    expect(doc).not.toMatch(/\*\*Unhide hidden fields\*\* and \*\*Unlock read-only fields\*\*/);
   });
 
   it("permission table matches public manifest (no sidePanel or API hosts)", () => {

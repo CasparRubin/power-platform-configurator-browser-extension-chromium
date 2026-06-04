@@ -1,15 +1,29 @@
 import { useCallback, useState } from "react";
-import { Eye, Loader2, LockOpen } from "lucide-react";
-import { TAB_PANEL_CLASS } from "../popup-layout";
-import { Button } from "@helvety/ui/button";
+import { Loader2 } from "lucide-react";
+import { RadioGroup } from "@helvety/ui/radio-group";
+import { Separator } from "@helvety/ui/separator";
 import type { PowerAppsFormAction } from "../../powerapps/constants";
+import {
+  SETTINGS_RADIO_GROUP_CLASS,
+  SETTINGS_SECTION_CLASS,
+  SETTINGS_SEPARATOR_CLASS,
+  TAB_PANEL_BODY_CLASS,
+  TAB_PANEL_CLASS,
+} from "../popup-layout";
 import {
   formatPowerAppsActionError,
   formatPowerAppsActionSuccess,
   requestPowerAppsFormAction,
 } from "../powerapps-client";
+import { SettingsChoiceRow } from "./SettingsChoiceRow";
+import { SettingsSectionHeader } from "./SettingsSectionHeader";
+
+type HiddenFieldsMode = "hide" | "show";
+type ReadOnlyMode = "lock" | "unlock";
 
 export function PowerAppsPanel() {
+  const [hiddenMode, setHiddenMode] = useState<HiddenFieldsMode>("hide");
+  const [readOnlyMode, setReadOnlyMode] = useState<ReadOnlyMode>("lock");
   const [busyAction, setBusyAction] = useState<PowerAppsFormAction | null>(null);
   const [status, setStatus] = useState("");
 
@@ -29,18 +43,7 @@ export function PowerAppsPanel() {
 
   return (
     <div className={TAB_PANEL_CLASS} aria-busy={busy}>
-      <div className="flex flex-col gap-3 pr-2">
-        <div className="flex flex-col gap-0.5">
-          <h2 className="text-sm font-semibold tracking-tight text-foreground">
-            Model-driven forms
-          </h2>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Works on an open <span className="font-medium text-foreground">record form</span> in a
-            model-driven app (Dataverse / Dynamics). Sign in as usual. Changes are client-side only
-            and do not bypass server security on save. Canvas apps are not supported.
-          </p>
-        </div>
-
+      <div className={TAB_PANEL_BODY_CLASS}>
         {status ? (
           <p
             className="text-xs leading-snug text-muted-foreground"
@@ -58,38 +61,109 @@ export function PowerAppsPanel() {
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="w-full justify-start"
+        <section className={SETTINGS_SECTION_CLASS}>
+          <SettingsSectionHeader
+            title="Hidden fields"
+            description={
+              <>
+                On an open <span className="font-medium text-foreground">record form</span> in a
+                model-driven app (Dataverse / Dynamics).{" "}
+                <span className="font-medium text-foreground">Show</span> reveals hidden tabs,
+                sections, and controls client-side.{" "}
+                <span className="font-medium text-foreground">Hide</span> leaves the form as opened;
+                reload the page to restore platform defaults.
+              </>
+            }
+          />
+
+          <RadioGroup
+            className={SETTINGS_RADIO_GROUP_CLASS}
+            aria-label="Hidden fields on model-driven forms"
             disabled={busy}
-            onClick={() => void runAction("unhide")}
+            value={hiddenMode}
+            onValueChange={(v) => {
+              if (v === "hide") {
+                setHiddenMode("hide");
+                return;
+              }
+              if (v === "show") {
+                setHiddenMode("show");
+                void runAction("unhide");
+              }
+            }}
           >
-            {busyAction === "unhide" ? (
-              <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" aria-hidden />
-            ) : (
-              <Eye className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-            )}
-            Unhide hidden fields
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="w-full justify-start"
+            <SettingsChoiceRow
+              id="hidden-hide"
+              value="hide"
+              selected={hiddenMode === "hide"}
+              label={
+                <>
+                  Hide hidden fields <span className="text-muted-foreground">(default)</span>
+                </>
+              }
+              description="No change. Reload the form to restore what the platform hid."
+            />
+            <SettingsChoiceRow
+              id="hidden-show"
+              value="show"
+              selected={hiddenMode === "show"}
+              label="Show hidden fields"
+              description="Unhide hidden tabs, sections, and controls on the current form."
+            />
+          </RadioGroup>
+        </section>
+
+        <Separator className={SETTINGS_SEPARATOR_CLASS} />
+
+        <section className={SETTINGS_SECTION_CLASS}>
+          <SettingsSectionHeader
+            title="Read-only fields"
+            description={
+              <>
+                Client-side only; does not bypass server security on save. Canvas apps are not
+                supported. <span className="font-medium text-foreground">Unlock</span> enables
+                disabled controls. <span className="font-medium text-foreground">Lock</span> leaves
+                read-only as opened; reload to restore.
+              </>
+            }
+          />
+
+          <RadioGroup
+            className={SETTINGS_RADIO_GROUP_CLASS}
+            aria-label="Read-only fields on model-driven forms"
             disabled={busy}
-            onClick={() => void runAction("unlock")}
+            value={readOnlyMode}
+            onValueChange={(v) => {
+              if (v === "lock") {
+                setReadOnlyMode("lock");
+                return;
+              }
+              if (v === "unlock") {
+                setReadOnlyMode("unlock");
+                void runAction("unlock");
+              }
+            }}
           >
-            {busyAction === "unlock" ? (
-              <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" aria-hidden />
-            ) : (
-              <LockOpen className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-            )}
-            Unlock read-only fields
-          </Button>
-        </div>
+            <SettingsChoiceRow
+              id="readonly-lock"
+              value="lock"
+              selected={readOnlyMode === "lock"}
+              label={
+                <>
+                  Lock read-only <span className="text-muted-foreground">(default)</span>
+                </>
+              }
+              description="No change. Reload the form to restore read-only controls."
+            />
+            <SettingsChoiceRow
+              id="readonly-unlock"
+              value="unlock"
+              selected={readOnlyMode === "unlock"}
+              label="Unlock read-only"
+              description="Enable disabled controls on the current form."
+            />
+          </RadioGroup>
+        </section>
       </div>
     </div>
   );

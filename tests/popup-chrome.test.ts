@@ -52,6 +52,106 @@ describe("popup chrome (header + About developer section)", () => {
     expect(app).not.toMatch(/<TabsTrigger[^>]*value="survey"/);
   });
 
+  it("shared settings UI modules exist and panels import them", () => {
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsChoiceRow.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsSectionHeader.tsx"))).toBe(true);
+    const paPanel = readSource("src/popup/components/PowerAutomatePanel.tsx");
+    const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
+    for (const source of [paPanel, appsPanel]) {
+      expect(source).toContain("SettingsChoiceRow");
+      expect(source).toContain("SettingsSectionHeader");
+      expect(source).toContain("TAB_PANEL_BODY_CLASS");
+      expect(source).toContain("SETTINGS_SECTION_CLASS");
+    }
+  });
+
+  it("all settings panels use shared SettingsChoiceRow and layout spacing tokens", () => {
+    const paPanel = readSource("src/popup/components/PowerAutomatePanel.tsx");
+    const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
+    const app = readSource("src/popup/App.tsx");
+    const choiceRow = readSource("src/popup/components/SettingsChoiceRow.tsx");
+    const sectionHeader = readSource("src/popup/components/SettingsSectionHeader.tsx");
+    const layout = readSource("src/popup/popup-layout.ts");
+
+    for (const source of [paPanel, appsPanel, app]) {
+      expect(source).toContain("@helvety/ui/radio-group");
+      expect(source).toContain("SettingsChoiceRow");
+      expect(source).toContain("SETTINGS_RADIO_GROUP_CLASS");
+      expect(source).not.toContain("popupChoiceRowClass");
+      expect(source).not.toContain("@helvety/extension-chrome/popup-shell");
+      expect(source).not.toContain("@helvety/ui/button");
+      expect(source).not.toContain("<Button");
+      expect(source).not.toMatch(/RadioGroup[^>]*\n[^>]*className="flex flex-col gap-1\.5"/);
+    }
+
+    expect(sectionHeader).toContain("SETTINGS_SECTION_INTRO_CLASS");
+    expect(sectionHeader).toContain("SETTINGS_SECTION_TITLE_CLASS");
+    expect(choiceRow).toContain("RadioGroupItem");
+    expect(choiceRow).toContain("settingsChoiceRowClass");
+    expect(choiceRow).toContain('className="mt-1 shrink-0"');
+    expect(layout).toContain("settingsChoiceRowClass");
+    expect(layout).toContain("gap-3 rounded-sm p-3");
+    expect(layout).toContain("SETTINGS_RADIO_GROUP_CLASS");
+    expect(layout).toContain("gap-2");
+    expect(layout).toContain("TAB_PANEL_BODY_CLASS");
+    expect(layout).toContain("TAB_PANEL_CLASS");
+    expect(layout).toContain("pt-1");
+    expect(layout).toContain("py-2.5");
+    expect(layout).toContain("ABOUT_CARD_HEADER_CLASS");
+    expect(layout).toContain("ABOUT_DEVELOPER_LINK_CLASS");
+
+    expect(appsPanel).toContain('value="hide"');
+    expect(appsPanel).toContain('value="show"');
+    expect(appsPanel).toContain('value="lock"');
+    expect(appsPanel).toContain('value="unlock"');
+    expect(appsPanel).toContain('runAction("unhide")');
+    expect(appsPanel).toContain('runAction("unlock")');
+    expect(appsPanel).toContain("Separator");
+  });
+
+  it("About appearance radios use SettingsChoiceRow (no Sun/Moon between radio and label)", () => {
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain('id="theme-light"');
+    expect(app).toContain('id="theme-dark"');
+    expect(app).toContain("<SettingsChoiceRow");
+    expect(app).toContain("<SettingsSectionHeader");
+    expect(app).toContain("ABOUT_CARD_HEADER_CLASS");
+    expect(app).toContain("ABOUT_CARD_CONTENT_CLASS");
+    expect(app).toContain("ABOUT_DEVELOPER_LINK_CLASS");
+    expect(app).toContain("SETTINGS_CODE_CLASS");
+    expect(app).not.toContain('className="pr-2"');
+    expect(app).not.toContain("popupChoiceRowClass");
+    expect(app).not.toMatch(/\bSun\b/);
+    expect(app).not.toMatch(/\bMoon\b/);
+  });
+
+  it("popup flex chain fills height below tabs (host + stacked tab layers)", () => {
+    const css = readSource("src/popup/index.css");
+    expect(css).toContain("#root");
+    expect(css).toContain("h-full");
+    expect(css).toContain("min-h-0");
+    expect(css).toContain("overflow-hidden");
+
+    const indexHtml = readSource("src/popup/index.html");
+    expect(indexHtml).toContain('id="root"');
+    expect(indexHtml).toContain("h-full");
+
+    const layout = readSource("src/popup/popup-layout.ts");
+    expect(layout).toContain("TAB_PANEL_HOST_CLASS");
+    expect(layout).toContain("TAB_CONTENT_CLASS");
+    expect(layout).toContain("absolute inset-0");
+    expect(layout).toContain("data-[state=inactive]:hidden");
+    expect(layout).not.toContain("scrollbar-gutter");
+
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain("TAB_PANEL_HOST_CLASS");
+    expect(app).toContain("TAB_CONTENT_CLASS");
+    expect(app).toContain("flex h-0 min-h-0 flex-1");
+    expect(app).toContain("flex-shrink-0");
+    expect(app.match(/<TabsContent\b/g)?.length).toBe(3);
+    expect(app).not.toMatch(/<TabsContent[^>]*\n[^<]*className="mt-2 flex min-h-0 flex-1/);
+  });
+
   it("uses Chrome maximum popup dimensions via popup-layout (not legacy 320px shell)", () => {
     const layout = readSource("src/popup/popup-layout.ts");
     expect(layout).toContain("w-[800px]");

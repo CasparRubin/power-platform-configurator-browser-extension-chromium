@@ -23,6 +23,36 @@ const LEGACY_POPUP_TAB_PHRASES = [
   /Sync key for the popup Survey tab/i,
 ];
 
+/** Three sibling TabsContent with flex-1 split the panel into top/middle/bottom bands. */
+const LEGACY_POPUP_LAYOUT_PHRASES = [
+  /TabsContent[^>]*className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden outline-none"/,
+];
+
+/** Helvety popup-shell row helper and ad-hoc spacing superseded by popup-layout tokens. */
+const LEGACY_POPUP_SPACING_AND_ROW_PHRASES = [
+  /@helvety\/extension-chrome\/popup-shell/,
+  /\bpopupChoiceRowClass\s*\(/,
+  /className="flex flex-col gap-1\.5"/,
+];
+
+const POPUP_SETTINGS_SOURCE_PATHS = [
+  "src/popup/App.tsx",
+  "src/popup/components/PowerAutomatePanel.tsx",
+  "src/popup/components/PowerAppsPanel.tsx",
+  "src/popup/components/SettingsChoiceRow.tsx",
+  "src/popup/components/SettingsSectionHeader.tsx",
+] as const;
+
+/** Power Apps popup used action buttons before radio settings (Hide/Show, Lock/Unlock). */
+const LEGACY_POWER_APPS_POPUP_UI_PHRASES = [
+  /action buttons on an open model-driven/i,
+  /Power Apps one-shot unhide\/unlock/i,
+  /one-shot\s+\*\*Unhide hidden fields\*\*/i,
+  /runs one-shot\s+\*\*Unhide/i,
+  /\*\*Unhide hidden fields\*\* and \*\*Unlock read-only fields\*\*/i,
+  /Unhide hidden fields\s*\/\s*\*\*Unlock read-only fields\*\*/i,
+];
+
 /** Flow Inspector / side panel copy must not return in user-facing docs (not the unit-test index table). */
 const FLOW_INSPECTOR_PHRASES = [
   /## Flow Inspector/i,
@@ -54,6 +84,7 @@ const DOC_PATHS = [
   "src/popup/persist-policy-preference.ts",
   "src/popup/reload-focused-target-tab.ts",
   "src/popup/popup-layout.ts",
+  "src/popup/App.tsx",
   "src/storage-sync.ts",
   "vitest.config.ts",
 ] as const;
@@ -66,12 +97,50 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     }
   });
 
+  it("popup shell uses a single tab panel host (not three flex-split TabsContent bands)", () => {
+    const layout = readRepoFile("src/popup/popup-layout.ts");
+    expect(layout).toContain("TAB_PANEL_HOST_CLASS");
+    expect(layout).toContain("TAB_CONTENT_CLASS");
+    expect(layout).toContain("settingsChoiceRowClass");
+    expect(layout).toContain("SETTINGS_RADIO_GROUP_CLASS");
+    expect(layout).toContain("TAB_PANEL_BODY_CLASS");
+    const app = readRepoFile("src/popup/App.tsx");
+    expect(app).toContain("TAB_PANEL_HOST_CLASS");
+    for (const pattern of LEGACY_POPUP_LAYOUT_PHRASES) {
+      expect(app).not.toMatch(pattern);
+    }
+  });
+
+  it.each(POPUP_SETTINGS_SOURCE_PATHS)(
+    "%s uses centralized spacing (no legacy popup-shell choice rows)",
+    (relativePath) => {
+      const text = readRepoFile(relativePath);
+      for (const pattern of LEGACY_POPUP_SPACING_AND_ROW_PHRASES) {
+        expect(text).not.toMatch(pattern);
+      }
+    },
+  );
+
+  it("About tab avoids asymmetric pr-2-only scroll wrapper", () => {
+    const app = readRepoFile("src/popup/App.tsx");
+    expect(app).toContain("ABOUT_CARD_HEADER_CLASS");
+    expect(app).not.toContain('className="pr-2"');
+  });
+
   it("README documents Power Automate, Power Apps, and TabProductIcon", () => {
     const readme = readRepoFile("README.md");
     expect(readme).toContain("Power Automate");
     expect(readme).toContain("Power Apps");
     expect(readme).toContain("TabProductIcon");
     expect(readme).toContain("content-powerapps.ts");
+    expect(readme).toContain("SettingsChoiceRow");
+    expect(readme).toContain("settingsChoiceRowClass");
+  });
+
+  it("chrome-web-store smoke test mentions full-height tab content and shared choice rows", () => {
+    const doc = readRepoFile("docs/chrome-web-store.md");
+    expect(doc).toMatch(/full-height|not three short bands/i);
+    expect(doc).toContain("SettingsChoiceRow");
   });
 
   it("README user-facing sections avoid Flow Inspector and retired API permission copy", () => {
@@ -105,6 +174,38 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(doc).not.toContain("`sidePanel`");
     expect(doc).not.toMatch(/Flow Inspector/i);
     expect(doc).not.toMatch(/^\d+\.\s+\*\*Editor:\*\*/m);
+    for (const pattern of LEGACY_POWER_APPS_POPUP_UI_PHRASES) {
+      expect(doc).not.toMatch(pattern);
+    }
+    expect(doc).toMatch(/Hide hidden fields|Show hidden fields/i);
+    expect(doc).toMatch(/Lock read-only|Unlock read-only/i);
+  });
+
+  it("README avoids legacy Power Apps button and one-shot UI copy", () => {
+    const readme = readRepoFile("README.md");
+    for (const pattern of LEGACY_POWER_APPS_POPUP_UI_PHRASES) {
+      expect(readme).not.toMatch(pattern);
+    }
+  });
+
+  it("README user-facing sections describe Power Apps radio settings (not action buttons)", () => {
+    const readme = readRepoFile("README.md");
+    for (const heading of ["## What it does", "## Validation checklist", "## Repository layout"]) {
+      const section = readmeSection(readme, heading);
+      for (const pattern of LEGACY_POWER_APPS_POPUP_UI_PHRASES) {
+        expect(section).not.toMatch(pattern);
+      }
+    }
+    const whatItDoes = readmeSection(readme, "## What it does");
+    expect(whatItDoes).toMatch(
+      /Hide hidden fields|Show hidden fields|\*\*Hide\*\*.*hidden fields|\*\*Show\*\*.*hidden fields/i,
+    );
+    expect(whatItDoes).toMatch(
+      /Lock read-only|Unlock read-only|\*\*Lock\*\*.*read-only|\*\*Unlock\*\*.*read-only/i,
+    );
+    const validation = readmeSection(readme, "## Validation checklist");
+    expect(validation).toMatch(/Hide hidden|Show hidden|hidden fields/i);
+    expect(validation).toMatch(/Unlock read-only|Lock read-only|read-only/i);
   });
 
   it("public manifest description matches expected-manifest-description.ts", () => {

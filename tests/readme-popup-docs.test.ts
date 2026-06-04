@@ -29,7 +29,17 @@ describe("README popup and icon documentation", () => {
     expect(section).toMatch(/About.*Developer/i);
     expect(section).toContain("Power Automate");
     expect(section).toContain("Power Apps");
+    expect(section).toMatch(
+      /Hide hidden fields|Show hidden fields|\*\*Hide\*\*.*hidden fields|\*\*Show\*\*.*hidden fields/i,
+    );
+    expect(section).toMatch(
+      /Lock read-only|Unlock read-only|\*\*Lock\*\*.*read-only|\*\*Unlock\*\*.*read-only/i,
+    );
+    expect(section).not.toMatch(/action buttons on an open model-driven/i);
+    expect(section).not.toMatch(/one-shot\s+\*\*Unhide hidden fields\*\*/i);
     expect(section).toMatch(/800\s*[×x]\s*600|800×600/i);
+    expect(section).toContain("SettingsChoiceRow");
+    expect(section).toContain("popup-layout.ts");
     expect(section).not.toMatch(/Tabs:\s*\*\*Editor\*\*/);
     expect(section).not.toContain("Flow Inspector");
     expect(section).not.toContain("FlowInspectorLauncherCard");
@@ -55,5 +65,19 @@ describe("README popup and icon documentation", () => {
     expect(readme).not.toContain("v3False");
     expect(readme).toContain("docs/chrome-web-store.md");
     expect(readme).toContain("popup-layout.ts");
+    expect(readme).toContain("TAB_PANEL_HOST_CLASS");
+    expect(layout).toContain("SettingsChoiceRow");
+    expect(layout).toContain("settingsChoiceRowClass");
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsChoiceRow.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsSectionHeader.tsx"))).toBe(true);
+  });
+
+  it("popup-chrome suite guards shared settings spacing and choice rows", () => {
+    const chrome = readFileSync(join(repoRoot, "tests/popup-chrome.test.ts"), "utf8");
+    expect(chrome).toContain("SettingsChoiceRow");
+    expect(chrome).toContain("settingsChoiceRowClass");
+    expect(chrome).toContain("TAB_PANEL_BODY_CLASS");
+    expect(chrome).toContain("ABOUT_CARD_HEADER_CLASS");
+    expect(chrome).not.toContain("popupChoiceRowClass(themePreference");
   });
 });

@@ -4,20 +4,27 @@ import {
   ExternalLink,
   GitBranch,
   Loader2,
-  Moon,
   Package,
   Palette,
-  Sun,
   Workflow,
 } from "lucide-react";
 import { readExtensionVersion } from "@helvety/extension-chrome/extension-version";
-import { popupChoiceRowClass } from "@helvety/extension-chrome/popup-shell";
-import { POPUP_ROOT_CLASS, TAB_PANEL_CLASS } from "./popup-layout";
+import {
+  ABOUT_CARD_CONTENT_CLASS,
+  ABOUT_CARD_HEADER_CLASS,
+  ABOUT_DEVELOPER_LINK_CLASS,
+  POPUP_ROOT_CLASS,
+  SETTINGS_CODE_CLASS,
+  SETTINGS_RADIO_GROUP_CLASS,
+  SETTINGS_SECTION_CLASS,
+  SETTINGS_SEPARATOR_CLASS,
+  TAB_CONTENT_CLASS,
+  TAB_PANEL_CLASS,
+  TAB_PANEL_HOST_CLASS,
+} from "./popup-layout";
 import { usePopupTheme } from "@helvety/extension-chrome/use-popup-theme";
-import { cn } from "@helvety/shared/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@helvety/ui/card";
-import { Label } from "@helvety/ui/label";
-import { RadioGroup, RadioGroupItem } from "@helvety/ui/radio-group";
+import { RadioGroup } from "@helvety/ui/radio-group";
 import { Separator } from "@helvety/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@helvety/ui/tabs";
 import {
@@ -41,6 +48,8 @@ import { PopupHeader } from "./components/PopupHeader";
 import { TabProductIcon } from "./components/TabProductIcon";
 import { PowerAppsPanel } from "./components/PowerAppsPanel";
 import { PowerAutomatePanel } from "./components/PowerAutomatePanel";
+import { SettingsChoiceRow } from "./components/SettingsChoiceRow";
+import { SettingsSectionHeader } from "./components/SettingsSectionHeader";
 import { persistPolicyPreferenceAndOptionalReload } from "./persist-policy-preference";
 import { createAsyncQueue } from "./sync-write-queue";
 import type { ThemePreference } from "@helvety/extension-chrome/theme-preference";
@@ -228,9 +237,14 @@ export default function App() {
 
   return (
     <div className={`${POPUP_ROOT_CLASS} text-foreground`}>
-      <Tabs defaultValue="power-automate" className="flex min-h-0 flex-1 flex-col gap-0">
-        <PopupHeader version={extensionVersion} />
-        <TabsList className="grid h-auto w-full grid-cols-3 gap-0.5 bg-muted p-1 text-xs">
+      <Tabs
+        defaultValue="power-automate"
+        className="flex h-0 min-h-0 flex-1 flex-col gap-0 overflow-hidden"
+      >
+        <div className="flex-shrink-0">
+          <PopupHeader version={extensionVersion} />
+        </div>
+        <TabsList className="grid h-auto w-full flex-shrink-0 grid-cols-3 gap-0.5 bg-muted p-1 text-xs">
           <TabsTrigger
             value="power-automate"
             className="flex flex-col gap-0.5 px-2 py-2 text-xs shadow-none"
@@ -258,7 +272,7 @@ export default function App() {
           <div
             role="status"
             aria-live="polite"
-            className="mt-2 flex min-h-[1.25rem] items-center gap-2 text-xs text-muted-foreground"
+            className="mt-1.5 flex min-h-[1.25rem] flex-shrink-0 items-center gap-2 text-xs text-muted-foreground"
           >
             {isPolicySyncBusy || isTargetTabReloadBusy ? (
               <Loader2
@@ -270,49 +284,47 @@ export default function App() {
           </div>
         ) : null}
 
-        <TabsContent
-          value="power-automate"
-          className="mt-2 flex min-h-0 flex-1 flex-col outline-none"
-        >
-          <PowerAutomatePanel
-            value={value}
-            surveyMode={surveyMode}
-            isPolicySyncBusy={isPolicySyncBusy}
-            isTargetTabReloadBusy={isTargetTabReloadBusy}
-            onSave={onSave}
-            onSaveSurvey={onSaveSurvey}
-          />
-        </TabsContent>
+        <div className={TAB_PANEL_HOST_CLASS}>
+          <TabsContent value="power-automate" className={TAB_CONTENT_CLASS}>
+            <PowerAutomatePanel
+              value={value}
+              surveyMode={surveyMode}
+              isPolicySyncBusy={isPolicySyncBusy}
+              isTargetTabReloadBusy={isTargetTabReloadBusy}
+              onSave={onSave}
+              onSaveSurvey={onSaveSurvey}
+            />
+          </TabsContent>
 
-        <TabsContent value="power-apps" className="mt-2 flex min-h-0 flex-1 flex-col outline-none">
-          <PowerAppsPanel />
-        </TabsContent>
+          <TabsContent value="power-apps" className={TAB_CONTENT_CLASS}>
+            <PowerAppsPanel />
+          </TabsContent>
 
-        <TabsContent value="about" className="mt-2 flex min-h-0 flex-1 flex-col outline-none">
-          <div className={TAB_PANEL_CLASS}>
-            <div className="pr-2">
-              <Card className="bg-transparent">
-                <CardHeader className="flex flex-col gap-1 p-3 pb-2">
+          <TabsContent value="about" className={TAB_CONTENT_CLASS}>
+            <div className={TAB_PANEL_CLASS}>
+              <Card className="bg-transparent shadow-none">
+                <CardHeader className={ABOUT_CARD_HEADER_CLASS}>
                   <CardTitle className="text-sm">{EXTENSION_DISPLAY_NAME}</CardTitle>
                   <CardDescription className="text-xs leading-relaxed">
                     Power Automate: align flow and run URLs with the classic or new designer,
                     optional <span className="font-medium text-foreground">v3survey</span>{" "}
-                    Hide/Show, and pause. Power Apps: unhide hidden fields or unlock read-only
+                    Hide/Show, and pause. Power Apps: show hidden fields or unlock read-only
                     controls on model-driven record forms (client-side only).
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-3 p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
-                  <div className="flex flex-col gap-1.5">
-                    <p className="flex items-center gap-2 font-medium text-foreground">
-                      <Palette className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                      Appearance
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      If nothing is saved yet, light or dark is chosen from your system theme. Your
-                      choice below is saved on this device only.
-                    </p>
+                <CardContent className={ABOUT_CARD_CONTENT_CLASS}>
+                  <section className={SETTINGS_SECTION_CLASS}>
+                    <SettingsSectionHeader
+                      title={
+                        <span className="flex items-center gap-2">
+                          <Palette className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                          Appearance
+                        </span>
+                      }
+                      description="If nothing is saved yet, light or dark is chosen from your system theme. Your choice below is saved on this device only."
+                    />
                     <RadioGroup
-                      className="flex flex-col gap-1.5"
+                      className={SETTINGS_RADIO_GROUP_CLASS}
                       aria-label="Popup color theme"
                       value={themePreference}
                       onValueChange={(v) => {
@@ -321,56 +333,24 @@ export default function App() {
                         }
                       }}
                     >
-                      <div className={popupChoiceRowClass(themePreference === "light")}>
-                        <RadioGroupItem
-                          value="light"
-                          id="theme-light"
-                          className="mt-0.5 shrink-0"
-                        />
-                        <Sun
-                          className={cn(
-                            "mt-0.5 h-4 w-4 shrink-0",
-                            themePreference === "light" ? "text-primary" : "text-muted-foreground",
-                          )}
-                          aria-hidden
-                        />
-                        <div className="flex min-w-0 flex-col gap-0">
-                          <Label
-                            htmlFor="theme-light"
-                            className="cursor-pointer text-sm font-medium"
-                          >
-                            Light
-                          </Label>
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            Always light.
-                          </p>
-                        </div>
-                      </div>
-                      <div className={popupChoiceRowClass(themePreference === "dark")}>
-                        <RadioGroupItem value="dark" id="theme-dark" className="mt-0.5 shrink-0" />
-                        <Moon
-                          className={cn(
-                            "mt-0.5 h-4 w-4 shrink-0",
-                            themePreference === "dark" ? "text-primary" : "text-muted-foreground",
-                          )}
-                          aria-hidden
-                        />
-                        <div className="flex min-w-0 flex-col gap-0">
-                          <Label
-                            htmlFor="theme-dark"
-                            className="cursor-pointer text-sm font-medium"
-                          >
-                            Dark
-                          </Label>
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            Always dark.
-                          </p>
-                        </div>
-                      </div>
+                      <SettingsChoiceRow
+                        id="theme-light"
+                        value="light"
+                        selected={themePreference === "light"}
+                        label="Light"
+                        description="Always light."
+                      />
+                      <SettingsChoiceRow
+                        id="theme-dark"
+                        value="dark"
+                        selected={themePreference === "dark"}
+                        label="Dark"
+                        description="Always dark."
+                      />
                     </RadioGroup>
-                  </div>
+                  </section>
 
-                  <Separator className="bg-foreground/10" />
+                  <Separator className={SETTINGS_SEPARATOR_CLASS} />
 
                   <p className="flex items-center gap-2 font-medium text-foreground">
                     <Workflow className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -380,43 +360,26 @@ export default function App() {
                     <li>
                       <span className="font-medium text-foreground">Power Automate</span> rewrites
                       only URLs on Power Automate hosts whose path contains{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        /flows/
-                      </code>{" "}
-                      or{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        /runs/
-                      </code>
-                      , and only while enforcement is not paused.
+                      <code className={SETTINGS_CODE_CLASS}>/flows/</code> or{" "}
+                      <code className={SETTINGS_CODE_CLASS}>/runs/</code>, and only while
+                      enforcement is not paused.
                     </li>
                     <li>
                       The <span className="font-medium text-foreground">v3</span> query flag matches
                       your flow designer choice. Survey prompt settings use{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        v3survey
-                      </code>
-                      : <span className="font-medium text-foreground">Hide</span> (default) uses{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        v3survey=false
-                      </code>{" "}
-                      on rewrites; <span className="font-medium text-foreground">Show</span> only
-                      normalizes an existing flag to{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        true
-                      </code>{" "}
-                      and never adds it when absent.
+                      <code className={SETTINGS_CODE_CLASS}>v3survey</code>:{" "}
+                      <span className="font-medium text-foreground">Hide</span> (default) uses{" "}
+                      <code className={SETTINGS_CODE_CLASS}>v3survey=false</code> on rewrites;{" "}
+                      <span className="font-medium text-foreground">Show</span> only normalizes an
+                      existing flag to <code className={SETTINGS_CODE_CLASS}>true</code> and never
+                      adds it when absent.
                     </li>
                     <li>
-                      <span className="font-medium text-foreground">Power Apps</span> actions use
-                      the Xrm Client API on an open model-driven form (
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        *.crm.dynamics.com
-                      </code>
-                      ,{" "}
-                      <code className="rounded-none bg-muted px-0.5 text-[11px] text-foreground">
-                        apps.powerapps.com
-                      </code>
-                      ). Canvas apps are not supported.
+                      <span className="font-medium text-foreground">Power Apps</span> uses the Xrm
+                      Client API on an open model-driven form (
+                      <code className={SETTINGS_CODE_CLASS}>*.crm.dynamics.com</code>,{" "}
+                      <code className={SETTINGS_CODE_CLASS}>apps.powerapps.com</code>). Canvas apps
+                      are not supported.
                     </li>
                     <li>
                       Power Automate uses layered enforcement: declarative net request rules,
@@ -444,7 +407,7 @@ export default function App() {
                     </a>
                   </p>
 
-                  <Separator className="bg-foreground/10" />
+                  <Separator className={SETTINGS_SEPARATOR_CLASS} />
 
                   <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
                     <Package
@@ -454,7 +417,7 @@ export default function App() {
                     <span className="font-medium text-foreground">Version:</span> {extensionVersion}
                   </p>
 
-                  <Separator className="bg-foreground/10" />
+                  <Separator className={SETTINGS_SEPARATOR_CLASS} />
 
                   <section
                     className="flex flex-col gap-2"
@@ -464,7 +427,7 @@ export default function App() {
                       Developer
                     </p>
                     <a
-                      className="-mx-1 flex items-center gap-2.5 rounded-sm p-1.5 transition-colors hover:bg-muted/60"
+                      className={ABOUT_DEVELOPER_LINK_CLASS}
                       href={DEVELOPER_URL}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -487,8 +450,8 @@ export default function App() {
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </TabsContent>
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
