@@ -37,12 +37,23 @@ describe("README popup and icon documentation", () => {
     );
     expect(section).not.toMatch(/action buttons on an open model-driven/i);
     expect(section).not.toMatch(/one-shot\s+\*\*Unhide hidden fields\*\*/i);
+    expect(section).toMatch(/executeScript|MAIN world|powerAppsFormActionInPage/i);
+    expect(section).toMatch(/powerAppsHiddenFields|chrome\.storage\.sync|stays on|auto-apply/i);
+    expect(section).not.toMatch(/not persisted across popup|Choices are not persisted/i);
     expect(section).toMatch(/800\s*[×x]\s*600|800×600/i);
     expect(section).toContain("SettingsChoiceRow");
     expect(section).toContain("popup-layout.ts");
     expect(section).not.toMatch(/Tabs:\s*\*\*Editor\*\*/);
     expect(section).not.toContain("Flow Inspector");
     expect(section).not.toContain("FlowInspectorLauncherCard");
+  });
+
+  it("Known limitations document regional CRM hosts and manifest match pattern", () => {
+    const section = readmeSection(readme, "## Known limitations");
+    expect(section).toMatch(/crm17|dynamics\.cn|microsoftdynamics\.de|datacenter-regions/i);
+    expect(section).toMatch(/DATAVERSE_ORG_HOST_SUFFIXES|host_not_permitted|reload the extension/i);
+    expect(section).toMatch(/Hide.*Lock.*stop enforcement|stops enforcement/i);
+    expect(section).not.toMatch(/not persisted across popup|Choices are not persisted/i);
   });
 
   it("layout and unit-test tables document popup components and icon paths", () => {
@@ -55,6 +66,10 @@ describe("README popup and icon documentation", () => {
     expect(layout).toContain("TabProductIcon");
     expect(layout).toContain("Power_Automate_Scalable.svg");
     expect(layout).toContain("content-powerapps.ts");
+    expect(layout).toContain("xrm-page-script");
+    expect(layout).toContain("powerapps-client.ts");
+    expect(layout).toContain("persist-powerapps-preference.ts");
+    expect(layout).toContain("apply-preferences");
     expect(existsSync(join(repoRoot, "src/popup/popup-layout.ts"))).toBe(true);
     expect(layout).toContain("@helvety/extension-chrome");
     expect(layout).not.toContain("ExtensionMark");

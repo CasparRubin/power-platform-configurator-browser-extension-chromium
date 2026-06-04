@@ -48,16 +48,28 @@ describe("dist/ bundle (post-build)", () => {
   });
 
   it("dist manifest matches public manifest (no side panel or inspector hosts)", () => {
+    const publicManifest = JSON.parse(
+      readFileSync(join(repoRoot, "public", "manifest.json"), "utf8"),
+    ) as {
+      host_permissions?: string[];
+      content_scripts?: Array<{ js?: string[]; matches?: string[]; world?: string }>;
+    };
     const distManifest = JSON.parse(
       readFileSync(join(repoRoot, "dist", "manifest.json"), "utf8"),
     ) as {
       permissions?: string[];
       host_permissions?: string[];
       side_panel?: unknown;
-      content_scripts?: Array<{ js?: string[]; world?: string }>;
+      content_scripts?: Array<{ js?: string[]; matches?: string[]; world?: string }>;
     };
     expect(distManifest.side_panel).toBeUndefined();
     expect(distManifest.permissions).not.toContain("sidePanel");
+    expect(distManifest.host_permissions?.sort()).toEqual(
+      [...(publicManifest.host_permissions ?? [])].sort(),
+    );
+    expect(distManifest.host_permissions).toContain("https://*.crm17.dynamics.com/*");
+    expect(distManifest.host_permissions).toContain("https://*.crm.dynamics.cn/*");
+    expect(distManifest.host_permissions).not.toContain("https://*.*.dynamics.com/*");
     expect(distManifest.host_permissions).not.toEqual(
       expect.arrayContaining([
         "https://api.powerplatform.com/*",
@@ -65,6 +77,13 @@ describe("dist/ bundle (post-build)", () => {
         "https://api.flow.microsoft.com/*",
       ]),
     );
+    const publicPowerApps = publicManifest.content_scripts?.find((s) =>
+      s.js?.includes("content-powerapps.js"),
+    );
+    const distPowerApps = distManifest.content_scripts?.find((s) =>
+      s.js?.includes("content-powerapps.js"),
+    );
+    expect(distPowerApps?.matches?.sort()).toEqual(publicPowerApps?.matches?.sort());
     const scripts = distManifest.content_scripts ?? [];
     expect(scripts).toHaveLength(2);
     expect(scripts.some((s) => s.js?.includes("content-main-hook.js"))).toBe(false);

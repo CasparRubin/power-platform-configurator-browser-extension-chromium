@@ -8,15 +8,24 @@ import {
   DNR_RULESET_CLASSIC_EDITOR_ID,
   DNR_RULESET_NEW_DESIGNER_ID,
   needsDefaultEnforcedV3Seed,
+  needsDefaultPowerAppsHiddenFieldsSeed,
+  needsDefaultPowerAppsReadOnlySeed,
   needsDefaultV3SurveyEnabledSeed,
   parseEnforcementPreference,
+  parsePowerAppsHiddenFieldsMode,
+  parsePowerAppsReadOnlyMode,
+  parsePowerAppsPreferencesFromSync,
   parseV3SurveyEnabled,
+  POWERAPPS_SYNC_KEYS,
   STORAGE_KEY_ENFORCED_V3,
+  STORAGE_KEY_POWERAPPS_HIDDEN_FIELDS,
+  STORAGE_KEY_POWERAPPS_READ_ONLY,
   STORAGE_KEY_POPUP_THEME,
   STORAGE_KEY_V3SURVEY_ENABLED,
   SYNC_POLICY_KEYS,
 } from "../src/constants";
 import { EXTENSION_DISPLAY_NAME } from "../src/popup/about-meta";
+import { POWERAPPS_HOST_PERMISSIONS, POWERAPPS_URL_PATTERNS } from "../src/powerapps/constants";
 import {
   EXPECTED_MANIFEST_DESCRIPTION,
   MANIFEST_DESCRIPTION_MAX_LENGTH,
@@ -136,6 +145,20 @@ describe("storage and default mode constants", () => {
     expect(SYNC_POLICY_KEYS).toEqual(["enforcedV3", "v3surveyEnabled"]);
   });
 
+  it("exports Power Apps sync keys and parsers", () => {
+    expect(POWERAPPS_SYNC_KEYS).toEqual(["powerAppsHiddenFields", "powerAppsReadOnly"]);
+    expect(parsePowerAppsHiddenFieldsMode("show")).toBe("show");
+    expect(parsePowerAppsHiddenFieldsMode("SHOW")).toBe("hide");
+    expect(parsePowerAppsReadOnlyMode("unlock")).toBe("unlock");
+    expect(parsePowerAppsPreferencesFromSync({})).toEqual({ hidden: "hide", readOnly: "lock" });
+    expect(needsDefaultPowerAppsHiddenFieldsSeed(undefined)).toBe(true);
+    expect(needsDefaultPowerAppsReadOnlySeed("lock")).toBe(false);
+    expect(needsDefaultPowerAppsReadOnlySeed("unlock")).toBe(false);
+    expect(needsDefaultPowerAppsHiddenFieldsSeed("show")).toBe(false);
+    expect(STORAGE_KEY_POWERAPPS_HIDDEN_FIELDS).toBe("powerAppsHiddenFields");
+    expect(STORAGE_KEY_POWERAPPS_READ_ONLY).toBe("powerAppsReadOnly");
+  });
+
   it("exports DNR ruleset ids used by buildUpdateRulesetOptions", () => {
     expect(DNR_RULESET_CLASSIC_EDITOR_ID).toBe("dnr-classic-editor");
     expect(DNR_RULESET_NEW_DESIGNER_ID).toBe("dnr-new-designer");
@@ -175,13 +198,15 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     );
     expect(manifest.host_permissions?.sort()).toEqual(
       [
-        "https://*.api.crm.dynamics.com/*",
-        "https://*.crm.dynamics.com/*",
         "https://*.powerautomate.com/*",
-        "https://apps.powerapps.com/*",
         "https://flow.microsoft.com/*",
+        ...POWERAPPS_HOST_PERMISSIONS,
       ].sort(),
     );
+    expect(manifest.host_permissions).not.toContain("https://*.*.dynamics.com/*");
+    expect(manifest.host_permissions).toContain("https://*.crm.dynamics.cn/*");
+    expect(manifest.host_permissions).toContain("https://*.crm.microsoftdynamics.de/*");
+    expect(manifest.host_permissions).toHaveLength(2 + POWERAPPS_HOST_PERMISSIONS.length);
     const raw = JSON.parse(readFileSync(join(repoRoot, "public", "manifest.json"), "utf8")) as {
       side_panel?: unknown;
     };
@@ -243,7 +268,10 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
       ["https://*.powerautomate.com/*", "https://flow.microsoft.com/*"].sort(),
     );
     expect(powerApps?.matches?.sort()).toEqual(
-      ["https://*.crm.dynamics.com/*", "https://apps.powerapps.com/*"].sort(),
+      [
+        ...POWERAPPS_URL_PATTERNS.map((p) => p.replace("*://", "https://").replace(/\/?\*$/, "/*")),
+      ].sort(),
     );
+    expect(powerApps?.matches).not.toContain("https://*.*.dynamics.com/*");
   });
 });

@@ -69,6 +69,10 @@ describe("README and docs accuracy (current product scope)", () => {
     );
     expect(section).not.toMatch(/one-shot/i);
     expect(section).not.toMatch(/action buttons on an open model-driven/i);
+    expect(section).toMatch(/executeScript|MAIN world|powerAppsFormActionInPage/i);
+    expect(section).toMatch(/persist-powerapps-preference|apply-preferences|content-powerapps/i);
+    expect(section).toMatch(/powerAppsHiddenFields|chrome\.storage\.sync/i);
+    expect(section).toContain("powerapps-client.ts");
     expect(section).not.toContain("Flow Inspector");
     expect(section).not.toContain("side panel");
     expect(section).not.toContain("inspector.html");
@@ -79,8 +83,42 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toContain("Power Automate");
     expect(section).toContain("Power Apps");
     expect(section).toContain("About");
+    expect(section).toMatch(/record form/i);
+    expect(section).toMatch(/status line/i);
+    expect(section).toMatch(/saves to sync|stay selected|stay visible/i);
+    expect(section).toMatch(/powerAppsHiddenFields|powerAppsReadOnly/i);
+    expect(section).not.toMatch(/no API call/i);
+    expect(section).not.toMatch(/not persisted/i);
     expect(section).not.toMatch(/Flow Inspector/i);
     expect(section).not.toMatch(/side panel/i);
+  });
+
+  it("Known limitations documents Power Apps record form and status behavior", () => {
+    const section = readmeSection(readme, "## Known limitations");
+    expect(section).toMatch(/Power Apps/i);
+    expect(section).toMatch(/record form/i);
+    expect(section).toMatch(/getVisible|setVisible|setDisabled/i);
+    expect(section).toMatch(/status line|inject/i);
+  });
+
+  it("Implementation notes documents Power Apps MAIN-world injection", () => {
+    const section = readmeSection(readme, "## Implementation notes");
+    expect(section).toContain("powerAppsFormActionInPage");
+    expect(section).toMatch(/MAIN/i);
+    expect(section).toContain("inject_no_result");
+    expect(section).toMatch(/apply-preferences|persist-powerapps-preference|SCHEDULE_APPLY/i);
+    expect(section).toMatch(/powerAppsHiddenFields|powerAppsReadOnly/i);
+    expect(section).not.toMatch(/only sends `pp:powerapps:apply-form-action`/i);
+  });
+
+  it("repository layout documents powerapps inject and ISOLATED content-powerapps", () => {
+    const layout = readmeSection(readme, "## Repository layout");
+    expect(layout).toContain("xrm-page-script");
+    expect(layout).toContain("inject_no_result");
+    expect(layout).toMatch(/ISOLATED|ISOLATED-world/i);
+    expect(layout).toContain("apply-preferences");
+    expect(layout).toContain("persist-powerapps-preference.ts");
+    expect(layout).toContain("powerapps-client.ts");
   });
 
   it("unit tests intro and table cover every tests/*.test.ts file", () => {
@@ -118,6 +156,9 @@ describe("chrome-web-store.md accuracy", () => {
     expect(doc).not.toMatch(/Flow Inspector/i);
     expect(doc).toMatch(/Show hidden fields/i);
     expect(doc).toMatch(/Unlock read-only/i);
+    expect(doc).toMatch(/record form/i);
+    expect(doc).toMatch(/status line/i);
+    expect(doc).toMatch(/self-contained/i);
     expect(doc).not.toMatch(/\*\*Unhide hidden fields\*\* and \*\*Unlock read-only fields\*\*/);
   });
 
@@ -131,8 +172,12 @@ describe("chrome-web-store.md accuracy", () => {
     expect(doc).not.toContain("`sidePanel`");
     expect(manifest.permissions).not.toContain("sidePanel");
     expect(doc).toMatch(/Power Automate hosts/i);
-    expect(doc).toMatch(/crm\.dynamics\.com/i);
+    expect(doc).toMatch(/crm17|\.crm\d*\.dynamics|dynamics\.cn|microsoftdynamics\.de/i);
     expect(doc).toMatch(/apps\.powerapps\.com/i);
+    expect(doc).toMatch(
+      /learn\.microsoft\.com\/en-us\/power-platform\/admin\/new-datacenter-regions/i,
+    );
+    expect(doc).not.toContain("https://*.*.dynamics.com/*");
     const apiHosts = ["api.powerplatform.com", "api.bap.microsoft.com", "api.flow.microsoft.com"];
     for (const api of apiHosts) {
       expect(doc).not.toContain(api);

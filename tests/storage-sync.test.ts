@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isConfiguratorSyncChange } from "../src/storage-sync";
+import { isConfiguratorSyncChange, isPowerAppsSyncChange } from "../src/storage-sync";
 
 describe("isConfiguratorSyncChange", () => {
   it("returns true when enforcedV3 changes in sync", () => {
@@ -63,5 +63,25 @@ describe("isConfiguratorSyncChange", () => {
       unrelated: { newValue: 1 },
     };
     expect(isConfiguratorSyncChange("sync", changes)).toBe(true);
+  });
+});
+
+describe("isPowerAppsSyncChange", () => {
+  it("is true when powerAppsHiddenFields or powerAppsReadOnly changes in sync", () => {
+    expect(
+      isPowerAppsSyncChange("sync", {
+        powerAppsHiddenFields: {},
+      }),
+    ).toBe(true);
+    expect(
+      isPowerAppsSyncChange("sync", {
+        powerAppsReadOnly: {},
+      }),
+    ).toBe(true);
+  });
+
+  it("is false for local area or unrelated keys", () => {
+    expect(isPowerAppsSyncChange("local", { powerAppsHiddenFields: {} })).toBe(false);
+    expect(isPowerAppsSyncChange("sync", { enforcedV3: {} })).toBe(false);
   });
 });

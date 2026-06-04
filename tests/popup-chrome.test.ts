@@ -104,8 +104,10 @@ describe("popup chrome (header + About developer section)", () => {
     expect(appsPanel).toContain('value="show"');
     expect(appsPanel).toContain('value="lock"');
     expect(appsPanel).toContain('value="unlock"');
-    expect(appsPanel).toContain('runAction("unhide")');
-    expect(appsPanel).toContain('runAction("unlock")');
+    expect(appsPanel).toContain("persistPowerAppsPreference");
+    expect(appsPanel).toContain("requestPowerAppsApplyPreferencesOnActiveTab");
+    expect(appsPanel).toContain("formatPowerAppsPreferencesApplyStatus");
+    expect(appsPanel).toContain("POWERAPPS_SYNC_KEYS");
     expect(appsPanel).toContain("Separator");
   });
 

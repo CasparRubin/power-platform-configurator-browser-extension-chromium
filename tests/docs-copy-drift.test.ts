@@ -53,6 +53,18 @@ const LEGACY_POWER_APPS_POPUP_UI_PHRASES = [
   /Unhide hidden fields\s*\/\s*\*\*Unlock read-only fields\*\*/i,
 ];
 
+/** Vague inject failure copy before structured `inject_no_result` / frame diagnostics. */
+const LEGACY_POWER_APPS_VAGUE_ERROR_PHRASES = [
+  /Could not apply changes\. Reload the form tab and try again\./,
+];
+
+/** Pre-v2.19 copy: choices did not persist across popup close or navigation. */
+const OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES = [
+  /not persisted across popup/i,
+  /Choices are not persisted/i,
+  /only runs once when toggled/i,
+];
+
 /** Flow Inspector / side panel copy must not return in user-facing docs (not the unit-test index table). */
 const FLOW_INSPECTOR_PHRASES = [
   /## Flow Inspector/i,
@@ -170,7 +182,7 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(doc).toContain("Power Apps tab");
     expect(doc).toContain("TabProductIcon");
     expect(doc).toContain("`scripting`");
-    expect(doc).toContain("*.crm.dynamics.com");
+    expect(doc).toMatch(/\*\.\*\.dynamics\.com|crm17\.dynamics\.com/i);
     expect(doc).not.toContain("`sidePanel`");
     expect(doc).not.toMatch(/Flow Inspector/i);
     expect(doc).not.toMatch(/^\d+\.\s+\*\*Editor:\*\*/m);
@@ -185,6 +197,56 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     const readme = readRepoFile("README.md");
     for (const pattern of LEGACY_POWER_APPS_POPUP_UI_PHRASES) {
       expect(readme).not.toMatch(pattern);
+    }
+    for (const pattern of LEGACY_POWER_APPS_VAGUE_ERROR_PHRASES) {
+      expect(readme).not.toMatch(pattern);
+    }
+    for (const pattern of OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES) {
+      expect(readme).not.toMatch(pattern);
+    }
+  });
+
+  it("README and store doc document global persisted Power Apps enforcement", () => {
+    const readme = readRepoFile("README.md");
+    expect(readme).toMatch(/powerAppsHiddenFields|chrome\.storage\.sync/i);
+    expect(readme).toMatch(/stays on|auto-apply|persist/i);
+    for (const pattern of OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES) {
+      expect(readme).not.toMatch(pattern);
+    }
+
+    const storeDoc = readRepoFile("docs/chrome-web-store.md");
+    expect(storeDoc).toMatch(/choices persist in sync|stay on across tabs/i);
+    for (const pattern of OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES) {
+      expect(storeDoc).not.toMatch(pattern);
+    }
+    const panel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
+    expect(panel).toMatch(/persistPowerAppsPreference|POWERAPPS_SYNC_KEYS/i);
+    expect(panel).toMatch(/stays on|auto-apply/i);
+  });
+
+  it("Power Apps user-facing source avoids vague inject-only error copy", () => {
+    for (const path of ["README.md", "docs/chrome-web-store.md", ...POPUP_SETTINGS_SOURCE_PATHS]) {
+      const text = readRepoFile(path);
+      for (const pattern of LEGACY_POWER_APPS_VAGUE_ERROR_PHRASES) {
+        expect(text).not.toMatch(pattern);
+      }
+    }
+    const client = readRepoFile("src/popup/powerapps-client.ts");
+    expect(client).toContain("inject_no_result");
+    expect(client).toContain("host_not_permitted");
+    expect(client).not.toMatch(/Could not apply changes\. Reload the form tab and try again\./);
+  });
+
+  it("README and store doc document per-cluster Dataverse hosts (no invalid wildcards)", () => {
+    for (const path of ["README.md", "docs/chrome-web-store.md"]) {
+      const text = readRepoFile(path);
+      expect(text).toMatch(
+        /crm17|dynamics\.cn|microsoftdynamics\.de|datacenter-regions|per-cluster|per-region/i,
+      );
+      expect(text).not.toContain("https://*.*.dynamics.com/*");
+      expect(text).toMatch(
+        /learn\.microsoft\.com\/en-us\/power-platform\/admin\/new-datacenter-regions/i,
+      );
     }
   });
 
@@ -206,6 +268,29 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     const validation = readmeSection(readme, "## Validation checklist");
     expect(validation).toMatch(/Hide hidden|Show hidden|hidden fields/i);
     expect(validation).toMatch(/Unlock read-only|Lock read-only|read-only/i);
+    expect(validation).toMatch(/saves to sync|stay visible|enforcement stops/i);
+    for (const pattern of OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES) {
+      expect(validation).not.toMatch(pattern);
+    }
+    expect(validation).not.toMatch(/no API call/i);
+  });
+
+  it("README Implementation notes document Power Apps host permissions and host_not_permitted", () => {
+    const readme = readRepoFile("README.md");
+    const section = readmeSection(readme, "## Implementation notes");
+    expect(section).toMatch(/crm17|per-cluster|invalid host wildcard|datacenter/i);
+    expect(section).toContain("host_not_permitted");
+    expect(section).toMatch(/constants\.ts|DATAVERSE_ORG_HOST_SUFFIXES/i);
+    expect(section).not.toContain("https://*.*.dynamics.com/*");
+  });
+
+  it("PowerAppsPanel and App About copy mention Dataverse regions or reload extension", () => {
+    const panel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
+    expect(panel).toMatch(/crm17|dynamics\.cn|commercial/i);
+    expect(panel).not.toMatch(/one-shot|action buttons on an open model-driven/i);
+    expect(readRepoFile("src/popup/App.tsx")).toMatch(
+      /crm17|\.crm\d*\.dynamics|reload the extension/i,
+    );
   });
 
   it("public manifest description matches expected-manifest-description.ts", () => {

@@ -376,10 +376,12 @@ export default function App() {
                     </li>
                     <li>
                       <span className="font-medium text-foreground">Power Apps</span> uses the Xrm
-                      Client API on an open model-driven form (
-                      <code className={SETTINGS_CODE_CLASS}>*.crm.dynamics.com</code>,{" "}
+                      Client API on an open model-driven record form (
+                      <code className={SETTINGS_CODE_CLASS}>*.crm17.dynamics.com</code> and other
+                      regional org hosts,{" "}
                       <code className={SETTINGS_CODE_CLASS}>apps.powerapps.com</code>). Canvas apps
-                      are not supported.
+                      are not supported. Reload the extension after an update if injection is
+                      blocked for a permitted CRM URL.
                     </li>
                     <li>
                       Power Automate uses layered enforcement: declarative net request rules,

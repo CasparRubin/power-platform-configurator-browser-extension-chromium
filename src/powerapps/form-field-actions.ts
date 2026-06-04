@@ -1,18 +1,29 @@
 /**
  * Testable Client API helpers for model-driven form unhide / unlock.
- * Injectable page script mirrors this logic — keep in sync with `xrm-page-script.ts`.
+ * Only updates tabs/sections/controls that report hidden (`getVisible() === false`) or
+ * disabled (`getDisabled() === true`). Injectable `powerAppsFormActionInPage` mirrors this
+ * logic with nested helpers — keep in sync with `xrm-page-script.ts`.
  */
 
 export type FormControlLike = {
+  getVisible?: () => boolean;
+  getDisabled?: () => boolean;
   setVisible?: (visible: boolean) => void;
   setDisabled?: (disabled: boolean) => void;
 };
 
 export type FormSectionLike = {
+  getVisible?: () => boolean;
   setVisible?: (visible: boolean) => void;
+  controls?: {
+    forEach?: (fn: (control: FormControlLike) => void) => void;
+    get?: (index: number) => FormControlLike;
+    getLength?: () => number;
+  };
 };
 
 export type FormTabLike = {
+  getVisible?: () => boolean;
   setVisible?: (visible: boolean) => void;
   sections?: {
     forEach?: (fn: (section: FormSectionLike) => void) => void;
@@ -79,16 +90,41 @@ function forEachCollection<T>(
   }
 }
 
-function setVisibleIfPresent(target: { setVisible?: (visible: boolean) => void }): number {
-  if (typeof target.setVisible !== "function") {
+function isHidden(target: { getVisible?: () => boolean }): boolean {
+  if (typeof target.getVisible !== "function") {
+    return true;
+  }
+  try {
+    return target.getVisible() === false;
+  } catch {
+    return true;
+  }
+}
+
+function isDisabledControl(target: FormControlLike): boolean {
+  if (typeof target.getDisabled !== "function") {
+    return true;
+  }
+  try {
+    return target.getDisabled() === true;
+  } catch {
+    return true;
+  }
+}
+
+function unhideIfHidden(target: {
+  getVisible?: () => boolean;
+  setVisible?: (visible: boolean) => void;
+}): number {
+  if (typeof target.setVisible !== "function" || !isHidden(target)) {
     return 0;
   }
   target.setVisible(true);
   return 1;
 }
 
-function setDisabledFalseIfPresent(target: { setDisabled?: (disabled: boolean) => void }): number {
-  if (typeof target.setDisabled !== "function") {
+function setDisabledFalseIfPresent(target: FormControlLike): number {
+  if (typeof target.setDisabled !== "function" || !isDisabledControl(target)) {
     return 0;
   }
   target.setDisabled(false);
@@ -100,19 +136,22 @@ export function unhideFormFields(formContext: FormContextLike): { unhidden: numb
   let unhidden = 0;
 
   forEachCollection(formContext.ui?.tabs, (tab) => {
-    unhidden += setVisibleIfPresent(tab);
+    unhidden += unhideIfHidden(tab);
     forEachCollection(tab.sections, (section) => {
-      unhidden += setVisibleIfPresent(section);
+      unhidden += unhideIfHidden(section);
+      forEachCollection(section.controls, (control) => {
+        unhidden += unhideIfHidden(control);
+      });
     });
   });
 
   forEachCollection(formContext.ui?.controls, (control) => {
-    unhidden += setVisibleIfPresent(control);
+    unhidden += unhideIfHidden(control);
   });
 
   forEachCollection(formContext.data?.entity?.attributes, (attr) => {
     forEachCollection(attr.controls, (control) => {
-      unhidden += setVisibleIfPresent(control);
+      unhidden += unhideIfHidden(control);
     });
   });
 
@@ -130,6 +169,14 @@ export function unlockReadOnlyFields(formContext: FormContextLike): { unlocked: 
   forEachCollection(formContext.data?.entity?.attributes, (attr) => {
     forEachCollection(attr.controls, (control) => {
       unlocked += setDisabledFalseIfPresent(control);
+    });
+  });
+
+  forEachCollection(formContext.ui?.tabs, (tab) => {
+    forEachCollection(tab.sections, (section) => {
+      forEachCollection(section.controls, (control) => {
+        unlocked += setDisabledFalseIfPresent(control);
+      });
     });
   });
 

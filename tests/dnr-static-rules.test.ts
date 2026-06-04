@@ -72,6 +72,9 @@ describe("static DNR rule JSON (Chrome declarativeNetRequest)", () => {
     const hosts = manifest.host_permissions ?? [];
     expect(hosts).toContain("https://*.powerautomate.com/*");
     expect(hosts).toContain("https://flow.microsoft.com/*");
+    expect(hosts).toContain("https://*.crm17.dynamics.com/*");
+    expect(hosts).toContain("https://*.crm.microsoftdynamics.de/*");
+    expect(hosts).not.toContain("https://*.*.dynamics.com/*");
 
     const byId = new Map(
       (manifest.declarative_net_request?.rule_resources ?? []).map((r) => [r.id, r.path]),

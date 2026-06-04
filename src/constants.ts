@@ -17,6 +17,35 @@ export const STORAGE_KEY_V3SURVEY_ENABLED = "v3surveyEnabled" as const;
 /** Keys loaded together by the service worker, content script, and popup. */
 export const SYNC_POLICY_KEYS = [STORAGE_KEY_ENFORCED_V3, STORAGE_KEY_V3SURVEY_ENABLED] as const;
 
+/**
+ * Sync key: global model-driven form hidden-fields mode (`"hide"` default, `"show"` enforces unhide on
+ * every eligible tab until switched back).
+ */
+export const STORAGE_KEY_POWERAPPS_HIDDEN_FIELDS = "powerAppsHiddenFields" as const;
+
+/**
+ * Sync key: global model-driven form read-only mode (`"lock"` default, `"unlock"` enforces unlock on
+ * every eligible tab until switched back).
+ */
+export const STORAGE_KEY_POWERAPPS_READ_ONLY = "powerAppsReadOnly" as const;
+
+/** Keys loaded for global Power Apps form enforcement. */
+export const POWERAPPS_SYNC_KEYS = [
+  STORAGE_KEY_POWERAPPS_HIDDEN_FIELDS,
+  STORAGE_KEY_POWERAPPS_READ_ONLY,
+] as const;
+
+export type PowerAppsHiddenFieldsMode = "hide" | "show";
+export type PowerAppsReadOnlyMode = "lock" | "unlock";
+
+export type PowerAppsPreferences = {
+  hidden: PowerAppsHiddenFieldsMode;
+  readOnly: PowerAppsReadOnlyMode;
+};
+
+export const DEFAULT_POWERAPPS_HIDDEN_FIELDS: PowerAppsHiddenFieldsMode = "hide";
+export const DEFAULT_POWERAPPS_READ_ONLY: PowerAppsReadOnlyMode = "lock";
+
 /** Local storage key for popup UI theme (`"light"` | `"dark"`). */
 export const STORAGE_KEY_POPUP_THEME = "popupThemePreference" as const;
 
@@ -57,4 +86,35 @@ export function needsDefaultV3SurveyEnabledSeed(raw: unknown): boolean {
  */
 export function parseV3SurveyEnabled(value: unknown): boolean {
   return value === "true";
+}
+
+export function parsePowerAppsHiddenFieldsMode(value: unknown): PowerAppsHiddenFieldsMode {
+  if (value === "show") {
+    return "show";
+  }
+  return DEFAULT_POWERAPPS_HIDDEN_FIELDS;
+}
+
+export function parsePowerAppsReadOnlyMode(value: unknown): PowerAppsReadOnlyMode {
+  if (value === "unlock") {
+    return "unlock";
+  }
+  return DEFAULT_POWERAPPS_READ_ONLY;
+}
+
+export function parsePowerAppsPreferencesFromSync(
+  result: Record<string, unknown>,
+): PowerAppsPreferences {
+  return {
+    hidden: parsePowerAppsHiddenFieldsMode(result[STORAGE_KEY_POWERAPPS_HIDDEN_FIELDS]),
+    readOnly: parsePowerAppsReadOnlyMode(result[STORAGE_KEY_POWERAPPS_READ_ONLY]),
+  };
+}
+
+export function needsDefaultPowerAppsHiddenFieldsSeed(raw: unknown): boolean {
+  return raw !== "hide" && raw !== "show";
+}
+
+export function needsDefaultPowerAppsReadOnlySeed(raw: unknown): boolean {
+  return raw !== "lock" && raw !== "unlock";
 }
