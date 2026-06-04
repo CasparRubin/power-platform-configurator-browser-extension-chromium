@@ -10,7 +10,7 @@ import { defineConfig } from "vitest/config";
  * `tests/popup-notification-visibility.test.ts`, `tests/infer-settings-status-variant.test.ts`,
  * `tests/persist-status-messages.test.ts`, `tests/popup-settings-copy.test.ts`,
  * `tests/settings-busy-hint.test.ts`, and docs drift tests; Power Apps by
- * `tests/powerapps-*.test.ts` (form helpers, inject script, apply-form-actions, constants,
+ * `tests/powerapps-*.test.ts` (inject script behavior, apply-form-actions, constants,
  * datacenter-region table, host/manifest alignment, `host_not_permitted`, client formatting,
  * apply-preferences scheduler/retry, persist/format Power Apps popup saves, powerapps-client messaging).
  */
@@ -35,8 +35,6 @@ export default defineConfig({
         "src/popup/persist-policy-preference.ts",
         "src/popup/policy-popup-log.ts",
         "src/powerapps/apply-form-actions.ts",
-        "src/powerapps/xrm-page-script.ts",
-        "src/components/**",
         "src/popup/components/**",
       ],
       thresholds: {

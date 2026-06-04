@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   applyPowerAppsPreferencesOnActiveTab,
   applyPowerAppsPreferencesOnTab,
+  applyPowerAppsPreferencesOnTabWithRetries,
+  POPUP_ACTIVE_TAB_RETRY_DELAYS_MS,
   applyPowerAppsPreferencesToAllHostTabs,
   clearPowerAppsTabScheduleState,
   getRetryDelayMs,
@@ -111,6 +113,37 @@ describe("applyPowerAppsPreferencesOnTab", () => {
   });
 });
 
+describe("applyPowerAppsPreferencesOnTabWithRetries", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it("retries until form context is available", async () => {
+    vi.useFakeTimers();
+    const executeScript = vi
+      .fn()
+      .mockResolvedValueOnce([
+        { result: { ok: false, action: "unhide", error: "no_form_context" } },
+      ])
+      .mockResolvedValueOnce([{ result: { ok: true, action: "unhide", unhidden: 4 } }]);
+
+    vi.stubGlobal("chrome", chromePrefsStub({}, executeScript));
+
+    const promise = applyPowerAppsPreferencesOnTabWithRetries(
+      7,
+      { hidden: "show", readOnly: "lock" },
+      [0],
+    );
+    await vi.runAllTimersAsync();
+    const results = await promise;
+
+    expect(executeScript).toHaveBeenCalledTimes(2);
+    expect(results[0]?.ok).toBe(true);
+    expect(results[0]?.unhidden).toBe(4);
+  });
+});
+
 describe("applyPowerAppsPreferencesOnActiveTab", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -190,6 +223,34 @@ describe("applyPowerAppsPreferencesOnActiveTab", () => {
     const response = await applyPowerAppsPreferencesOnActiveTab();
     expect(response.ok).toBe(false);
     expect(response.results).toHaveLength(2);
+  });
+
+  it("retries on the active tab before returning no_form_context", async () => {
+    vi.useFakeTimers();
+    const executeScript = vi
+      .fn()
+      .mockResolvedValueOnce([
+        { result: { ok: false, action: "unhide", error: "no_form_context" } },
+      ])
+      .mockResolvedValueOnce([{ result: { ok: true, action: "unhide", unhidden: 2 } }]);
+    vi.stubGlobal(
+      "chrome",
+      chromePrefsStub(
+        { powerAppsHiddenFields: "show", powerAppsReadOnly: "lock" },
+        executeScript,
+        vi.fn().mockResolvedValue([{ id: 7, url: "https://org.crm17.dynamics.com/main.aspx" }]),
+      ),
+    );
+
+    const promise = applyPowerAppsPreferencesOnActiveTab();
+    await vi.runAllTimersAsync();
+    const response = await promise;
+
+    expect(POPUP_ACTIVE_TAB_RETRY_DELAYS_MS.length).toBeGreaterThan(0);
+    expect(executeScript.mock.calls.length).toBeGreaterThan(1);
+    expect(response.ok).toBe(true);
+    expect(response.results[0]?.unhidden).toBe(2);
+    vi.useRealTimers();
   });
 });
 

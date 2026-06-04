@@ -6,7 +6,7 @@ import {
 } from "../constants";
 import { POWER_APPS_PERSIST_STATUS } from "./persist-status-messages";
 
-export type PersistPowerAppsMountRef = { current: boolean };
+type PersistPowerAppsMountRef = { current: boolean };
 
 /**
  * Writes Power Apps enforcement keys to `chrome.storage.sync`. Background listeners fan out apply

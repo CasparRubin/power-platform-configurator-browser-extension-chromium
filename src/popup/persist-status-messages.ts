@@ -1,7 +1,8 @@
 /**
  * User-facing status strings from persist helpers (`persist-policy-preference.ts`,
- * `persist-powerapps-preference.ts`). Kept in sync with `tests/persist-status-messages.test.ts`
- * and `infer-settings-status-variant.ts`.
+ * `persist-powerapps-preference.ts`) and `format-powerapps-preferences.ts` apply outcomes.
+ * Kept in sync with `tests/persist-status-messages.test.ts` (Power Automate infer) and
+ * `format-powerapps-preferences.ts` apply outcomes (Power Apps explicit variants).
  */
 export const POWER_AUTOMATE_PERSIST_STATUS = {
   saving: "Saving preference…",
@@ -18,4 +19,8 @@ export const POWER_APPS_PERSIST_STATUS = {
   saveFailed: "Could not save preference. Try again.",
   applyFailed:
     "Preference saved; could not apply on the active tab. Reload the page and try again.",
+  /** Sync saved; active-tab apply missed because Xrm form context was not ready yet. */
+  savedApplyDeferred: "Preference saved. Reload the page to apply on this record form.",
+  savedNoControlsOnForm: "Preference saved. No hidden or locked fields were found on this form.",
+  applyFinishRemaining: "Reload the page to finish applying the remaining changes.",
 } as const;

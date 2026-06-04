@@ -50,7 +50,6 @@
     "vitest": "^4.1.6"
   },
   "dependencies": {
-    "@helvety/brand": "file:.helvety/packages/brand",
     "@helvety/extension-chrome": "file:.helvety/packages/extension-chrome",
     "@helvety/shared": "file:.helvety/packages/shared",
     "@helvety/ui": "file:.helvety/packages/ui",
@@ -66,7 +65,6 @@
     "@types/react-dom": "^19.2.3",
     "react": "$react",
     "react-dom": "$react-dom",
-    "@helvety/brand": "file:.helvety/packages/brand",
     "@helvety/shared": "file:.helvety/packages/shared",
     "@helvety/ui": "file:.helvety/packages/ui",
     "@helvety/extension-chrome": "file:.helvety/packages/extension-chrome",

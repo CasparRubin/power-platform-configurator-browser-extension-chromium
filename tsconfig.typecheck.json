@@ -2,11 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"],
       "@helvety/ui/*": ["./types/helvety-packages.d.ts"],
       "@helvety/extension-chrome/*": ["./types/helvety-packages.d.ts"],
-      "@helvety/shared/*": ["./types/helvety-packages.d.ts"],
-      "@helvety/brand/*": ["./types/helvety-packages.d.ts"]
+      "@helvety/shared/*": ["./types/helvety-packages.d.ts"]
     }
   },
   "include": ["src", "tests", "types", "vitest.config.ts"]

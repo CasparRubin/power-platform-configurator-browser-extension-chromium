@@ -1,6 +1,5 @@
 /** Runtime messages for model-driven form enforcement. */
 export const POWERAPPS_MESSAGE = {
-  APPLY_FORM_ACTION: "pp:powerapps:apply-form-action",
   SCHEDULE_APPLY: "pp:powerapps:schedule-apply",
   APPLY_PREFERENCES_ACTIVE_TAB: "pp:powerapps:apply-preferences-active-tab",
 } as const;
@@ -15,18 +14,11 @@ export type PowerAppsFormActionResult = {
   unlocked?: number;
   /** e.g. `no_form_context`, `no_controls_updated`, `inject_no_result`, `host_not_permitted`, `injection_failed`, `scripting_unavailable`. */
   error?: string;
-  /** Human-readable detail (Chrome lastError, frame counts, etc.) for the popup notification area. */
+  /** Human-readable detail (Chrome lastError, etc.) appended to notification errors when present. */
   detail?: string;
-  /** Number of frames `executeScript` ran in (diagnostics). */
+  /** Number of frames `executeScript` ran in (internal diagnostics only; not shown in popup). */
   framesChecked?: number;
 };
-
-export type PowerAppsApplyFormActionRequest = {
-  type: typeof POWERAPPS_MESSAGE.APPLY_FORM_ACTION;
-  action: PowerAppsFormAction;
-};
-
-export type PowerAppsApplyFormActionResponse = PowerAppsFormActionResult;
 
 export type PowerAppsScheduleApplyRequest = {
   type: typeof POWERAPPS_MESSAGE.SCHEDULE_APPLY;

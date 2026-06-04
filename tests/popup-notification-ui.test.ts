@@ -4,10 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import {
-  POWER_APPS_PERSIST_STATUS,
-  POWER_AUTOMATE_PERSIST_STATUS,
-} from "../src/popup/persist-status-messages";
+import { POWER_AUTOMATE_PERSIST_STATUS } from "../src/popup/persist-status-messages";
 import { inferSettingsStatusVariant } from "../src/popup/infer-settings-status-variant";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -23,6 +20,8 @@ const NOTIFICATION_SOURCE_PATHS = [
   "src/popup/components/SettingsInfoAlert.tsx",
   "src/popup/components/SettingsSectionHeader.tsx",
   "src/popup/components/PowerAppsPanel.tsx",
+  "src/popup/format-powerapps-preferences.ts",
+  "src/popup/persist-status-messages.ts",
   "src/popup/components/ui/alert.tsx",
   "src/popup/popup-layout.ts",
   "src/popup/infer-settings-status-variant.ts",
@@ -49,7 +48,8 @@ describe("App notification region (below tabs, above scroll)", () => {
     expect(app).toContain("useState<PopupTab>");
     expect(app).toContain("power-automate");
     expect(app).toContain("powerAutomateStatus");
-    expect(app).toContain("powerAppsStatus");
+    expect(app).toContain("powerAppsStatusMessage");
+    expect(app).toContain("powerAppsStatusVariant");
     expect(app).toContain("shouldShowPopupTabNotification");
     expect(app).toContain("value={activeTab}");
     expect(app).toContain("onValueChange");
@@ -59,6 +59,7 @@ describe("App notification region (below tabs, above scroll)", () => {
     expect(app).toContain("<PopupNotificationRegion");
     expect(app).toContain("showPowerAutomateNotification");
     expect(app).toContain("showPowerAppsNotification");
+    expect(app).toContain("variant={powerAppsStatusVariant}");
     const regionIdx = app.indexOf("<PopupNotificationRegion");
     const hostIdx = app.indexOf("className={TAB_PANEL_HOST_CLASS}");
     expect(regionIdx).toBeGreaterThan(-1);
@@ -82,6 +83,8 @@ describe("PowerAppsPanel delegates status to App", () => {
     expect(panel).toContain("setStatus:");
     expect(panel).toContain("clearPendingStatusDismiss:");
     expect(panel).toContain("scheduleStatusClear:");
+    expect(panel).toContain("formatPowerAppsPreferencesApplyStatus");
+    expect(panel).toContain("setStatus(formatted.message, formatted.variant)");
     expect(panel).not.toMatch(/useState\([^)]*\)[\s\S]{0,40}status/);
     expect(panel).not.toContain("statusClearTimerRef");
   });
@@ -112,11 +115,21 @@ describe("section info callouts", () => {
   });
 });
 
+describe("PopupNotificationRegion explicit variant", () => {
+  const region = readSource("src/popup/components/PopupNotificationRegion.tsx");
+
+  it("forwards optional variant to SettingsStatusAlert", () => {
+    expect(region).toContain("variant?: SettingsStatusVariant");
+    expect(region).toContain("variant={resolvedVariant}");
+  });
+});
+
 describe("SettingsStatusAlert and layout tokens", () => {
   const statusAlert = readSource("src/popup/components/SettingsStatusAlert.tsx");
   const layout = readSource("src/popup/popup-layout.ts");
 
   it("maps variants to Alert and lucide icons", () => {
+    expect(statusAlert).toContain("variantProp ?? inferSettingsStatusVariant");
     expect(statusAlert).toContain("inferSettingsStatusVariant");
     expect(statusAlert).toContain('role="status"');
     expect(statusAlert).toContain("aria-live");
@@ -146,12 +159,13 @@ describe("persist status strings match variant inference", () => {
     );
   });
 
-  it("classifies Power Apps persist messages", () => {
-    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saving)).toBe("loading");
-    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applying)).toBe("loading");
-    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saved)).toBe("success");
-    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saveFailed)).toBe("error");
-    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applyFailed)).toBe("error");
+  it("Power Apps passes explicit notification variants from App (not infer)", () => {
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain("powerAppsStatusVariant");
+    expect(app).toContain("variant={powerAppsStatusVariant}");
+    expect(readSource("src/popup/components/PowerAppsPanel.tsx")).toContain(
+      "setStatus(formatted.message, formatted.variant)",
+    );
   });
 
   it("persist modules import shared status constants", () => {

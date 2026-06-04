@@ -133,7 +133,9 @@ describe("popup chrome (header + About developer section)", () => {
     expect(app).toContain("PopupNotificationRegion");
     expect(app).toContain("shouldShowPopupTabNotification");
     expect(app).toContain("powerAutomateStatus");
-    expect(app).toContain("powerAppsStatus");
+    expect(app).toContain("powerAppsStatusMessage");
+    expect(app).toContain("powerAppsStatusVariant");
+    expect(app).toContain("variant={powerAppsStatusVariant}");
     expect(app).not.toContain('defaultValue="power-automate"');
     expect(paPanel).toContain("SettingsBusyHint");
     expect(paPanel).toContain("hideBusyHint");

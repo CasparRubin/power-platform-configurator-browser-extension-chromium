@@ -1,7 +1,6 @@
 /**
  * Self-contained function for `chrome.scripting.executeScript({ func })` in the MAIN world.
  * All logic must live inside `powerAppsFormActionInPage` — Chrome serializes only that function.
- * Testable twin: `form-field-actions.ts` (keep behavior in sync).
  */
 import type { PowerAppsFormAction, PowerAppsFormActionResult } from "./constants";
 

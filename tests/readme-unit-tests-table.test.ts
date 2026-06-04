@@ -18,6 +18,7 @@ const RETIRED_TEST_FILES = [
   "tests/portal-proxy-url.test.ts",
   "tests/session-bridge.test.ts",
   "tests/token-match.test.ts",
+  "tests/powerapps-form-field-actions.test.ts",
 ] as const;
 
 /** Links from the Unit tests markdown table only (ignores inline refs elsewhere in README). */

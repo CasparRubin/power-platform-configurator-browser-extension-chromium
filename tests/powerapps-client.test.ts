@@ -1,10 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  formatPowerAppsActionError,
-  formatPowerAppsActionSuccess,
+  formatPowerAppsActionErrorForNotification,
+  formatPowerAppsActionSuccessForNotification,
   requestPowerAppsApplyPreferencesOnActiveTab,
-  requestPowerAppsFormAction,
 } from "../src/popup/powerapps-client";
 import { POWERAPPS_MESSAGE } from "../src/powerapps/constants";
 
@@ -55,153 +54,141 @@ describe("requestPowerAppsApplyPreferencesOnActiveTab", () => {
   });
 });
 
-describe("requestPowerAppsFormAction", () => {
-  it("sends APPLY_FORM_ACTION with action", async () => {
-    const sendMessage = vi.fn().mockResolvedValue({ ok: true, action: "unlock", unlocked: 0 });
-    vi.stubGlobal("chrome", { runtime: { sendMessage } } as unknown as typeof chrome);
-
-    await requestPowerAppsFormAction("unlock");
-    expect(sendMessage).toHaveBeenCalledWith({
-      type: POWERAPPS_MESSAGE.APPLY_FORM_ACTION,
-      action: "unlock",
-    });
-
-    vi.unstubAllGlobals();
-  });
-
-  it("maps missing response to no_response", async () => {
-    vi.stubGlobal("chrome", {
-      runtime: { sendMessage: vi.fn().mockResolvedValue(undefined) },
-    } as unknown as typeof chrome);
-
-    const response = await requestPowerAppsFormAction("unhide");
-    expect(response.error).toBe("no_response");
-
-    vi.unstubAllGlobals();
-  });
-
-  it("maps sendMessage rejection to message_failed", async () => {
-    vi.stubGlobal("chrome", {
-      runtime: {
-        sendMessage: vi.fn().mockRejectedValue(new Error("port closed")),
-      },
-    } as unknown as typeof chrome);
-
-    const response = await requestPowerAppsFormAction("unhide");
-    expect(response.error).toBe("message_failed");
-    expect(response.detail).toContain("port closed");
-
-    vi.unstubAllGlobals();
-  });
-});
-
-describe("formatPowerAppsActionError", () => {
-  it("includes detail and frame count for inject_no_result", () => {
-    const message = formatPowerAppsActionError(
+describe("formatPowerAppsActionErrorForNotification", () => {
+  it("maps inject_no_result with detail", () => {
+    const message = formatPowerAppsActionErrorForNotification(
       "inject_no_result",
       "Script did not return in 3 frame(s)",
-      3,
     );
     expect(message).toContain("record form");
     expect(message).toContain("Script did not return");
-    expect(message).toContain("Checked 3 frames");
+    expect(message).not.toContain("Checked");
   });
 
-  it("maps no_form_context with frame hint", () => {
-    const message = formatPowerAppsActionError("no_form_context", undefined, 5);
-    expect(message).toContain("record form");
-    expect(message).toContain("Checked 5 frames");
+  it("maps no_form_context for notifications without frame diagnostics", () => {
+    const message = formatPowerAppsActionErrorForNotification("no_form_context");
+    expect(message).toContain("still loading");
+    expect(message).toContain("Reload the page");
+    expect(message).not.toContain("Checked");
   });
 
-  it("maps injection_failed with detail and frames", () => {
-    const message = formatPowerAppsActionError(
+  it("maps injection_failed with detail", () => {
+    const message = formatPowerAppsActionErrorForNotification(
       "injection_failed",
       "tab not found (No tab with id: 99)",
-      1,
     );
     expect(message).toContain("inject");
     expect(message).toContain("Reload the page");
     expect(message).not.toContain("Reload the form tab");
     expect(message).toContain("tab not found");
-    expect(message).toContain("Checked 1 frame");
   });
 
   it("maps no_controls_updated without implying injection failure", () => {
-    const message = formatPowerAppsActionError("no_controls_updated", undefined, 6);
+    const message = formatPowerAppsActionErrorForNotification("no_controls_updated");
     expect(message).toContain("No hidden or locked fields");
     expect(message).not.toContain("inject");
-    expect(message).toContain("Checked 6 frames");
   });
 
   it("maps host_not_permitted with reload extension hint", () => {
-    const message = formatPowerAppsActionError(
+    const message = formatPowerAppsActionErrorForNotification(
       "host_not_permitted",
       "Extension manifest must request permission",
-      2,
     );
     expect(message).toContain("chrome://extensions");
-    expect(message).toContain("Checked 2 frames");
   });
 
   it("maps unsupported_host for Dataverse hosts", () => {
-    expect(formatPowerAppsActionError("unsupported_host")).toContain("crm17");
-    expect(formatPowerAppsActionError("unsupported_host")).toContain("dynamics.cn");
-    expect(formatPowerAppsActionError("unsupported_host")).toContain("apps.powerapps.com");
+    expect(formatPowerAppsActionErrorForNotification("unsupported_host")).toContain("crm17");
+    expect(formatPowerAppsActionErrorForNotification("unsupported_host")).toContain("dynamics.cn");
+    expect(formatPowerAppsActionErrorForNotification("unsupported_host")).toContain(
+      "apps.powerapps.com",
+    );
   });
 
   it("maps scripting_unavailable with detail", () => {
     expect(
-      formatPowerAppsActionError("scripting_unavailable", "chrome.scripting is missing"),
+      formatPowerAppsActionErrorForNotification(
+        "scripting_unavailable",
+        "chrome.scripting is missing",
+      ),
     ).toContain("scripting API");
   });
 
   it("maps no_active_tab, no_response, and message_failed", () => {
-    expect(formatPowerAppsActionError("no_active_tab")).toContain("No active browser tab");
-    expect(formatPowerAppsActionError("no_response", "empty")).toContain("No response");
-    expect(formatPowerAppsActionError("no_response", "empty")).toContain("empty");
-    expect(formatPowerAppsActionError("message_failed", "disconnected")).toContain("background");
-    expect(formatPowerAppsActionError("message_failed", "disconnected")).toContain("disconnected");
+    expect(formatPowerAppsActionErrorForNotification("no_active_tab")).toContain(
+      "No active browser tab",
+    );
+    expect(formatPowerAppsActionErrorForNotification("no_response", "empty")).toContain(
+      "No response",
+    );
+    expect(formatPowerAppsActionErrorForNotification("no_response", "empty")).toContain("empty");
+    expect(formatPowerAppsActionErrorForNotification("message_failed", "disconnected")).toContain(
+      "background",
+    );
+    expect(formatPowerAppsActionErrorForNotification("message_failed", "disconnected")).toContain(
+      "disconnected",
+    );
   });
 
   it("maps unknown errors with optional detail", () => {
-    expect(formatPowerAppsActionError("custom_code", "extra")).toContain("record form");
-    expect(formatPowerAppsActionError("custom_code", "extra")).toContain("extra");
-    expect(formatPowerAppsActionError(undefined)).toContain("record form");
+    expect(formatPowerAppsActionErrorForNotification("custom_code", "extra")).toContain(
+      "record form",
+    );
+    expect(formatPowerAppsActionErrorForNotification("custom_code", "extra")).toContain("extra");
+    expect(formatPowerAppsActionErrorForNotification(undefined)).toContain("record form");
+  });
+
+  it("maps injection_failed for notifications", () => {
+    expect(formatPowerAppsActionErrorForNotification("injection_failed")).toContain(
+      "Could not inject",
+    );
   });
 });
 
-describe("formatPowerAppsActionSuccess", () => {
-  it("appends frame count when present", () => {
+describe("formatPowerAppsActionSuccessForNotification", () => {
+  it("omits frame counts from notification success copy", () => {
     expect(
-      formatPowerAppsActionSuccess("unhide", {
+      formatPowerAppsActionSuccessForNotification("unhide", {
         ok: true,
         action: "unhide",
         unhidden: 2,
         framesChecked: 4,
       }),
-    ).toBe("Unhid 2 elements. (4 frames)");
+    ).toBe("Unhid 2 elements.");
+    expect(
+      formatPowerAppsActionSuccessForNotification("unlock", {
+        ok: true,
+        action: "unlock",
+        unlocked: 1,
+        framesChecked: 2,
+      }),
+    ).toBe("Unlocked 1 control.");
   });
 
-  it("singular unlock message", () => {
+  it("uses singular and plural success copy", () => {
     expect(
-      formatPowerAppsActionSuccess("unlock", {
+      formatPowerAppsActionSuccessForNotification("unhide", {
+        ok: true,
+        action: "unhide",
+        unhidden: 1,
+      }),
+    ).toBe("Unhid 1 element.");
+    expect(
+      formatPowerAppsActionSuccessForNotification("unlock", {
         ok: true,
         action: "unlock",
         unlocked: 1,
       }),
     ).toBe("Unlocked 1 control.");
-  });
-
-  it("uses plural success copy for multiple elements", () => {
     expect(
-      formatPowerAppsActionSuccess("unhide", {
+      formatPowerAppsActionSuccessForNotification("unhide", {
         ok: true,
         action: "unhide",
         unhidden: 3,
       }),
     ).toBe("Unhid 3 elements.");
     expect(
-      formatPowerAppsActionSuccess("unlock", {
+      formatPowerAppsActionSuccessForNotification("unlock", {
         ok: true,
         action: "unlock",
         unlocked: 2,

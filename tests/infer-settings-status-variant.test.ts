@@ -5,7 +5,6 @@ import {
   POWER_APPS_PERSIST_STATUS,
   POWER_AUTOMATE_PERSIST_STATUS,
 } from "../src/popup/persist-status-messages";
-import { formatPowerAppsActionError } from "../src/popup/powerapps-client";
 
 describe("inferSettingsStatusVariant", () => {
   it("returns loading when busy", () => {
@@ -17,49 +16,53 @@ describe("inferSettingsStatusVariant", () => {
     expect(inferSettingsStatusVariant("   ")).toBe("info");
   });
 
-  it("detects saving and applying messages", () => {
+  it("detects saving and refreshing messages for Power Automate", () => {
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.saving)).toBe("loading");
-    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applying)).toBe("loading");
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.refreshing)).toBe("loading");
   });
 
-  it("detects success messages", () => {
+  it("detects Power Automate success messages", () => {
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.saved)).toBe("success");
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.savedReloaded)).toBe("success");
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.savedReloadPage)).toBe(
       "success",
     );
-    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saved)).toBe("success");
-    expect(inferSettingsStatusVariant("Unhid 3 elements.")).toBe("success");
-    expect(inferSettingsStatusVariant("Unlocked 1 control.")).toBe("success");
   });
 
   it("prefers error over success when a message contains both cues", () => {
     expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applyFailed)).toBe("error");
   });
 
-  it("detects error messages from persist and powerapps-client", () => {
+  it("detects error messages from persist helpers", () => {
     expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saveFailed)).toBe("error");
     expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applyFailed)).toBe("error");
-    expect(inferSettingsStatusVariant(formatPowerAppsActionError("no_active_tab"))).toBe("error");
-    expect(inferSettingsStatusVariant(formatPowerAppsActionError("host_not_permitted"))).toBe(
-      "error",
-    );
     expect(inferSettingsStatusVariant("Check Chrome sync sign-in, then try again.")).toBe("error");
   });
 
-  it("classifies neutral apply guidance as info", () => {
-    expect(
-      inferSettingsStatusVariant(
-        "Open a model-driven app on a Dataverse org URL (e.g. org.crm17.dynamics.com) first.",
-      ),
-    ).toBe("info");
-    expect(inferSettingsStatusVariant(formatPowerAppsActionError("no_controls_updated"))).toBe(
-      "info",
-    );
+  it.each([
+    "Could not save",
+    "sync failed",
+    "tab not found",
+    "host not permitted",
+    "unsupported host",
+    "No active tab",
+    "No response from background",
+    "Xrm is not available",
+  ] as const)("classifies error substring in %s", (message) => {
+    expect(inferSettingsStatusVariant(message)).toBe("error");
+  });
+
+  it("classifies reload-only guidance without error fragments as info", () => {
+    expect(inferSettingsStatusVariant("Reload when ready.")).toBe("info");
+    expect(inferSettingsStatusVariant("please reload the tab")).toBe("info");
   });
 
   it("does not treat Saved as loading when message is only whitespace and not busy", () => {
     expect(inferSettingsStatusVariant("Saved.", { busy: false })).toBe("success");
+  });
+
+  it("does not infer Power Apps applying copy as loading (explicit variant from App)", () => {
+    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applying)).toBe("info");
+    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saved)).toBe("info");
   });
 });

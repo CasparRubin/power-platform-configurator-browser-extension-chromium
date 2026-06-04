@@ -3,7 +3,7 @@ import { POWER_AUTOMATE_PERSIST_STATUS } from "./persist-status-messages";
 import { policyPopupLog } from "./policy-popup-log";
 import { reloadFocusedTargetTabIfApplicable } from "./reload-focused-target-tab";
 
-export type PersistPolicyMountRef = { current: boolean };
+type PersistPolicyMountRef = { current: boolean };
 
 /**
  * Writes policy keys to `chrome.storage.sync`, then optionally reloads the focused flow/run tab.

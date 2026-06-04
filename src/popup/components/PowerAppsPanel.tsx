@@ -3,6 +3,7 @@ import { RadioGroup } from "@helvety/ui/radio-group";
 import { type PowerAppsHiddenFieldsMode, type PowerAppsReadOnlyMode } from "../../constants";
 import { isPowerAppsEnforcementActive } from "../../powerapps/apply-preferences";
 import { SETTINGS_RADIO_GROUP_CLASS, SETTINGS_SECTION_CLASS } from "../popup-layout";
+import type { SettingsStatusVariant } from "../infer-settings-status-variant";
 import { formatPowerAppsPreferencesApplyStatus } from "../format-powerapps-preferences";
 import { persistPowerAppsPreference } from "../persist-powerapps-preference";
 import { requestPowerAppsApplyPreferencesOnActiveTab } from "../powerapps-client";
@@ -17,7 +18,7 @@ type PowerAppsPanelProps = {
   readOnlyMode: PowerAppsReadOnlyMode;
   onHiddenModeChange: (next: PowerAppsHiddenFieldsMode) => void;
   onReadOnlyModeChange: (next: PowerAppsReadOnlyMode) => void;
-  setStatus: (message: string) => void;
+  setStatus: (message: string, variant?: SettingsStatusVariant) => void;
   clearPendingStatusDismiss: () => void;
   scheduleStatusClear: (clearAfterMs?: number) => void;
   isSyncBusy: boolean;
@@ -76,7 +77,8 @@ export function PowerAppsPanel({
                   if (!mountedRef.current) {
                     return;
                   }
-                  setStatus(formatPowerAppsPreferencesApplyStatus(response));
+                  const formatted = formatPowerAppsPreferencesApplyStatus(response);
+                  setStatus(formatted.message, formatted.variant);
                 } finally {
                   if (mountedRef.current) {
                     setIsApplying(false);

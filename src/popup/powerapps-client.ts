@@ -1,22 +1,10 @@
 /** Popup messaging and user-facing strings for the Power Apps notification area (global form enforcement). */
 import {
   POWERAPPS_MESSAGE,
-  type PowerAppsApplyFormActionResponse,
   type PowerAppsApplyPreferencesActiveTabResponse,
   type PowerAppsFormAction,
+  type PowerAppsFormActionResult,
 } from "../powerapps/constants";
-
-const POPUP_LOG_PREFIX = "[power-platform-configurator] [popup]";
-
-function logPowerAppsResponse(
-  action: PowerAppsFormAction,
-  response: PowerAppsApplyFormActionResponse,
-): void {
-  if (!import.meta.env.DEV) {
-    return;
-  }
-  console.log(POPUP_LOG_PREFIX, "powerapps form action", action, response);
-}
 
 export async function requestPowerAppsApplyPreferencesOnActiveTab(): Promise<PowerAppsApplyPreferencesActiveTabResponse> {
   try {
@@ -37,39 +25,6 @@ export async function requestPowerAppsApplyPreferencesOnActiveTab(): Promise<Pow
   }
 }
 
-export async function requestPowerAppsFormAction(
-  action: PowerAppsFormAction,
-): Promise<PowerAppsApplyFormActionResponse> {
-  try {
-    const response = (await chrome.runtime.sendMessage({
-      type: POWERAPPS_MESSAGE.APPLY_FORM_ACTION,
-      action,
-    })) as PowerAppsApplyFormActionResponse | undefined;
-
-    if (response && typeof response === "object" && "ok" in response) {
-      logPowerAppsResponse(action, response);
-      return response;
-    }
-    const fallback = {
-      ok: false,
-      action,
-      error: "no_response",
-    } satisfies PowerAppsApplyFormActionResponse;
-    logPowerAppsResponse(action, fallback);
-    return fallback;
-  } catch (err) {
-    const detail = err instanceof Error ? err.message : String(err);
-    const fallback = {
-      ok: false,
-      action,
-      error: "message_failed",
-      detail,
-    } satisfies PowerAppsApplyFormActionResponse;
-    logPowerAppsResponse(action, fallback);
-    return fallback;
-  }
-}
-
 function appendDetail(base: string, detail: string | undefined): string {
   if (!detail) {
     return base;
@@ -77,50 +32,36 @@ function appendDetail(base: string, detail: string | undefined): string {
   return `${base} (${detail})`;
 }
 
-export function formatPowerAppsActionError(
+function formatPowerAppsActionErrorMessage(
   error: string | undefined,
-  detail?: string,
-  framesChecked?: number,
+  detail: string | undefined,
 ): string {
-  const frameHint =
-    framesChecked !== undefined && framesChecked > 0
-      ? ` Checked ${framesChecked} frame${framesChecked === 1 ? "" : "s"}.`
-      : "";
-
   switch (error) {
     case "unsupported_host":
       return "Open a model-driven app on a Dataverse org URL (e.g. org.crm17.dynamics.com, org.crm.dynamics.cn) or apps.powerapps.com first.";
     case "host_not_permitted":
       return appendDetail(
-        "This tab URL is not permitted by the extension. Reload the extension on chrome://extensions, then try again." +
-          frameHint,
+        "This tab URL is not permitted by the extension. Reload the extension on chrome://extensions, then try again.",
         detail,
       );
     case "no_active_tab":
       return "No active browser tab found.";
     case "no_form_context":
       return appendDetail(
-        "Open a model-driven record form on this tab, then try again." + frameHint,
+        "The record form is still loading on this tab. Reload the page to apply.",
         detail,
       );
     case "no_controls_updated":
-      return appendDetail(
-        "No hidden or locked fields were found on this form." + frameHint,
-        detail,
-      );
+      return appendDetail("No hidden or locked fields were found on this form.", detail);
     case "scripting_unavailable":
       return appendDetail("Chrome scripting API is not available for this extension.", detail);
     case "inject_no_result":
       return appendDetail(
-        "Could not run on this page. Use a record form (not a list or dashboard), reload the page, and try again." +
-          frameHint,
+        "Could not run on this page. Use a record form (not a list or dashboard), reload the page, and try again.",
         detail,
       );
     case "injection_failed":
-      return appendDetail(
-        "Could not inject into the tab. Reload the page and try again." + frameHint,
-        detail,
-      );
+      return appendDetail("Could not inject into the tab. Reload the page and try again.", detail);
     case "message_failed":
       return appendDetail(
         "Could not reach the extension background. Try reloading the extension.",
@@ -136,21 +77,23 @@ export function formatPowerAppsActionError(
   }
 }
 
-export function formatPowerAppsActionSuccess(
-  action: PowerAppsFormAction,
-  response: PowerAppsApplyFormActionResponse,
+/** User-facing popup notification errors (no per-frame diagnostics). */
+export function formatPowerAppsActionErrorForNotification(
+  error: string | undefined,
+  detail?: string,
 ): string {
-  const frameHint =
-    response.framesChecked !== undefined && response.framesChecked > 0
-      ? ` (${response.framesChecked} frame${response.framesChecked === 1 ? "" : "s"})`
-      : "";
+  return formatPowerAppsActionErrorMessage(error, detail);
+}
 
+/** User-facing popup notification success (no frame counts). */
+export function formatPowerAppsActionSuccessForNotification(
+  action: PowerAppsFormAction,
+  response: PowerAppsFormActionResult,
+): string {
   if (action === "unhide") {
     const count = response.unhidden ?? 0;
-    const base = count === 1 ? "Unhid 1 element." : `Unhid ${count} elements.`;
-    return base + frameHint;
+    return count === 1 ? "Unhid 1 element." : `Unhid ${count} elements.`;
   }
   const count = response.unlocked ?? 0;
-  const base = count === 1 ? "Unlocked 1 control." : `Unlocked ${count} controls.`;
-  return base + frameHint;
+  return count === 1 ? "Unlocked 1 control." : `Unlocked ${count} controls.`;
 }

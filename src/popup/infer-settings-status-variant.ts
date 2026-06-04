@@ -1,12 +1,9 @@
+/** Infer alert variant from message text when the popup does not pass an explicit `variant` (Power Automate). */
 export type SettingsStatusVariant = "loading" | "success" | "error" | "info";
 
-const LOADING_PREFIXES = [
-  "Saving preference",
-  "Applying",
-  "Refreshing open Power Automate",
-] as const;
+const LOADING_PREFIXES = ["Saving preference", "Refreshing open Power Automate"] as const;
 
-const SUCCESS_PATTERNS = [/^Saved\./, /^Preference saved/, /^Unhid \d+/, /^Unlocked \d+/] as const;
+const SUCCESS_PATTERNS = [/^Saved\./] as const;
 
 const ERROR_SUBSTRINGS = [
   "Could not",
@@ -17,7 +14,6 @@ const ERROR_SUBSTRINGS = [
   "No active",
   "No response",
   "not available",
-  "Try again",
   "Check Chrome sync",
 ] as const;
 
@@ -53,7 +49,7 @@ export function inferSettingsStatusVariant(
     }
   }
 
-  if (trimmed.includes("Open a model-driven") || trimmed.includes("reload")) {
+  if (trimmed.includes("reload")) {
     return "info";
   }
 

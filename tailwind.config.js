@@ -3,7 +3,6 @@ export default {
   darkMode: ["class"],
   content: [
     "./src/popup/**/*.{ts,tsx}",
-    "./src/components/**/*.{ts,tsx}",
     "./node_modules/@helvety/ui/src/**/*.{ts,tsx}",
     "./.helvety/packages/ui/src/**/*.{ts,tsx}",
   ],

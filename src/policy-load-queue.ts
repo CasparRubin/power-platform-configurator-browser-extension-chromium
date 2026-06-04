@@ -2,7 +2,7 @@
  * Chains storage-backed reconcile work so navigation handlers can await a stable tail
  * (Chrome extension storage preload pattern for MV3 service workers).
  */
-export type ReconcileFn = () => Promise<void>;
+type ReconcileFn = () => Promise<void>;
 
 export function createPolicyLoadQueue(reconcile: ReconcileFn): {
   scheduleReconcile: () => void;

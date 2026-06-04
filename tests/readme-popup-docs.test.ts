@@ -44,6 +44,9 @@ describe("README popup and icon documentation", () => {
     expect(section).toContain("SettingsChoiceRow");
     expect(section).toContain("SettingsBusyHint");
     expect(section).toMatch(/PopupNotificationRegion|notification slot|notification area/i);
+    expect(section).toMatch(
+      /Preference saved\. Reload the page to apply on this record form|short in-popup retries/i,
+    );
     expect(section).toContain("SettingsInfoAlert");
     expect(section).toContain("POPUP_SYNC_SETTINGS_KEYS");
     expect(section).not.toMatch(/top status spinner/i);

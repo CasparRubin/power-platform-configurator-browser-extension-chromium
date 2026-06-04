@@ -12,7 +12,7 @@ import {
   SETTINGS_RADIO_GROUP_CLASS,
   SETTINGS_SECTION_CLASS,
 } from "../popup-layout";
-import { HelvetyMark } from "./HelvetyMark";
+import { HelvetyMark } from "@helvety/extension-chrome/helvety-mark";
 import { SettingsBusyHint } from "./SettingsBusyHint";
 import { SettingsChoiceRow } from "./SettingsChoiceRow";
 import { SettingsDeveloperLink } from "./SettingsDeveloperLink";

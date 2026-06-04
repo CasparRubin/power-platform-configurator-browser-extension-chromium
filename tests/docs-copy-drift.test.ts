@@ -102,6 +102,15 @@ const LEGACY_POWER_APPS_VAGUE_ERROR_PHRASES = [
   /Reload the form tab and try again\./,
 ];
 
+/** Misleading Power Apps notification copy before deferred-apply info + explicit variants. */
+const LEGACY_POWER_APPS_NOTIFICATION_MISLEADING_PHRASES = [
+  /Open a model-driven record form on this tab/i,
+  /distinguishes ["']open a record form/i,
+  /optional frame count and detail/i,
+  /specific error such as ["']open a record form/i,
+  /not on a record form, nothing hidden/i,
+];
+
 /** Old reload wording superseded by “reload the page” in panels, status strings, and errors. */
 const OUTDATED_RELOAD_FORM_COPY = [
   /reload forms to restore/i,
@@ -195,8 +204,17 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     const messages = readRepoFile("src/popup/persist-status-messages.ts");
     expect(messages).toMatch(/savedReloaded/);
     expect(messages).toMatch(/savedReloadPage/);
+    expect(messages).toMatch(/savedApplyDeferred/);
+    expect(messages).toMatch(/Preference saved\. Reload the page to apply on this record form/i);
     expect(messages).toMatch(/Reload the flow or run page/i);
     expect(messages).toMatch(/Reload the page/i);
+  });
+
+  it("Power Apps popup copy avoids misleading record-form-only apply errors", () => {
+    const client = readRepoFile("src/popup/powerapps-client.ts");
+    expect(client).toMatch(/formatPowerAppsActionErrorForNotification/);
+    expect(client).not.toMatch(/Open a model-driven record form on this tab/i);
+    expect(readRepoFile("src/popup/format-powerapps-preferences.ts")).toMatch(/savedApplyDeferred/);
   });
 
   it("Power Automate panel uses compact v3 copy and reload guidance", () => {
@@ -234,6 +252,7 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(layout).toContain("SettingsTabPanel");
     expect(layout).toContain("AboutPanel");
     expect(layout).toContain("persist-status-messages.ts");
+    expect(layout).toContain("format-powerapps-preferences.ts");
     expect(layout).not.toMatch(/ABOUT_CARD_/);
   });
 
@@ -299,9 +318,15 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     for (const pattern of LEGACY_POWER_APPS_VAGUE_ERROR_PHRASES) {
       expect(readme).not.toMatch(pattern);
     }
+    for (const pattern of LEGACY_POWER_APPS_NOTIFICATION_MISLEADING_PHRASES) {
+      expect(readme).not.toMatch(pattern);
+    }
     for (const pattern of OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES) {
       expect(readme).not.toMatch(pattern);
     }
+    expect(readme).toMatch(
+      /savedApplyDeferred|Preference saved\. Reload the page to apply on this record form/i,
+    );
   });
 
   it("README and store doc document global persisted Power Apps enforcement", () => {

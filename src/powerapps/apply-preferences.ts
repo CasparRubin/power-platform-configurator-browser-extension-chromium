@@ -14,6 +14,9 @@ const APPLY_DEBOUNCE_MS = 150;
 const RETRY_DELAYS_MS = [300, 1000, 2000, 2000, 2000] as const;
 const MAX_RETRY_ATTEMPTS = RETRY_DELAYS_MS.length;
 
+/** Shorter retry schedule for popup active-tab apply (user waits on Applying…). */
+export const POPUP_ACTIVE_TAB_RETRY_DELAYS_MS = [300, 1000, 2000] as const;
+
 type TabScheduleState = {
   debounceTimerId: ReturnType<typeof setTimeout> | null;
   retryTimerId: ReturnType<typeof setTimeout> | null;
@@ -105,6 +108,30 @@ export async function applyPowerAppsPreferencesOnTab(
   }
   if (shouldEnforceUnlock(prefs)) {
     results.push(await applyPowerAppsFormActionOnTab(tabId, "unlock"));
+  }
+
+  return results;
+}
+
+function delayMs(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+export async function applyPowerAppsPreferencesOnTabWithRetries(
+  tabId: number,
+  prefs: PowerAppsPreferences,
+  retryDelaysMs: readonly number[] = POPUP_ACTIVE_TAB_RETRY_DELAYS_MS,
+): Promise<PowerAppsFormActionResult[]> {
+  let results = await applyPowerAppsPreferencesOnTab(tabId, prefs);
+
+  for (const waitMs of retryDelaysMs) {
+    if (!results.some((r) => shouldRetryResult(r))) {
+      break;
+    }
+    await delayMs(waitMs);
+    results = await applyPowerAppsPreferencesOnTab(tabId, prefs);
   }
 
   return results;
@@ -222,7 +249,7 @@ export async function applyPowerAppsPreferencesOnActiveTab(): Promise<{
     };
   }
 
-  const results = await applyPowerAppsPreferencesOnTab(activeTab.id, prefs);
+  const results = await applyPowerAppsPreferencesOnTabWithRetries(activeTab.id, prefs);
   const ok = results.length === 0 || results.every((r) => r.ok);
   return { ok, results };
 }

@@ -8,16 +8,14 @@ import { describe, expect, it } from "vitest";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 describe("powerapps background router", () => {
-  it("registers runtime message handlers for form actions and enforcement", () => {
+  it("registers runtime message handlers for schedule and active-tab apply", () => {
     const router = readFileSync(join(repoRoot, "src/background/powerapps-router.ts"), "utf8");
-    expect(router).toContain("POWERAPPS_MESSAGE.APPLY_FORM_ACTION");
     expect(router).toContain("POWERAPPS_MESSAGE.SCHEDULE_APPLY");
     expect(router).toContain("POWERAPPS_MESSAGE.APPLY_PREFERENCES_ACTIVE_TAB");
     expect(router).toContain("installPowerAppsRouter");
-    expect(router).toContain("applyPowerAppsFormActionOnTab");
+    expect(router).not.toContain("APPLY_FORM_ACTION");
     expect(router).toContain("schedulePowerAppsApplyForTab");
     expect(router).toContain("onPowerAppsSyncStorageChanged");
-    expect(router).toContain("isPowerAppsHostUrl");
   });
 
   it("background service worker installs router and enforcement listeners", () => {

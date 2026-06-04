@@ -63,8 +63,11 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).not.toMatch(/radio groups are disabled only while/i);
     expect(section).toContain("TAB_PANEL_HOST_CLASS");
     expect(section).toContain("SettingsTabPanel");
-    expect(section).toMatch(/persist-status-messages/i);
+    expect(section).toMatch(/persist-status-messages|format-powerapps-preferences/i);
     expect(section).toMatch(/Reload the (flow or run page|page)/i);
+    expect(section).toMatch(
+      /in-popup retries|still loading|Reload the page to apply on this record form/i,
+    );
     expect(section).toContain("Power Automate");
     expect(section).toContain("Power Apps");
     expect(section).toContain("v3survey");
@@ -95,7 +98,9 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toMatch(/SettingsInfoAlert|SettingsStatusAlert/i);
     expect(section).toMatch(/SettingsBusyHint|stay enabled/i);
     expect(section).toMatch(/reload the page|Reload the flow or run page/i);
+    expect(section).toMatch(/Preference saved\. Reload the page|blue reload hint|still loading/i);
     expect(section).not.toMatch(/radios briefly disable only while/i);
+    expect(section).not.toMatch(/specific error such as ["']open a record form/i);
     expect(section).toMatch(/saves to sync|stay selected|stay visible/i);
     expect(section).toMatch(/powerAppsHiddenFields|powerAppsReadOnly/i);
     expect(section).not.toMatch(/no API call/i);
@@ -110,6 +115,9 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toMatch(/record form/i);
     expect(section).toMatch(/getVisible|setVisible|setDisabled/i);
     expect(section).toMatch(/notification (area|region)|inject/i);
+    expect(section).toMatch(/blue reload hint|still loading|Preference saved/i);
+    expect(section).not.toMatch(/optional frame count and detail/i);
+    expect(section).not.toMatch(/distinguishes ["']open a record form/i);
   });
 
   it("Implementation notes documents Power Apps MAIN-world injection", () => {
@@ -119,6 +127,8 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toContain("inject_no_result");
     expect(section).toMatch(/apply-preferences|persist-powerapps-preference|SCHEDULE_APPLY/i);
     expect(section).toMatch(/powerAppsHiddenFields|powerAppsReadOnly/i);
+    expect(section).toMatch(/format-powerapps-preferences|POPUP_ACTIVE_TAB_RETRY_DELAYS_MS/i);
+    expect(section).toMatch(/formatPowerAppsActionErrorForNotification|Checked N frames/i);
     expect(section).not.toMatch(/only sends `pp:powerapps:apply-form-action`/i);
   });
 
@@ -130,6 +140,7 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(layout).toContain("apply-preferences");
     expect(layout).toContain("persist-powerapps-preference.ts");
     expect(layout).toContain("powerapps-client.ts");
+    expect(layout).toContain("format-powerapps-preferences.ts");
   });
 
   it("unit tests intro and table cover every tests/*.test.ts file", () => {

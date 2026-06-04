@@ -8,7 +8,6 @@ export function extensionResolve(repoRoot) {
   return {
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
     alias: {
-      "@": resolve(repoRoot, "src"),
       "@helvety/shared": resolve(repoRoot, "node_modules/@helvety/shared/src"),
       react,
       "react-dom": reactDom,

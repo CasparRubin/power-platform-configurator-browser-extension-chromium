@@ -26,6 +26,7 @@ import { PopupNotificationRegion } from "./components/PopupNotificationRegion";
 import { TabProductIcon } from "./components/TabProductIcon";
 import { PowerAppsPanel } from "./components/PowerAppsPanel";
 import { PowerAutomatePanel } from "./components/PowerAutomatePanel";
+import type { SettingsStatusVariant } from "./infer-settings-status-variant";
 import { persistPolicyPreferenceAndOptionalReload } from "./persist-policy-preference";
 import { shouldShowPopupTabNotification } from "./popup-notification-visibility";
 import { createAsyncQueue } from "./sync-write-queue";
@@ -49,7 +50,10 @@ export default function App() {
   const loaded = themeLoaded && settingsLoaded;
   const [activeTab, setActiveTab] = useState<PopupTab>("power-automate");
   const [powerAutomateStatus, setPowerAutomateStatus] = useState("");
-  const [powerAppsStatus, setPowerAppsStatus] = useState("");
+  const [powerAppsStatusMessage, setPowerAppsStatusMessage] = useState("");
+  const [powerAppsStatusVariant, setPowerAppsStatusVariant] = useState<
+    SettingsStatusVariant | undefined
+  >();
   const [isPolicySyncBusy, setIsPolicySyncBusy] = useState(false);
   const [isTargetTabReloadBusy, setIsTargetTabReloadBusy] = useState(false);
   const [isPowerAppsSyncBusy, setIsPowerAppsSyncBusy] = useState(false);
@@ -163,12 +167,18 @@ export default function App() {
     }
   }, []);
 
+  const setPowerAppsStatus = useCallback((message: string, variant?: SettingsStatusVariant) => {
+    setPowerAppsStatusMessage(message);
+    setPowerAppsStatusVariant(variant);
+  }, []);
+
   const schedulePowerAppsStatusClear = useCallback(
     (clearAfterMs: number = 2000) => {
       clearPendingPowerAppsStatusDismiss();
       powerAppsStatusClearTimerRef.current = window.setTimeout(() => {
         powerAppsStatusClearTimerRef.current = null;
-        setPowerAppsStatus("");
+        setPowerAppsStatusMessage("");
+        setPowerAppsStatusVariant(undefined);
       }, clearAfterMs);
     },
     [clearPendingPowerAppsStatusDismiss],
@@ -268,7 +278,7 @@ export default function App() {
   const showPowerAppsNotification = shouldShowPopupTabNotification(
     activeTab,
     "power-apps",
-    powerAppsStatus,
+    powerAppsStatusMessage,
     powerAppsPanelBusy,
   );
   const powerAutomateBusyLabel = isTargetTabReloadBusy ? "Reloading tab…" : "Saving…";
@@ -330,8 +340,9 @@ export default function App() {
         ) : null}
         {showPowerAppsNotification ? (
           <PopupNotificationRegion
-            message={powerAppsStatus}
-            showSpinner={powerAppsPanelBusy && !powerAppsStatus}
+            message={powerAppsStatusMessage}
+            variant={powerAppsStatusVariant}
+            showSpinner={powerAppsPanelBusy && !powerAppsStatusMessage}
             busyLabel={powerAppsBusyLabel}
           />
         ) : null}

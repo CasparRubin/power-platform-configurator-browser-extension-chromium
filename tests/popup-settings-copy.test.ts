@@ -90,7 +90,20 @@ describe("powerapps-client error copy", () => {
   });
 });
 
+describe("Power Apps apply notification formatter", () => {
+  it("maps retryable apply misses to shared deferred status copy", () => {
+    const formatter = readSource("src/popup/format-powerapps-preferences.ts");
+    expect(formatter).toContain("formatPowerAppsPreferencesApplyStatus");
+    expect(formatter).toContain("POWER_APPS_PERSIST_STATUS.savedApplyDeferred");
+    expect(formatter).toContain("shouldRetryApplyError");
+    expect(formatter).toContain("formatPowerAppsActionErrorForNotification");
+    expect(formatter).toContain("formatPowerAppsActionSuccessForNotification");
+  });
+});
+
 describe("status strings stay aligned with persist modules", () => {
+  const messages = readSource("src/popup/persist-status-messages.ts");
+
   it("persist-policy-preference imports Power Automate status constants", () => {
     expect(readSource("src/popup/persist-policy-preference.ts")).toContain(
       "POWER_AUTOMATE_PERSIST_STATUS",
@@ -110,5 +123,12 @@ describe("status strings stay aligned with persist modules", () => {
     expect(readSource("src/popup/persist-powerapps-preference.ts")).toContain(
       "POWER_APPS_PERSIST_STATUS.saved",
     );
+  });
+
+  it("documents deferred apply and benign form outcomes", () => {
+    expect(messages).toContain("savedApplyDeferred");
+    expect(messages).toContain("savedNoControlsOnForm");
+    expect(messages).toContain("applyFinishRemaining");
+    expect(messages).toMatch(/Preference saved\. Reload the page to apply on this record form/i);
   });
 });

@@ -37,21 +37,14 @@ describe("POWER_APPS_PERSIST_STATUS", () => {
   it("exports stable keys used by persist-powerapps-preference", () => {
     expect(Object.keys(POWER_APPS_PERSIST_STATUS).sort()).toEqual([
       "applyFailed",
+      "applyFinishRemaining",
       "applying",
       "saveFailed",
       "saved",
+      "savedApplyDeferred",
+      "savedNoControlsOnForm",
       "saving",
     ]);
-  });
-
-  it.each([
-    [POWER_APPS_PERSIST_STATUS.saving, "loading"],
-    [POWER_APPS_PERSIST_STATUS.applying, "loading"],
-    [POWER_APPS_PERSIST_STATUS.saved, "success"],
-    [POWER_APPS_PERSIST_STATUS.saveFailed, "error"],
-    [POWER_APPS_PERSIST_STATUS.applyFailed, "error"],
-  ] as const)("variant for %s", (message, variant) => {
-    expect(inferSettingsStatusVariant(message)).toBe(variant);
   });
 
   it("saved and apply-failed paths mention reloading the page", () => {

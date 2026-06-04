@@ -12,10 +12,8 @@
   },
   "iconLibrary": "lucide-react",
   "aliases": {
-    "components": "@/popup/components",
+    "components": "src/popup/components",
     "utils": "@helvety/shared/utils",
-    "ui": "@helvety/ui",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
+    "ui": "@helvety/ui"
   }
 }
