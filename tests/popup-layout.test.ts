@@ -40,7 +40,8 @@ describe("SETTINGS_CHOICE_RADIO_CLASS", () => {
 describe("popup notification layout tokens", () => {
   it("defines region and alert typography classes", () => {
     expect(POPUP_NOTIFICATION_REGION_CLASS).toContain("flex-shrink-0");
-    expect(POPUP_NOTIFICATION_REGION_CLASS).toContain("px-2");
+    expect(POPUP_NOTIFICATION_REGION_CLASS).toContain("w-full");
+    expect(POPUP_NOTIFICATION_REGION_CLASS).not.toContain("px-2");
     expect(POPUP_NOTIFICATION_ALERT_CLASS).toContain("text-xs");
     expect(POPUP_NOTIFICATION_ALERT_CLASS).toContain("leading-snug");
   });

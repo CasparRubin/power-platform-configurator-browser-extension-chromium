@@ -1,3 +1,4 @@
+import { cn } from "@helvety/shared/utils";
 import { CheckCircle2, CircleAlert, Info, Loader2 } from "lucide-react";
 import {
   inferSettingsStatusVariant,
@@ -39,14 +40,14 @@ export function SettingsStatusAlert({
       variant={alertVariant}
       role="status"
       aria-live="polite"
-      className={POPUP_NOTIFICATION_ALERT_CLASS}
+      className={cn(POPUP_NOTIFICATION_ALERT_CLASS, "items-center")}
     >
       {showSpinner || variant === "loading" ? (
         <StatusIcon variant="loading" />
       ) : (
         <StatusIcon variant={variant} />
       )}
-      <AlertDescription>{message}</AlertDescription>
+      <AlertDescription className="min-w-0 flex-1 py-0 leading-snug">{message}</AlertDescription>
     </Alert>
   );
 }

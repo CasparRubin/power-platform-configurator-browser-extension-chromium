@@ -11,8 +11,8 @@ import { cn } from "@helvety/shared/utils";
 export const POPUP_ROOT_CLASS =
   "flex h-[600px] w-[800px] max-h-[600px] max-w-[800px] min-h-0 flex-col overflow-hidden px-3 py-2.5 text-sm leading-snug";
 
-/** Below tab bar, above scroll host; zero height when empty (conditional render). */
-export const POPUP_NOTIFICATION_REGION_CLASS = "flex-shrink-0 px-2 pb-1.5 pt-0";
+/** Below tab bar, above scroll host; full width of tab column (matches TabsList; no extra horizontal inset). */
+export const POPUP_NOTIFICATION_REGION_CLASS = "w-full flex-shrink-0 pb-1.5 pt-0";
 
 export const POPUP_NOTIFICATION_ALERT_CLASS = "text-xs leading-snug";
 

@@ -128,7 +128,9 @@ describe("SettingsStatusAlert and layout tokens", () => {
   it("popup-layout exports notification region classes", () => {
     expect(layout).toContain("POPUP_NOTIFICATION_REGION_CLASS");
     expect(layout).toContain("POPUP_NOTIFICATION_ALERT_CLASS");
-    expect(layout).toContain("px-2");
+    expect(layout).toMatch(/w-full/);
+    expect(readSource("src/popup/components/ui/alert.tsx")).toContain("flex");
+    expect(readSource("src/popup/components/ui/alert.tsx")).not.toContain("[&>svg]:absolute");
   });
 });
 
