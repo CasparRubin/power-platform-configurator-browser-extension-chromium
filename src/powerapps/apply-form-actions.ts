@@ -2,7 +2,7 @@
  * Runs `powerAppsFormActionInPage` on every frame of a tab (MAIN world) and picks the best result.
  * Used by `apply-preferences.ts` for global enforcement and by legacy popup `APPLY_FORM_ACTION` messages.
  * Surfaces `inject_no_result`, `host_not_permitted`, `injection_failed`, `framesChecked`, and `detail`
- * for popup status text (`powerapps-client.ts`).
+ * for the popup notification area (`powerapps-client.ts`).
  */
 import type { PowerAppsFormAction, PowerAppsFormActionResult } from "./constants";
 import { powerAppsFormActionInPage } from "./xrm-page-script";

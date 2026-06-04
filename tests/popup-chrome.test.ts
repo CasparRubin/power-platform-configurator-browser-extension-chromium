@@ -86,6 +86,8 @@ describe("popup chrome (header + About developer section)", () => {
 
     expect(sectionHeader).toContain("SETTINGS_SECTION_INTRO_CLASS");
     expect(sectionHeader).toContain("SETTINGS_SECTION_TITLE_CLASS");
+    expect(sectionHeader).toContain("SettingsInfoAlert");
+    expect(sectionHeader).toContain("hideBusyHint");
     expect(choiceRow).toContain("RadioGroupItem");
     expect(choiceRow).toContain("settingsChoiceRowClass");
     expect(choiceRow).toContain("SETTINGS_CHOICE_RADIO_CLASS");
@@ -108,16 +110,23 @@ describe("popup chrome (header + About developer section)", () => {
     expect(appsPanel).toContain('value="lock"');
     expect(appsPanel).toContain('value="unlock"');
     expect(appsPanel).toContain("persistPowerAppsPreference");
-    expect(appsPanel).toContain("requestPowerAppsApplyPreferencesOnActiveTab");
     expect(appsPanel).toContain("formatPowerAppsPreferencesApplyStatus");
     expect(appsPanel).toContain("SettingsBusyHint");
+    expect(appsPanel).toContain("hideBusyHint");
     expect(appsPanel).not.toContain("disabled={");
+    expect(appsPanel).not.toContain("statusClearTimerRef");
     expect(appsPanel).toContain("Separator");
 
     expect(app).toContain("POPUP_SYNC_SETTINGS_KEYS");
     expect(app).toContain("settingsLoaded");
     expect(app).toContain("onHiddenModeChange={setHiddenMode}");
+    expect(app).toContain("PopupNotificationRegion");
+    expect(app).toContain("shouldShowPopupTabNotification");
+    expect(app).toContain("powerAutomateStatus");
+    expect(app).toContain("powerAppsStatus");
+    expect(app).not.toContain('defaultValue="power-automate"');
     expect(paPanel).toContain("SettingsBusyHint");
+    expect(paPanel).toContain("hideBusyHint");
     expect(paPanel).not.toContain("PolicyPanelBusyHint");
     expect(paPanel).not.toContain("disabled={");
   });
@@ -287,6 +296,37 @@ describe("settings UX (choice rows, preload, busy hints)", () => {
     expect(paPanel.match(/<SettingsBusyHint mode=\{busyMode\} \/>/g)?.length).toBe(2);
     expect(appsPanel.match(/<SettingsBusyHint mode=\{busyMode\} \/>/g)?.length).toBe(2);
     expect(paPanel).toContain("policyPanelBusyMode");
+  });
+});
+
+describe("popup notifications (region, alerts, lifted status)", () => {
+  it("notification modules exist and App wires the shared region", () => {
+    expect(existsSync(join(repoRoot, "src/popup/components/ui/alert.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/PopupNotificationRegion.tsx"))).toBe(
+      true,
+    );
+    expect(existsSync(join(repoRoot, "tests/popup-notification-ui.test.ts"))).toBe(true);
+    expect(existsSync(join(repoRoot, "tests/popup-notification-visibility.test.ts"))).toBe(true);
+
+    const app = readSource("src/popup/App.tsx");
+    expect(readSource("src/popup/components/PopupNotificationRegion.tsx")).toContain(
+      "POPUP_NOTIFICATION_REGION_CLASS",
+    );
+    expect(app).not.toMatch(/<Loader2[\s\S]{0,80}powerAutomateStatus/);
+  });
+
+  it("PowerAppsPanel does not render inline status; persist uses shared message constants", () => {
+    const panel = readSource("src/popup/components/PowerAppsPanel.tsx");
+    expect(panel).toContain("setStatus:");
+    expect(panel).not.toContain("<PopupNotificationRegion");
+    expect(panel).not.toMatch(/role="status"/);
+
+    expect(readSource("src/popup/persist-powerapps-preference.ts")).toContain(
+      "POWER_APPS_PERSIST_STATUS",
+    );
+    expect(readSource("src/popup/persist-policy-preference.ts")).toContain(
+      "POWER_AUTOMATE_PERSIST_STATUS",
+    );
   });
 });
 

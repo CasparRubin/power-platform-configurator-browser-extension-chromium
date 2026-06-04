@@ -43,7 +43,10 @@ describe("README popup and icon documentation", () => {
     expect(section).toMatch(/800\s*[×x]\s*600|800×600/i);
     expect(section).toContain("SettingsChoiceRow");
     expect(section).toContain("SettingsBusyHint");
+    expect(section).toMatch(/PopupNotificationRegion|notification slot|notification area/i);
+    expect(section).toContain("SettingsInfoAlert");
     expect(section).toContain("POPUP_SYNC_SETTINGS_KEYS");
+    expect(section).not.toMatch(/top status spinner/i);
     expect(section).toMatch(/stay enabled|full.row click/i);
     expect(section).not.toMatch(/radio groups are disabled only while/i);
     expect(section).not.toMatch(/radios briefly disable only while/i);
@@ -64,6 +67,7 @@ describe("README popup and icon documentation", () => {
   it("layout and unit-test tables document popup components and icon paths", () => {
     const fromUnitTests = readme.slice(readme.indexOf("## Unit tests"));
     expect(fromUnitTests).toContain("tests/popup-chrome.test.ts");
+    expect(fromUnitTests).toContain("tests/popup-notification-ui.test.ts");
     expect(fromUnitTests).toContain("tests/readme-popup-docs.test.ts");
 
     const layout = readmeSection(readme, "## Repository layout");
@@ -87,6 +91,8 @@ describe("README popup and icon documentation", () => {
     expect(readme).toContain("popup-layout.ts");
     expect(readme).toContain("TAB_PANEL_HOST_CLASS");
     expect(layout).toContain("SettingsChoiceRow");
+    expect(layout).toContain("PopupNotificationRegion");
+    expect(layout).toContain("SettingsInfoAlert");
     expect(layout).toContain("settingsChoiceRowClass");
     expect(existsSync(join(repoRoot, "src/popup/components/SettingsChoiceRow.tsx"))).toBe(true);
     expect(existsSync(join(repoRoot, "src/popup/components/SettingsSectionHeader.tsx"))).toBe(true);

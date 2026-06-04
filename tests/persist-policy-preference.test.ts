@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { POWER_AUTOMATE_PERSIST_STATUS } from "../src/popup/persist-status-messages";
 
 const { reloadMock } = vi.hoisted(() => ({
   reloadMock: vi.fn(),
@@ -71,7 +72,7 @@ describe("persistPolicyPreferenceAndOptionalReload", () => {
     expect(syncSet).toHaveBeenCalledWith({ [STORAGE_KEY_ENFORCED_V3]: "off" });
     expect(reloadMock).not.toHaveBeenCalled();
     expect(setReloadBusy).not.toHaveBeenCalled();
-    expect(setStatus).toHaveBeenCalledWith("Saved.");
+    expect(setStatus).toHaveBeenCalledWith(POWER_AUTOMATE_PERSIST_STATUS.saved);
     expect(scheduleClear).toHaveBeenCalledWith(2000);
   });
 

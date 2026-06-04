@@ -1,13 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  BadgeInfo,
-  ExternalLink,
-  GitBranch,
-  Loader2,
-  Package,
-  Palette,
-  Workflow,
-} from "lucide-react";
+import { BadgeInfo, ExternalLink, GitBranch, Package, Palette, Workflow } from "lucide-react";
 import { readExtensionVersion } from "@helvety/extension-chrome/extension-version";
 import {
   ABOUT_CARD_CONTENT_CLASS,
@@ -51,6 +43,7 @@ import {
 } from "./about-meta";
 import { HelvetyMark } from "./components/HelvetyMark";
 import { PopupHeader } from "./components/PopupHeader";
+import { PopupNotificationRegion } from "./components/PopupNotificationRegion";
 import { TabProductIcon } from "./components/TabProductIcon";
 import { PowerAppsPanel } from "./components/PowerAppsPanel";
 import { PowerAutomatePanel } from "./components/PowerAutomatePanel";
@@ -58,10 +51,13 @@ import { SettingsBusyHint } from "./components/SettingsBusyHint";
 import { SettingsChoiceRow } from "./components/SettingsChoiceRow";
 import { SettingsSectionHeader } from "./components/SettingsSectionHeader";
 import { persistPolicyPreferenceAndOptionalReload } from "./persist-policy-preference";
+import { shouldShowPopupTabNotification } from "./popup-notification-visibility";
 import { createAsyncQueue } from "./sync-write-queue";
 import type { ThemePreference } from "@helvety/extension-chrome/theme-preference";
 
 type SurveyEnabledSync = "true" | "false";
+
+type PopupTab = "power-automate" | "power-apps" | "about";
 
 export default function App() {
   const [value, setValue] = useState<EnforcementPreference>(DEFAULT_ENFORCEMENT_PREFERENCE);
@@ -75,14 +71,20 @@ export default function App() {
   const { themePreference, themeLoaded, saveTheme } = usePopupTheme(STORAGE_KEY_POPUP_THEME);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const loaded = themeLoaded && settingsLoaded;
-  const [status, setStatus] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<PopupTab>("power-automate");
+  const [powerAutomateStatus, setPowerAutomateStatus] = useState("");
+  const [powerAppsStatus, setPowerAppsStatus] = useState("");
   const [isPolicySyncBusy, setIsPolicySyncBusy] = useState(false);
   const [isTargetTabReloadBusy, setIsTargetTabReloadBusy] = useState(false);
+  const [isPowerAppsSyncBusy, setIsPowerAppsSyncBusy] = useState(false);
+  const [isPowerAppsApplying, setIsPowerAppsApplying] = useState(false);
   const [extensionVersion, setExtensionVersion] = useState<string>("");
-  const statusClearTimerRef = useRef<number | null>(null);
+  const powerAutomateStatusClearTimerRef = useRef<number | null>(null);
+  const powerAppsStatusClearTimerRef = useRef<number | null>(null);
   const mountedRef = useRef(true);
   const enforcementRef = useRef<EnforcementPreference>(DEFAULT_ENFORCEMENT_PREFERENCE);
   const syncWriteDepthRef = useRef(0);
+  const powerAppsSyncWriteDepthRef = useRef(0);
   const editorWriteQueue = useMemo(() => createAsyncQueue(), []);
   const surveyWriteQueue = useMemo(() => createAsyncQueue(), []);
 
@@ -98,6 +100,21 @@ export default function App() {
     if (syncWriteDepthRef.current <= 0) {
       syncWriteDepthRef.current = 0;
       setIsPolicySyncBusy(false);
+    }
+  }, []);
+
+  const beginPowerAppsSyncWrite = useCallback(() => {
+    powerAppsSyncWriteDepthRef.current += 1;
+    if (powerAppsSyncWriteDepthRef.current === 1) {
+      setIsPowerAppsSyncBusy(true);
+    }
+  }, []);
+
+  const endPowerAppsSyncWrite = useCallback(() => {
+    powerAppsSyncWriteDepthRef.current -= 1;
+    if (powerAppsSyncWriteDepthRef.current <= 0) {
+      powerAppsSyncWriteDepthRef.current = 0;
+      setIsPowerAppsSyncBusy(false);
     }
   }, []);
 
@@ -145,22 +162,40 @@ export default function App() {
       });
   }, []);
 
-  const clearPendingStatusDismiss = useCallback(() => {
-    if (statusClearTimerRef.current !== null) {
-      window.clearTimeout(statusClearTimerRef.current);
-      statusClearTimerRef.current = null;
+  const clearPendingPowerAutomateStatusDismiss = useCallback(() => {
+    if (powerAutomateStatusClearTimerRef.current !== null) {
+      window.clearTimeout(powerAutomateStatusClearTimerRef.current);
+      powerAutomateStatusClearTimerRef.current = null;
     }
   }, []);
 
-  const scheduleStatusClear = useCallback(
+  const schedulePowerAutomateStatusClear = useCallback(
     (clearAfterMs: number = 2000) => {
-      clearPendingStatusDismiss();
-      statusClearTimerRef.current = window.setTimeout(() => {
-        statusClearTimerRef.current = null;
-        setStatus("");
+      clearPendingPowerAutomateStatusDismiss();
+      powerAutomateStatusClearTimerRef.current = window.setTimeout(() => {
+        powerAutomateStatusClearTimerRef.current = null;
+        setPowerAutomateStatus("");
       }, clearAfterMs);
     },
-    [clearPendingStatusDismiss],
+    [clearPendingPowerAutomateStatusDismiss],
+  );
+
+  const clearPendingPowerAppsStatusDismiss = useCallback(() => {
+    if (powerAppsStatusClearTimerRef.current !== null) {
+      window.clearTimeout(powerAppsStatusClearTimerRef.current);
+      powerAppsStatusClearTimerRef.current = null;
+    }
+  }, []);
+
+  const schedulePowerAppsStatusClear = useCallback(
+    (clearAfterMs: number = 2000) => {
+      clearPendingPowerAppsStatusDismiss();
+      powerAppsStatusClearTimerRef.current = window.setTimeout(() => {
+        powerAppsStatusClearTimerRef.current = null;
+        setPowerAppsStatus("");
+      }, clearAfterMs);
+    },
+    [clearPendingPowerAppsStatusDismiss],
   );
 
   const resyncFromStorage = useCallback(async () => {
@@ -190,22 +225,22 @@ export default function App() {
           mountedRef,
           beginSyncWrite,
           endSyncWrite,
-          clearPendingStatusDismiss,
-          setStatus,
+          clearPendingStatusDismiss: clearPendingPowerAutomateStatusDismiss,
+          setStatus: setPowerAutomateStatus,
           setIsTargetTabReloadBusy,
           resyncFromStorage,
-          scheduleStatusClear,
+          scheduleStatusClear: schedulePowerAutomateStatusClear,
           onResyncHardFailure: () => setValue(DEFAULT_ENFORCEMENT_PREFERENCE),
         }),
       );
     },
     [
       beginSyncWrite,
-      clearPendingStatusDismiss,
+      clearPendingPowerAutomateStatusDismiss,
       editorWriteQueue,
       endSyncWrite,
       resyncFromStorage,
-      scheduleStatusClear,
+      schedulePowerAutomateStatusClear,
     ],
   );
 
@@ -220,30 +255,48 @@ export default function App() {
           mountedRef,
           beginSyncWrite,
           endSyncWrite,
-          clearPendingStatusDismiss,
-          setStatus,
+          clearPendingStatusDismiss: clearPendingPowerAutomateStatusDismiss,
+          setStatus: setPowerAutomateStatus,
           setIsTargetTabReloadBusy,
           resyncFromStorage,
-          scheduleStatusClear,
+          scheduleStatusClear: schedulePowerAutomateStatusClear,
           onResyncHardFailure: () => setSurveyMode("false"),
         }),
       );
     },
     [
       beginSyncWrite,
-      clearPendingStatusDismiss,
+      clearPendingPowerAutomateStatusDismiss,
       endSyncWrite,
       resyncFromStorage,
-      scheduleStatusClear,
+      schedulePowerAutomateStatusClear,
       surveyWriteQueue,
     ],
   );
 
   useEffect(() => {
     return () => {
-      clearPendingStatusDismiss();
+      clearPendingPowerAutomateStatusDismiss();
+      clearPendingPowerAppsStatusDismiss();
     };
-  }, [clearPendingStatusDismiss]);
+  }, [clearPendingPowerAutomateStatusDismiss, clearPendingPowerAppsStatusDismiss]);
+
+  const powerAutomatePanelBusy = isPolicySyncBusy || isTargetTabReloadBusy;
+  const powerAppsPanelBusy = isPowerAppsSyncBusy || isPowerAppsApplying;
+  const showPowerAutomateNotification = shouldShowPopupTabNotification(
+    activeTab,
+    "power-automate",
+    powerAutomateStatus,
+    powerAutomatePanelBusy,
+  );
+  const showPowerAppsNotification = shouldShowPopupTabNotification(
+    activeTab,
+    "power-apps",
+    powerAppsStatus,
+    powerAppsPanelBusy,
+  );
+  const powerAutomateBusyLabel = isTargetTabReloadBusy ? "Reloading tab…" : "Saving…";
+  const powerAppsBusyLabel = isPowerAppsApplying ? "Applying…" : "Saving…";
 
   if (!loaded) {
     return (
@@ -257,7 +310,12 @@ export default function App() {
   return (
     <div className={`${POPUP_ROOT_CLASS} text-foreground`}>
       <Tabs
-        defaultValue="power-automate"
+        value={activeTab}
+        onValueChange={(v) => {
+          if (v === "power-automate" || v === "power-apps" || v === "about") {
+            setActiveTab(v);
+          }
+        }}
         className="flex h-0 min-h-0 flex-1 flex-col gap-0 overflow-hidden"
       >
         <div className="flex-shrink-0">
@@ -287,20 +345,19 @@ export default function App() {
           </TabsTrigger>
         </TabsList>
 
-        {status || isPolicySyncBusy || isTargetTabReloadBusy ? (
-          <div
-            role="status"
-            aria-live="polite"
-            className="mt-1.5 flex min-h-[1.25rem] flex-shrink-0 items-center gap-2 text-xs text-muted-foreground"
-          >
-            {isPolicySyncBusy || isTargetTabReloadBusy ? (
-              <Loader2
-                className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground"
-                aria-hidden
-              />
-            ) : null}
-            {status ? <span className="min-w-0 leading-snug">{status}</span> : null}
-          </div>
+        {showPowerAutomateNotification ? (
+          <PopupNotificationRegion
+            message={powerAutomateStatus}
+            showSpinner={powerAutomatePanelBusy && !powerAutomateStatus}
+            busyLabel={powerAutomateBusyLabel}
+          />
+        ) : null}
+        {showPowerAppsNotification ? (
+          <PopupNotificationRegion
+            message={powerAppsStatus}
+            showSpinner={powerAppsPanelBusy && !powerAppsStatus}
+            busyLabel={powerAppsBusyLabel}
+          />
         ) : null}
 
         <div className={TAB_PANEL_HOST_CLASS}>
@@ -312,6 +369,7 @@ export default function App() {
               isTargetTabReloadBusy={isTargetTabReloadBusy}
               onSave={onSave}
               onSaveSurvey={onSaveSurvey}
+              hideBusyHint={powerAutomatePanelBusy}
             />
           </TabsContent>
 
@@ -321,6 +379,15 @@ export default function App() {
               readOnlyMode={readOnlyMode}
               onHiddenModeChange={setHiddenMode}
               onReadOnlyModeChange={setReadOnlyMode}
+              setStatus={setPowerAppsStatus}
+              clearPendingStatusDismiss={clearPendingPowerAppsStatusDismiss}
+              scheduleStatusClear={schedulePowerAppsStatusClear}
+              isSyncBusy={isPowerAppsSyncBusy}
+              isApplying={isPowerAppsApplying}
+              setIsApplying={setIsPowerAppsApplying}
+              beginSyncWrite={beginPowerAppsSyncWrite}
+              endSyncWrite={endPowerAppsSyncWrite}
+              hideBusyHint={powerAppsPanelBusy}
             />
           </TabsContent>
 

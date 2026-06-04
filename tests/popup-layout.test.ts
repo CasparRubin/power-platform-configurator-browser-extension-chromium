@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { SETTINGS_CHOICE_RADIO_CLASS, settingsChoiceRowClass } from "../src/popup/popup-layout";
+import {
+  POPUP_NOTIFICATION_ALERT_CLASS,
+  POPUP_NOTIFICATION_REGION_CLASS,
+  SETTINGS_CHOICE_RADIO_CLASS,
+  settingsChoiceRowClass,
+} from "../src/popup/popup-layout";
 
 describe("settingsChoiceRowClass", () => {
   it("includes shared choice-card chrome for all rows", () => {
@@ -29,5 +34,14 @@ describe("SETTINGS_CHOICE_RADIO_CLASS", () => {
   it("uses a slightly larger radio control", () => {
     expect(SETTINGS_CHOICE_RADIO_CLASS).toMatch(/h-5/);
     expect(SETTINGS_CHOICE_RADIO_CLASS).toMatch(/w-5/);
+  });
+});
+
+describe("popup notification layout tokens", () => {
+  it("defines region and alert typography classes", () => {
+    expect(POPUP_NOTIFICATION_REGION_CLASS).toContain("flex-shrink-0");
+    expect(POPUP_NOTIFICATION_REGION_CLASS).toContain("px-2");
+    expect(POPUP_NOTIFICATION_ALERT_CLASS).toContain("text-xs");
+    expect(POPUP_NOTIFICATION_ALERT_CLASS).toContain("leading-snug");
   });
 });

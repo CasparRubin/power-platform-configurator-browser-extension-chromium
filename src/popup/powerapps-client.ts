@@ -1,4 +1,4 @@
-/** Popup messaging and user-facing status strings for global Power Apps form enforcement. */
+/** Popup messaging and user-facing strings for the Power Apps notification area (global form enforcement). */
 import {
   POWERAPPS_MESSAGE,
   type PowerAppsApplyFormActionResponse,

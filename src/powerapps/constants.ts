@@ -15,7 +15,7 @@ export type PowerAppsFormActionResult = {
   unlocked?: number;
   /** e.g. `no_form_context`, `no_controls_updated`, `inject_no_result`, `host_not_permitted`, `injection_failed`, `scripting_unavailable`. */
   error?: string;
-  /** Human-readable detail (Chrome lastError, frame counts, etc.) for the popup status line. */
+  /** Human-readable detail (Chrome lastError, frame counts, etc.) for the popup notification area. */
   detail?: string;
   /** Number of frames `executeScript` ran in (diagnostics). */
   framesChecked?: number;

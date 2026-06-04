@@ -4,12 +4,13 @@ import {
   type PowerAppsHiddenFieldsMode,
   type PowerAppsReadOnlyMode,
 } from "../constants";
+import { POWER_APPS_PERSIST_STATUS } from "./persist-status-messages";
 
 export type PersistPowerAppsMountRef = { current: boolean };
 
 /**
  * Writes Power Apps enforcement keys to `chrome.storage.sync`. Background listeners fan out apply
- * to all Dataverse tabs; optional callback runs apply on the active tab for popup status text.
+ * to all Dataverse tabs; optional callback runs apply on the active tab for the popup notification area.
  */
 export async function persistPowerAppsPreference(options: {
   hidden: PowerAppsHiddenFieldsMode;
@@ -36,7 +37,7 @@ export async function persistPowerAppsPreference(options: {
 
   clearPendingStatusDismiss();
   beginSyncWrite();
-  setStatus("Saving preference…");
+  setStatus(POWER_APPS_PERSIST_STATUS.saving);
 
   try {
     await chrome.storage.sync.set({
@@ -47,7 +48,7 @@ export async function persistPowerAppsPreference(options: {
     if (!mountedRef.current) {
       return;
     }
-    setStatus("Could not save preference. Try again.");
+    setStatus(POWER_APPS_PERSIST_STATUS.saveFailed);
     scheduleStatusClear(4000);
     return;
   } finally {
@@ -59,18 +60,18 @@ export async function persistPowerAppsPreference(options: {
   }
 
   if (onAfterSave) {
-    setStatus("Applying…");
+    setStatus(POWER_APPS_PERSIST_STATUS.applying);
     try {
       await onAfterSave();
     } catch {
       if (mountedRef.current) {
-        setStatus("Preference saved; could not apply on the active tab.");
+        setStatus(POWER_APPS_PERSIST_STATUS.applyFailed);
         scheduleStatusClear(4000);
       }
       return;
     }
   } else {
-    setStatus("Preference saved.");
+    setStatus(POWER_APPS_PERSIST_STATUS.saved);
     scheduleStatusClear(2000);
     return;
   }

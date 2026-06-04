@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { RadioGroup } from "@helvety/ui/radio-group";
 import { Separator } from "@helvety/ui/separator";
 import { type PowerAppsHiddenFieldsMode, type PowerAppsReadOnlyMode } from "../../constants";
@@ -24,6 +23,15 @@ type PowerAppsPanelProps = {
   readOnlyMode: PowerAppsReadOnlyMode;
   onHiddenModeChange: (next: PowerAppsHiddenFieldsMode) => void;
   onReadOnlyModeChange: (next: PowerAppsReadOnlyMode) => void;
+  setStatus: (message: string) => void;
+  clearPendingStatusDismiss: () => void;
+  scheduleStatusClear: (clearAfterMs?: number) => void;
+  isSyncBusy: boolean;
+  isApplying: boolean;
+  setIsApplying: (busy: boolean) => void;
+  beginSyncWrite: () => void;
+  endSyncWrite: () => void;
+  hideBusyHint?: boolean;
 };
 
 export function PowerAppsPanel({
@@ -31,47 +39,18 @@ export function PowerAppsPanel({
   readOnlyMode,
   onHiddenModeChange,
   onReadOnlyModeChange,
+  setStatus,
+  clearPendingStatusDismiss,
+  scheduleStatusClear,
+  isSyncBusy,
+  isApplying,
+  setIsApplying,
+  beginSyncWrite,
+  endSyncWrite,
+  hideBusyHint = false,
 }: PowerAppsPanelProps) {
-  const [isSyncBusy, setIsSyncBusy] = useState(false);
-  const [isApplying, setIsApplying] = useState(false);
-  const [status, setStatus] = useState("");
   const mountedRef = useRef(true);
-  const statusClearTimerRef = useRef<number | null>(null);
-  const syncWriteDepthRef = useRef(0);
   const writeQueue = useMemo(() => createAsyncQueue(), []);
-
-  const beginSyncWrite = useCallback(() => {
-    syncWriteDepthRef.current += 1;
-    if (syncWriteDepthRef.current === 1) {
-      setIsSyncBusy(true);
-    }
-  }, []);
-
-  const endSyncWrite = useCallback(() => {
-    syncWriteDepthRef.current -= 1;
-    if (syncWriteDepthRef.current <= 0) {
-      syncWriteDepthRef.current = 0;
-      setIsSyncBusy(false);
-    }
-  }, []);
-
-  const clearPendingStatusDismiss = useCallback(() => {
-    if (statusClearTimerRef.current !== null) {
-      window.clearTimeout(statusClearTimerRef.current);
-      statusClearTimerRef.current = null;
-    }
-  }, []);
-
-  const scheduleStatusClear = useCallback(
-    (clearAfterMs: number = 2000) => {
-      clearPendingStatusDismiss();
-      statusClearTimerRef.current = window.setTimeout(() => {
-        statusClearTimerRef.current = null;
-        setStatus("");
-      }, clearAfterMs);
-    },
-    [clearPendingStatusDismiss],
-  );
 
   useEffect(() => {
     mountedRef.current = true;
@@ -114,7 +93,15 @@ export function PowerAppsPanel({
         }),
       );
     },
-    [beginSyncWrite, clearPendingStatusDismiss, endSyncWrite, scheduleStatusClear, writeQueue],
+    [
+      beginSyncWrite,
+      clearPendingStatusDismiss,
+      endSyncWrite,
+      scheduleStatusClear,
+      setIsApplying,
+      setStatus,
+      writeQueue,
+    ],
   );
 
   const busyMode = powerAppsPanelBusyMode(isSyncBusy, isApplying);
@@ -123,35 +110,16 @@ export function PowerAppsPanel({
   return (
     <div className={TAB_PANEL_CLASS} aria-busy={panelBusy}>
       <div className={TAB_PANEL_BODY_CLASS}>
-        {status ? (
-          <p
-            className="text-xs leading-snug text-muted-foreground"
-            role="status"
-            aria-live="polite"
-          >
-            {panelBusy ? (
-              <span className="inline-flex items-center gap-1.5">
-                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-                {status}
-              </span>
-            ) : (
-              status
-            )}
-          </p>
-        ) : null}
-
         <section className={SETTINGS_SECTION_CLASS}>
           <SettingsSectionHeader
             title="Hidden fields"
             trailing={<SettingsBusyHint mode={busyMode} />}
+            hideBusyHint={hideBusyHint}
             description={
               <>
                 On an open <span className="font-medium text-foreground">record form</span> in a
-                model-driven app (Dataverse / Dynamics—commercial, China, Germany, US Gov, etc.;
-                e.g. <span className="font-medium text-foreground">crm17</span> or{" "}
-                <span className="font-medium text-foreground">dynamics.cn</span>).{" "}
-                <span className="font-medium text-foreground">Show</span> stays on across tabs and
-                record navigation until you choose Hide.{" "}
+                model-driven app. <span className="font-medium text-foreground">Show</span> stays on
+                across tabs and record navigation until you choose Hide.{" "}
                 <span className="font-medium text-foreground">Hide</span> stops auto-apply; reload
                 open forms to restore platform defaults.
               </>
@@ -197,6 +165,7 @@ export function PowerAppsPanel({
           <SettingsSectionHeader
             title="Read-only fields"
             trailing={<SettingsBusyHint mode={busyMode} />}
+            hideBusyHint={hideBusyHint}
             description={
               <>
                 Client-side only; does not bypass server security on save. Canvas apps are not

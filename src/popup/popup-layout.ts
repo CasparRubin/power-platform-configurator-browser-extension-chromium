@@ -3,13 +3,18 @@ import { cn } from "@helvety/shared/utils";
 /**
  * Central Tailwind class strings for the popup shell and settings UI.
  * Import these constants (and `settingsChoiceRowClass`) from panels and `App.tsx` so padding,
- * section gaps, and choice-card radio rows stay consistent. Do not use
- * `@helvety/extension-chrome/popup-shell` `popupChoiceRowClass` in this extension.
+ * section gaps, notification region layout, and choice-card radio rows stay consistent.
+ * Do not use `@helvety/extension-chrome/popup-shell` `popupChoiceRowClass` in this extension.
  */
 
 /** Chrome extension popup maximum dimensions (content-driven sizing). */
 export const POPUP_ROOT_CLASS =
   "flex h-[600px] w-[800px] max-h-[600px] max-w-[800px] min-h-0 flex-col overflow-hidden px-3 py-2.5 text-sm leading-snug";
+
+/** Below tab bar, above scroll host; zero height when empty (conditional render). */
+export const POPUP_NOTIFICATION_REGION_CLASS = "flex-shrink-0 px-2 pb-1.5 pt-0";
+
+export const POPUP_NOTIFICATION_ALERT_CLASS = "text-xs leading-snug";
 
 /** Fills space below tab chrome; tab panels stack here (not as flex siblings). */
 export const TAB_PANEL_HOST_CLASS = "relative mt-1.5 min-h-0 flex-1 basis-0 overflow-hidden";

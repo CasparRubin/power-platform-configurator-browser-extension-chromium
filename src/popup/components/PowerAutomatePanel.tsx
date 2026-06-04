@@ -22,6 +22,7 @@ type PowerAutomatePanelProps = {
   isTargetTabReloadBusy: boolean;
   onSave: (next: EnforcementPreference) => void;
   onSaveSurvey: (next: SurveyEnabledSync) => void;
+  hideBusyHint?: boolean;
 };
 
 export function PowerAutomatePanel({
@@ -31,6 +32,7 @@ export function PowerAutomatePanel({
   isTargetTabReloadBusy,
   onSave,
   onSaveSurvey,
+  hideBusyHint = false,
 }: PowerAutomatePanelProps) {
   const busyMode = policyPanelBusyMode(isPolicySyncBusy, isTargetTabReloadBusy);
   const panelBusy = isPolicySyncBusy || isTargetTabReloadBusy;
@@ -42,6 +44,7 @@ export function PowerAutomatePanel({
           <SettingsSectionHeader
             title="Flow designer"
             trailing={<SettingsBusyHint mode={busyMode} />}
+            hideBusyHint={hideBusyHint}
             description={
               <>
                 Choose how flow and run links open in Power Automate: classic designer, new
@@ -102,6 +105,7 @@ export function PowerAutomatePanel({
               </>
             }
             trailing={<SettingsBusyHint mode={busyMode} />}
+            hideBusyHint={hideBusyHint}
             description={
               <span className="flex flex-col gap-1">
                 <span>

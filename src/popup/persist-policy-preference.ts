@@ -1,4 +1,5 @@
 import type { EnforcementPreference } from "../constants";
+import { POWER_AUTOMATE_PERSIST_STATUS } from "./persist-status-messages";
 import { policyPopupLog } from "./policy-popup-log";
 import { reloadFocusedTargetTabIfApplicable } from "./reload-focused-target-tab";
 
@@ -7,7 +8,7 @@ export type PersistPolicyMountRef = { current: boolean };
 /**
  * Writes policy keys to `chrome.storage.sync`, then optionally reloads the focused flow/run tab.
  * Used by the Power Automate popup tab for flow designer (`enforcedV3`) and survey (`v3surveyEnabled`)
- * saves — keeps one implementation for status, busy flags, logging, and error handling.
+ * saves — keeps one implementation for notification messages, busy flags, logging, and error handling.
  */
 export async function persistPolicyPreferenceAndOptionalReload(options: {
   storagePatch: Record<string, string>;
@@ -44,7 +45,7 @@ export async function persistPolicyPreferenceAndOptionalReload(options: {
 
   clearPendingStatusDismiss();
   beginSyncWrite();
-  setStatus("Saving preference…");
+  setStatus(POWER_AUTOMATE_PERSIST_STATUS.saving);
   let statusAutoDismissMs = 2000;
   let storageOk = false;
   try {
@@ -95,7 +96,7 @@ export async function persistPolicyPreferenceAndOptionalReload(options: {
   const reloadPreference = getReloadPreference();
   let tabReloaded = false;
   if (reloadPreference !== "off") {
-    setStatus("Refreshing open Power Automate tab…");
+    setStatus(POWER_AUTOMATE_PERSIST_STATUS.refreshing);
     setIsTargetTabReloadBusy(true);
     try {
       tabReloaded = await reloadFocusedTargetTabIfApplicable(reloadPreference);
@@ -109,7 +110,7 @@ export async function persistPolicyPreferenceAndOptionalReload(options: {
   if (!mountedRef.current) {
     return;
   }
-  setStatus("Saved.");
+  setStatus(POWER_AUTOMATE_PERSIST_STATUS.saved);
   if (tabReloaded) {
     statusAutoDismissMs = 3800;
   }

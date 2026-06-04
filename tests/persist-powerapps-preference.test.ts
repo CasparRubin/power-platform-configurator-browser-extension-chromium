@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { persistPowerAppsPreference } from "../src/popup/persist-powerapps-preference";
+import { POWER_APPS_PERSIST_STATUS } from "../src/popup/persist-status-messages";
 
 describe("persistPowerAppsPreference", () => {
   afterEach(() => {
@@ -58,7 +59,7 @@ describe("persistPowerAppsPreference", () => {
     });
     mountedRef.current = false;
     await promise;
-    expect(setStatus).not.toHaveBeenCalledWith("Could not save preference. Try again.");
+    expect(setStatus).not.toHaveBeenCalledWith(POWER_APPS_PERSIST_STATUS.saveFailed);
   });
 
   it("reports save failure when storage.set throws", async () => {
@@ -81,7 +82,7 @@ describe("persistPowerAppsPreference", () => {
       scheduleStatusClear: vi.fn(),
     });
 
-    expect(setStatus).toHaveBeenCalledWith("Could not save preference. Try again.");
+    expect(setStatus).toHaveBeenCalledWith(POWER_APPS_PERSIST_STATUS.saveFailed);
   });
 
   it("does not call onAfterSave when callback is omitted", async () => {
@@ -102,7 +103,7 @@ describe("persistPowerAppsPreference", () => {
       scheduleStatusClear: vi.fn(),
     });
 
-    expect(setStatus).toHaveBeenCalledWith("Preference saved.");
+    expect(setStatus).toHaveBeenCalledWith(POWER_APPS_PERSIST_STATUS.saved);
   });
 
   it("runs onAfterSave when callback is provided", async () => {
@@ -176,7 +177,7 @@ describe("persistPowerAppsPreference", () => {
       onAfterSave: vi.fn().mockRejectedValue(new Error("apply failed")),
     });
 
-    expect(setStatus).toHaveBeenCalledWith("Preference saved; could not apply on the active tab.");
+    expect(setStatus).toHaveBeenCalledWith(POWER_APPS_PERSIST_STATUS.applyFailed);
   });
 
   it("does not set apply error status when unmounted before onAfterSave catch", async () => {
@@ -201,9 +202,7 @@ describe("persistPowerAppsPreference", () => {
       },
     });
 
-    expect(setStatus).not.toHaveBeenCalledWith(
-      "Preference saved; could not apply on the active tab.",
-    );
+    expect(setStatus).not.toHaveBeenCalledWith(POWER_APPS_PERSIST_STATUS.applyFailed);
   });
 
   it("schedules status clear after successful onAfterSave", async () => {

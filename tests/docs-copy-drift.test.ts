@@ -42,6 +42,15 @@ const POPUP_SETTINGS_SOURCE_PATHS = [
   "src/popup/components/SettingsChoiceRow.tsx",
   "src/popup/components/SettingsSectionHeader.tsx",
   "src/popup/components/SettingsBusyHint.tsx",
+  "src/popup/components/PopupNotificationRegion.tsx",
+  "src/popup/components/SettingsStatusAlert.tsx",
+  "src/popup/components/SettingsInfoAlert.tsx",
+] as const;
+
+/** Status was shown as plain muted text at panel top or under tabs without Alert chrome. */
+const LEGACY_POPUP_STATUS_UX_PHRASES = [
+  /className="mt-1\.5 flex min-h-\[1\.25rem\][^"]*text-muted-foreground"/,
+  /<p\s+className="text-xs leading-snug text-muted-foreground"[^>]*role="status"/,
 ] as const;
 
 /** Retired busy hint and per-panel storage load for Power Apps prefs. */
@@ -62,6 +71,18 @@ const OUTDATED_POPUP_RADIO_DISABLE_COPY = [
 ] as const;
 
 const POPUP_USER_FACING_DOC_PATHS = ["README.md", "docs/chrome-web-store.md"] as const;
+
+/** Save feedback copy that predates the shared notification slot below the tab bar. */
+const LEGACY_POPUP_NOTIFICATION_DOC_PHRASES = [
+  /top status spinner/i,
+  /plus a top status/i,
+  /section hints show \*\*Saving/i,
+  /SettingsBusyHint\*\* on each section shows \*\*Saving/i,
+  /hints show \*\*Saving…\*\* \/ \*\*Reloading tab/i,
+  /The status line should show success/i,
+  /confirm the status line \(/i,
+  /while \*\*SettingsBusyHint\*\* and the status line show progress/i,
+] as const;
 
 /** Power Apps popup used action buttons before radio settings (Hide/Show, Lock/Unlock). */
 const LEGACY_POWER_APPS_POPUP_UI_PHRASES = [
@@ -247,6 +268,19 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(panel).not.toMatch(/chrome\.storage\.sync/);
   });
 
+  it("README and store doc describe notification area (not legacy top status line only)", () => {
+    for (const path of POPUP_USER_FACING_DOC_PATHS) {
+      const text = readRepoFile(path);
+      for (const pattern of LEGACY_POPUP_NOTIFICATION_DOC_PHRASES) {
+        expect(text).not.toMatch(pattern);
+      }
+      expect(text).toMatch(
+        /notification (area|slot|region)|PopupNotificationRegion|SettingsStatusAlert/i,
+      );
+      expect(text).toMatch(/SettingsInfoAlert/i);
+    }
+  });
+
   it("README and store doc do not claim settings radios disable during sync", () => {
     for (const path of POPUP_USER_FACING_DOC_PATHS) {
       const text = readRepoFile(path);
@@ -255,6 +289,24 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
       }
       expect(text).toMatch(/SettingsBusyHint|POPUP_SYNC_SETTINGS_KEYS|stay enabled|full.row/i);
     }
+  });
+
+  it("popup settings sources use notification alerts instead of legacy plain status lines", () => {
+    for (const path of POPUP_SETTINGS_SOURCE_PATHS) {
+      const text = readRepoFile(path);
+      for (const pattern of LEGACY_POPUP_STATUS_UX_PHRASES) {
+        expect(text).not.toMatch(pattern);
+      }
+    }
+    const app = readRepoFile("src/popup/App.tsx");
+    expect(app).toContain("PopupNotificationRegion");
+    expect(readRepoFile("src/popup/components/PopupNotificationRegion.tsx")).toContain(
+      "SettingsStatusAlert",
+    );
+    expect(readRepoFile("src/popup/components/SettingsSectionHeader.tsx")).toContain(
+      "SettingsInfoAlert",
+    );
+    expect(readRepoFile("src/popup/components/PowerAppsPanel.tsx")).not.toMatch(/role="status"/);
   });
 
   it("popup settings sources use unified choice rows and do not lock radios during save", () => {
@@ -269,6 +321,8 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(choiceRow).not.toContain("htmlFor=");
     const appsPanel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
     expect(appsPanel).toContain("onHiddenModeChange");
+    expect(appsPanel).toContain("setStatus:");
+    expect(appsPanel).not.toContain("chrome.storage.sync");
     expect(appsPanel).toContain("powerAppsPanelBusyMode");
   });
 
@@ -332,9 +386,10 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(section).not.toContain("https://*.*.dynamics.com/*");
   });
 
-  it("PowerAppsPanel and App About copy mention Dataverse regions or reload extension", () => {
+  it("PowerAppsPanel describes model-driven forms; App About copy mentions Dataverse hosts", () => {
     const panel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
-    expect(panel).toMatch(/crm17|dynamics\.cn|commercial/i);
+    expect(panel).toMatch(/model-driven app|record form/i);
+    expect(panel).not.toMatch(/Dataverse \/ Dynamics—commercial/i);
     expect(panel).not.toMatch(/one-shot|action buttons on an open model-driven/i);
     expect(readRepoFile("src/popup/App.tsx")).toMatch(
       /crm17|\.crm\d*\.dynamics|reload the extension/i,
