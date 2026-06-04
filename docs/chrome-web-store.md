@@ -4,8 +4,8 @@ Use this when uploading **Power Platform Configurator** from a tagged release (`
 
 ## Package to upload
 
-- Build from a release tag: `npm run build` (or download the GitHub Release asset).
-- Upload the **`dist/`** contents as a zip (same layout as [`power-platform-configurator.zip`](../power-platform-configurator.zip) for Helvety Store).
+- Build from a release tag: `npm run build` then `npm run package:zip` (or download the GitHub Release asset).
+- Upload the generated zip (`power-platform-configurator-vX.Y.Z.zip`). **`manifest.json` must be at the archive root** (e.g. `manifest.json`, not `dist/manifest.json` or `./manifest.json`). On Windows, do **not** use `tar -a` to zip `dist/` — use `npm run package:zip` or the Linux `zip` command from [Release](.github/workflows/release.yml).
 - Confirm **no DNR warnings** on `chrome://extensions` when loaded unpacked before submitting.
 
 ## Listing fields (dashboard)
