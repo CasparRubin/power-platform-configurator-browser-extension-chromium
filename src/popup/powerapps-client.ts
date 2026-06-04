@@ -112,13 +112,13 @@ export function formatPowerAppsActionError(
       return appendDetail("Chrome scripting API is not available for this extension.", detail);
     case "inject_no_result":
       return appendDetail(
-        "Could not run on this page. Use a record form (not a list or dashboard), reload the tab, and try again." +
+        "Could not run on this page. Use a record form (not a list or dashboard), reload the page, and try again." +
           frameHint,
         detail,
       );
     case "injection_failed":
       return appendDetail(
-        "Could not inject into the tab. Reload the form tab and try again." + frameHint,
+        "Could not inject into the tab. Reload the page and try again." + frameHint,
         detail,
       );
     case "message_failed":

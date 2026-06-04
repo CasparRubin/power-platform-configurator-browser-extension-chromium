@@ -1,23 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BadgeInfo, ExternalLink, GitBranch, Package, Palette, Workflow } from "lucide-react";
+import { BadgeInfo } from "lucide-react";
 import { readExtensionVersion } from "@helvety/extension-chrome/extension-version";
-import {
-  ABOUT_CARD_CONTENT_CLASS,
-  ABOUT_CARD_HEADER_CLASS,
-  ABOUT_DEVELOPER_LINK_CLASS,
-  POPUP_ROOT_CLASS,
-  SETTINGS_CODE_CLASS,
-  SETTINGS_RADIO_GROUP_CLASS,
-  SETTINGS_SECTION_CLASS,
-  SETTINGS_SEPARATOR_CLASS,
-  TAB_CONTENT_CLASS,
-  TAB_PANEL_CLASS,
-  TAB_PANEL_HOST_CLASS,
-} from "./popup-layout";
+import { POPUP_ROOT_CLASS, TAB_CONTENT_CLASS, TAB_PANEL_HOST_CLASS } from "./popup-layout";
 import { usePopupTheme } from "@helvety/extension-chrome/use-popup-theme";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@helvety/ui/card";
-import { RadioGroup } from "@helvety/ui/radio-group";
-import { Separator } from "@helvety/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@helvety/ui/tabs";
 import {
   DEFAULT_ENFORCEMENT_PREFERENCE,
@@ -35,21 +20,12 @@ import {
   type PowerAppsHiddenFieldsMode,
   type PowerAppsReadOnlyMode,
 } from "../constants";
-import {
-  DEVELOPER_NAME,
-  DEVELOPER_URL,
-  EXTENSION_DISPLAY_NAME,
-  SOURCE_REPO_URL,
-} from "./about-meta";
-import { HelvetyMark } from "./components/HelvetyMark";
+import { AboutPanel } from "./components/AboutPanel";
 import { PopupHeader } from "./components/PopupHeader";
 import { PopupNotificationRegion } from "./components/PopupNotificationRegion";
 import { TabProductIcon } from "./components/TabProductIcon";
 import { PowerAppsPanel } from "./components/PowerAppsPanel";
 import { PowerAutomatePanel } from "./components/PowerAutomatePanel";
-import { SettingsBusyHint } from "./components/SettingsBusyHint";
-import { SettingsChoiceRow } from "./components/SettingsChoiceRow";
-import { SettingsSectionHeader } from "./components/SettingsSectionHeader";
 import { persistPolicyPreferenceAndOptionalReload } from "./persist-policy-preference";
 import { shouldShowPopupTabNotification } from "./popup-notification-visibility";
 import { createAsyncQueue } from "./sync-write-queue";
@@ -392,158 +368,12 @@ export default function App() {
           </TabsContent>
 
           <TabsContent value="about" className={TAB_CONTENT_CLASS}>
-            <div className={TAB_PANEL_CLASS}>
-              <Card className="bg-transparent shadow-none">
-                <CardHeader className={ABOUT_CARD_HEADER_CLASS}>
-                  <CardTitle className="text-sm">{EXTENSION_DISPLAY_NAME}</CardTitle>
-                  <CardDescription className="text-xs leading-relaxed">
-                    Power Automate: align flow and run URLs with the classic or new designer,
-                    optional <span className="font-medium text-foreground">v3survey</span>{" "}
-                    Hide/Show, and pause. Power Apps: show hidden fields or unlock read-only
-                    controls on model-driven record forms (client-side only).
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className={ABOUT_CARD_CONTENT_CLASS}>
-                  <section className={SETTINGS_SECTION_CLASS}>
-                    <SettingsSectionHeader
-                      title={
-                        <span className="flex items-center gap-2">
-                          <Palette className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                          Appearance
-                        </span>
-                      }
-                      trailing={themeLoaded ? null : <SettingsBusyHint mode="loading" />}
-                      description="If nothing is saved yet, light or dark is chosen from your system theme. Your choice below is saved on this device only."
-                    />
-                    <RadioGroup
-                      className={SETTINGS_RADIO_GROUP_CLASS}
-                      aria-label="Popup color theme"
-                      value={themePreference}
-                      onValueChange={(v) => {
-                        if (v === "light" || v === "dark") {
-                          onSaveTheme(v);
-                        }
-                      }}
-                    >
-                      <SettingsChoiceRow
-                        id="theme-light"
-                        value="light"
-                        selected={themePreference === "light"}
-                        label="Light"
-                        description="Always light."
-                      />
-                      <SettingsChoiceRow
-                        id="theme-dark"
-                        value="dark"
-                        selected={themePreference === "dark"}
-                        label="Dark"
-                        description="Always dark."
-                      />
-                    </RadioGroup>
-                  </section>
-
-                  <Separator className={SETTINGS_SEPARATOR_CLASS} />
-
-                  <p className="flex items-center gap-2 font-medium text-foreground">
-                    <Workflow className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                    How it works
-                  </p>
-                  <ul className="flex list-disc flex-col gap-1 pl-4">
-                    <li>
-                      <span className="font-medium text-foreground">Power Automate</span> rewrites
-                      only URLs on Power Automate hosts whose path contains{" "}
-                      <code className={SETTINGS_CODE_CLASS}>/flows/</code> or{" "}
-                      <code className={SETTINGS_CODE_CLASS}>/runs/</code>, and only while
-                      enforcement is not paused.
-                    </li>
-                    <li>
-                      The <span className="font-medium text-foreground">v3</span> query flag matches
-                      your flow designer choice. Survey prompt settings use{" "}
-                      <code className={SETTINGS_CODE_CLASS}>v3survey</code>:{" "}
-                      <span className="font-medium text-foreground">Hide</span> (default) uses{" "}
-                      <code className={SETTINGS_CODE_CLASS}>v3survey=false</code> on rewrites;{" "}
-                      <span className="font-medium text-foreground">Show</span> only normalizes an
-                      existing flag to <code className={SETTINGS_CODE_CLASS}>true</code> and never
-                      adds it when absent.
-                    </li>
-                    <li>
-                      <span className="font-medium text-foreground">Power Apps</span> uses the Xrm
-                      Client API on an open model-driven record form (
-                      <code className={SETTINGS_CODE_CLASS}>*.crm17.dynamics.com</code> and other
-                      regional org hosts,{" "}
-                      <code className={SETTINGS_CODE_CLASS}>apps.powerapps.com</code>). Canvas apps
-                      are not supported. Reload the extension after an update if injection is
-                      blocked for a permitted CRM URL.
-                    </li>
-                    <li>
-                      Power Automate uses layered enforcement: declarative net request rules,
-                      background navigation listeners, and a content script for SPA-style
-                      navigations.
-                    </li>
-                    <li>
-                      The toolbar icon shows a small badge:{" "}
-                      <span className="font-medium text-foreground">C</span> for Classic or{" "}
-                      <span className="font-medium text-foreground">N</span> for New Designer; the
-                      badge is cleared while{" "}
-                      <span className="font-medium text-foreground">Paused</span>.
-                    </li>
-                  </ul>
-                  <p>
-                    <a
-                      className="inline-flex items-center gap-1.5 font-medium text-primary underline underline-offset-2"
-                      href={SOURCE_REPO_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <GitBranch className="h-4 w-4 shrink-0" aria-hidden />
-                      Source code on GitHub
-                      <ExternalLink className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
-                    </a>
-                  </p>
-
-                  <Separator className={SETTINGS_SEPARATOR_CLASS} />
-
-                  <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                    <Package
-                      className="h-3.5 w-3.5 shrink-0 translate-y-0.5 text-muted-foreground"
-                      aria-hidden
-                    />
-                    <span className="font-medium text-foreground">Version:</span> {extensionVersion}
-                  </p>
-
-                  <Separator className={SETTINGS_SEPARATOR_CLASS} />
-
-                  <section
-                    className="flex flex-col gap-2"
-                    aria-labelledby="about-developer-heading"
-                  >
-                    <p id="about-developer-heading" className="text-xs font-medium text-foreground">
-                      Developer
-                    </p>
-                    <a
-                      className={ABOUT_DEVELOPER_LINK_CLASS}
-                      href={DEVELOPER_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <HelvetyMark className="h-7 w-7" />
-                      <span className="flex min-w-0 flex-1 flex-col gap-0">
-                        <span className="text-sm font-medium text-foreground">
-                          {DEVELOPER_NAME}
-                        </span>
-                        <span className="text-[11px] leading-tight text-muted-foreground">
-                          helvety.com
-                        </span>
-                      </span>
-                      <ExternalLink
-                        className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-70"
-                        aria-hidden
-                      />
-                    </a>
-                  </section>
-                </CardContent>
-              </Card>
-            </div>
+            <AboutPanel
+              extensionVersion={extensionVersion}
+              themePreference={themePreference}
+              themeLoaded={themeLoaded}
+              onSaveTheme={onSaveTheme}
+            />
           </TabsContent>
         </div>
       </Tabs>

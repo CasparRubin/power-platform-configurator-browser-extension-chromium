@@ -2,7 +2,7 @@
 export const DEVELOPER_URL = "https://helvety.com";
 
 /**
- * Shown in the popup header title and About card heading. Must match `name` in
+ * Shown in the popup header title and About tab intro. Must match `name` in
  * `public/manifest.json` (see `tests/constants.test.ts` manifest drift guard).
  */
 export const EXTENSION_DISPLAY_NAME = "Power Platform Configurator" as const;

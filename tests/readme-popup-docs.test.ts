@@ -103,7 +103,10 @@ describe("README popup and icon documentation", () => {
     expect(chrome).toContain("SettingsChoiceRow");
     expect(chrome).toContain("settingsChoiceRowClass");
     expect(chrome).toContain("TAB_PANEL_BODY_CLASS");
-    expect(chrome).toContain("ABOUT_CARD_HEADER_CLASS");
+    expect(chrome).toContain("SettingsTabPanel");
+    expect(chrome).toContain("SETTINGS_DEVELOPER_LINK_CLASS");
+    expect(readme).toContain("persist-status-messages.test.ts");
+    expect(readme).toContain("popup-settings-copy.test.ts");
     expect(chrome).toContain("settings UX");
     expect(chrome).toContain("SettingsBusyHint");
     expect(chrome).not.toContain("popupChoiceRowClass(themePreference");

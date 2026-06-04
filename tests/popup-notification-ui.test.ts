@@ -129,6 +129,7 @@ describe("SettingsStatusAlert and layout tokens", () => {
     expect(layout).toContain("POPUP_NOTIFICATION_REGION_CLASS");
     expect(layout).toContain("POPUP_NOTIFICATION_ALERT_CLASS");
     expect(layout).toMatch(/w-full/);
+    expect(layout).toMatch(/pt-2/);
     expect(readSource("src/popup/components/ui/alert.tsx")).toContain("flex");
     expect(readSource("src/popup/components/ui/alert.tsx")).not.toContain("[&>svg]:absolute");
   });
@@ -139,6 +140,10 @@ describe("persist status strings match variant inference", () => {
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.saving)).toBe("loading");
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.refreshing)).toBe("loading");
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.saved)).toBe("success");
+    expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.savedReloaded)).toBe("success");
+    expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.savedReloadPage)).toBe(
+      "success",
+    );
   });
 
   it("classifies Power Apps persist messages", () => {

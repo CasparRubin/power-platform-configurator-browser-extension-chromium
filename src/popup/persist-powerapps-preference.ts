@@ -11,6 +11,7 @@ export type PersistPowerAppsMountRef = { current: boolean };
 /**
  * Writes Power Apps enforcement keys to `chrome.storage.sync`. Background listeners fan out apply
  * to all Dataverse tabs; optional callback runs apply on the active tab for the popup notification area.
+ * **Hide** / **Lock** saves skip apply and use `POWER_APPS_PERSIST_STATUS.saved` (reload-the-page hint).
  */
 export async function persistPowerAppsPreference(options: {
   hidden: PowerAppsHiddenFieldsMode;

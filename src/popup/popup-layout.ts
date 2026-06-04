@@ -11,8 +11,8 @@ import { cn } from "@helvety/shared/utils";
 export const POPUP_ROOT_CLASS =
   "flex h-[600px] w-[800px] max-h-[600px] max-w-[800px] min-h-0 flex-col overflow-hidden px-3 py-2.5 text-sm leading-snug";
 
-/** Below tab bar, above scroll host; full width of tab column (matches TabsList; no extra horizontal inset). */
-export const POPUP_NOTIFICATION_REGION_CLASS = "w-full flex-shrink-0 pb-1.5 pt-0";
+/** Below tab bar, above scroll host; `pt-2` separates the alert from tab triggers (full width; no extra horizontal inset). */
+export const POPUP_NOTIFICATION_REGION_CLASS = "w-full flex-shrink-0 pb-1.5 pt-2";
 
 export const POPUP_NOTIFICATION_ALERT_CLASS = "text-xs leading-snug";
 
@@ -27,7 +27,7 @@ export const TAB_CONTENT_CLASS =
 export const TAB_PANEL_CLASS =
   "popup-tab-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2 pb-3 pt-1 w-full";
 
-/** Vertical rhythm for settings tabs (Power Automate, Power Apps). */
+/** Vertical rhythm for settings tab bodies (Power Automate, Power Apps, About). */
 export const TAB_PANEL_BODY_CLASS = "flex flex-col gap-4";
 
 export const SETTINGS_SECTION_CLASS = "flex flex-col gap-3";
@@ -53,15 +53,16 @@ export const SETTINGS_CHOICE_RADIO_CLASS = "mt-0.5 h-5 w-5 shrink-0";
 export const SETTINGS_CODE_CLASS =
   "rounded-none bg-muted px-1 py-0.5 text-[11px] leading-snug text-foreground";
 
-export const SETTINGS_SEPARATOR_CLASS = "bg-foreground/10";
+/** Bulleted explanatory copy (About “How it works”, etc.). */
+export const SETTINGS_MUTED_LIST_CLASS =
+  "flex list-disc flex-col gap-1 pl-4 text-xs leading-relaxed text-muted-foreground";
 
-/** About tab card padding (slightly less top than legacy Card p-3). */
-export const ABOUT_CARD_HEADER_CLASS = "flex flex-col gap-1 px-3 pb-2 pt-2";
+/** Inline text link row (e.g. GitHub source). */
+export const SETTINGS_TEXT_LINK_CLASS =
+  "inline-flex items-center gap-1.5 text-xs font-medium text-primary underline underline-offset-2";
 
-export const ABOUT_CARD_CONTENT_CLASS =
-  "flex flex-col gap-4 px-3 pb-3 pt-0 text-xs leading-relaxed text-muted-foreground";
-
-export const ABOUT_DEVELOPER_LINK_CLASS =
+/** Developer card row (no outer border; hover matches choice rows). */
+export const SETTINGS_DEVELOPER_LINK_CLASS =
   "flex items-center gap-2.5 rounded-sm p-2.5 transition-colors hover:bg-muted/60";
 
 /** Radio / choice row (consistent padding; replaces package `popupChoiceRowClass` in this popup). */

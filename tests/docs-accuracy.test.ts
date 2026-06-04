@@ -62,6 +62,9 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toMatch(/stay enabled|full.row/i);
     expect(section).not.toMatch(/radio groups are disabled only while/i);
     expect(section).toContain("TAB_PANEL_HOST_CLASS");
+    expect(section).toContain("SettingsTabPanel");
+    expect(section).toMatch(/persist-status-messages/i);
+    expect(section).toMatch(/Reload the (flow or run page|page)/i);
     expect(section).toContain("Power Automate");
     expect(section).toContain("Power Apps");
     expect(section).toContain("v3survey");
@@ -91,6 +94,7 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toMatch(/notification (area|slot|alert)/i);
     expect(section).toMatch(/SettingsInfoAlert|SettingsStatusAlert/i);
     expect(section).toMatch(/SettingsBusyHint|stay enabled/i);
+    expect(section).toMatch(/reload the page|Reload the flow or run page/i);
     expect(section).not.toMatch(/radios briefly disable only while/i);
     expect(section).toMatch(/saves to sync|stay selected|stay visible/i);
     expect(section).toMatch(/powerAppsHiddenFields|powerAppsReadOnly/i);
@@ -144,6 +148,9 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(layout).toContain("SettingsBusyHint");
     expect(layout).toContain("PopupNotificationRegion");
     expect(layout).toContain("SettingsInfoAlert");
+    expect(layout).toContain("SettingsTabPanel");
+    expect(layout).toContain("AboutPanel");
+    expect(layout).toContain("persist-status-messages.ts");
     expect(readme).toContain("POPUP_SYNC_SETTINGS_KEYS");
     expect(layout).not.toContain("src/inspector");
     expect(layout).not.toContain("FlowInspectorLauncherCard");
@@ -163,6 +170,10 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(existsSync(join(repoRoot, "tests/popup-layout.test.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "tests/popup-notification-ui.test.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "tests/popup-notification-visibility.test.ts"))).toBe(true);
+    expect(existsSync(join(repoRoot, "tests/persist-status-messages.test.ts"))).toBe(true);
+    expect(existsSync(join(repoRoot, "tests/popup-settings-copy.test.ts"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsTabPanel.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/AboutPanel.tsx"))).toBe(true);
   });
 });
 
@@ -179,6 +190,9 @@ describe("chrome-web-store.md accuracy", () => {
     expect(doc).toMatch(/record form/i);
     expect(doc).toMatch(/notification (area|slot|region)|SettingsStatusAlert/i);
     expect(doc).toMatch(/SettingsInfoAlert/i);
+    expect(doc).toMatch(/Reload the page/i);
+    expect(doc).toMatch(/Reload the flow or run page|Reloaded/i);
+    expect(doc).toMatch(/SettingsTabPanel|no card frame/i);
     expect(doc).toMatch(/self-contained/i);
     expect(doc).not.toMatch(/\*\*Unhide hidden fields\*\* and \*\*Unlock read-only fields\*\*/);
   });

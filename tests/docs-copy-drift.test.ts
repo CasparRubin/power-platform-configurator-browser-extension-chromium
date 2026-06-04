@@ -37,8 +37,10 @@ const LEGACY_POPUP_SPACING_AND_ROW_PHRASES = [
 
 const POPUP_SETTINGS_SOURCE_PATHS = [
   "src/popup/App.tsx",
+  "src/popup/components/AboutPanel.tsx",
   "src/popup/components/PowerAutomatePanel.tsx",
   "src/popup/components/PowerAppsPanel.tsx",
+  "src/popup/components/SettingsTabPanel.tsx",
   "src/popup/components/SettingsChoiceRow.tsx",
   "src/popup/components/SettingsSectionHeader.tsx",
   "src/popup/components/SettingsBusyHint.tsx",
@@ -97,6 +99,14 @@ const LEGACY_POWER_APPS_POPUP_UI_PHRASES = [
 /** Vague inject failure copy before structured `inject_no_result` / frame diagnostics. */
 const LEGACY_POWER_APPS_VAGUE_ERROR_PHRASES = [
   /Could not apply changes\. Reload the form tab and try again\./,
+  /Reload the form tab and try again\./,
+];
+
+/** Old reload wording superseded by “reload the page” in panels, status strings, and errors. */
+const OUTDATED_RELOAD_FORM_COPY = [
+  /reload forms to restore/i,
+  /reload the form to restore/i,
+  /Reload the form to restore/i,
 ];
 
 /** Pre-v2.19 copy: choices did not persist across popup close or navigation. */
@@ -174,10 +184,57 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     },
   );
 
-  it("About tab avoids asymmetric pr-2-only scroll wrapper", () => {
-    const app = readRepoFile("src/popup/App.tsx");
-    expect(app).toContain("ABOUT_CARD_HEADER_CLASS");
-    expect(app).not.toContain('className="pr-2"');
+  it("About tab uses shared settings panel shell (no card border)", () => {
+    const about = readRepoFile("src/popup/components/AboutPanel.tsx");
+    expect(about).toContain("SettingsTabPanel");
+    expect(about).not.toContain("@helvety/ui/card");
+    expect(about).not.toContain('className="pr-2"');
+  });
+
+  it("persist-status-messages documents reload outcomes for both products", () => {
+    const messages = readRepoFile("src/popup/persist-status-messages.ts");
+    expect(messages).toMatch(/savedReloaded/);
+    expect(messages).toMatch(/savedReloadPage/);
+    expect(messages).toMatch(/Reload the flow or run page/i);
+    expect(messages).toMatch(/Reload the page/i);
+  });
+
+  it("Power Automate panel uses compact v3 copy and reload guidance", () => {
+    const panel = readRepoFile("src/popup/components/PowerAutomatePanel.tsx");
+    expect(panel).toMatch(/v3=false/);
+    expect(panel).not.toMatch(/Rewritten links use/i);
+    expect(panel).toMatch(/reload the page yourself/i);
+  });
+
+  it("Power Apps panel tells users to reload the page when enforcement stops", () => {
+    const panel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
+    expect(panel).toMatch(/Reload the page to restore/i);
+    expect(panel).not.toMatch(/Reload the form to restore/i);
+  });
+
+  it("user-facing docs and popup sources avoid legacy reload-the-form wording", () => {
+    const paths = [
+      ...POPUP_USER_FACING_DOC_PATHS,
+      "src/popup/components/PowerAppsPanel.tsx",
+      "src/popup/components/PowerAutomatePanel.tsx",
+      "src/popup/powerapps-client.ts",
+      "src/popup/persist-status-messages.ts",
+    ] as const;
+    for (const path of paths) {
+      const text = readRepoFile(path);
+      for (const pattern of OUTDATED_RELOAD_FORM_COPY) {
+        expect(text).not.toMatch(pattern);
+      }
+    }
+    expect(readRepoFile("src/popup/powerapps-client.ts")).toMatch(/Reload the page/i);
+  });
+
+  it("README repository layout documents unified popup tab shell and status strings", () => {
+    const layout = readmeSection(readRepoFile("README.md"), "## Repository layout");
+    expect(layout).toContain("SettingsTabPanel");
+    expect(layout).toContain("AboutPanel");
+    expect(layout).toContain("persist-status-messages.ts");
+    expect(layout).not.toMatch(/ABOUT_CARD_/);
   });
 
   it("README documents Power Automate, Power Apps, and TabProductIcon", () => {
@@ -278,6 +335,14 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
         /notification (area|slot|region)|PopupNotificationRegion|SettingsStatusAlert/i,
       );
       expect(text).toMatch(/SettingsInfoAlert/i);
+    }
+  });
+
+  it("README and store doc describe reload outcomes in save feedback (not only Saved.)", () => {
+    for (const path of POPUP_USER_FACING_DOC_PATHS) {
+      const text = readRepoFile(path);
+      expect(text).toMatch(/Reload the flow or run page|Reloaded the open flow or run page/i);
+      expect(text).toMatch(/Reload the page/i);
     }
   });
 
@@ -386,12 +451,12 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(section).not.toContain("https://*.*.dynamics.com/*");
   });
 
-  it("PowerAppsPanel describes model-driven forms; App About copy mentions Dataverse hosts", () => {
+  it("PowerAppsPanel describes model-driven forms; About copy mentions Dataverse hosts", () => {
     const panel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
     expect(panel).toMatch(/model-driven app|record form/i);
     expect(panel).not.toMatch(/Dataverse \/ Dynamics—commercial/i);
     expect(panel).not.toMatch(/one-shot|action buttons on an open model-driven/i);
-    expect(readRepoFile("src/popup/App.tsx")).toMatch(
+    expect(readRepoFile("src/popup/components/AboutPanel.tsx")).toMatch(
       /crm17|\.crm\d*\.dynamics|reload the extension/i,
     );
   });

@@ -6,7 +6,7 @@ const LOADING_PREFIXES = [
   "Refreshing open Power Automate",
 ] as const;
 
-const SUCCESS_PATTERNS = [/^Saved\.$/, /^Preference saved/, /^Unhid \d+/, /^Unlocked \d+/] as const;
+const SUCCESS_PATTERNS = [/^Saved\./, /^Preference saved/, /^Unhid \d+/, /^Unlocked \d+/] as const;
 
 const ERROR_SUBSTRINGS = [
   "Could not",

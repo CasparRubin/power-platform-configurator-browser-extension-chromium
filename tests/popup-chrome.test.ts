@@ -32,11 +32,14 @@ describe("popup chrome (header + About developer section)", () => {
 
   it("App uses PopupHeader for top chrome and keeps HelvetyMark only in the About developer block", () => {
     const app = readSource("src/popup/App.tsx");
+    const about = readSource("src/popup/components/AboutPanel.tsx");
     expect(app.match(/<PopupHeader\b/g)?.length).toBe(2);
-    expect(app).toContain('id="about-developer-heading"');
-    expect(app).toContain("Developer");
-    expect(app).toContain("helvety.com");
-    expect(app.match(/<HelvetyMark\b/g)?.length).toBe(1);
+    expect(app).toContain("<AboutPanel");
+    expect(about).toContain("Developer");
+    expect(about).toContain("helvety.com");
+    expect(about).toContain("SettingsDeveloperLink");
+    expect(app.match(/<HelvetyMark\b/g)?.length ?? 0).toBe(0);
+    expect(about.match(/<HelvetyMark\b/g)?.length).toBe(1);
     expect(app).not.toMatch(/<header[^>]*>[\s\S]*<HelvetyMark/);
   });
 
@@ -55,12 +58,14 @@ describe("popup chrome (header + About developer section)", () => {
   it("shared settings UI modules exist and panels import them", () => {
     expect(existsSync(join(repoRoot, "src/popup/components/SettingsChoiceRow.tsx"))).toBe(true);
     expect(existsSync(join(repoRoot, "src/popup/components/SettingsSectionHeader.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsTabPanel.tsx"))).toBe(true);
     const paPanel = readSource("src/popup/components/PowerAutomatePanel.tsx");
     const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
-    for (const source of [paPanel, appsPanel]) {
+    const aboutPanel = readSource("src/popup/components/AboutPanel.tsx");
+    for (const source of [paPanel, appsPanel, aboutPanel]) {
       expect(source).toContain("SettingsChoiceRow");
       expect(source).toContain("SettingsSectionHeader");
-      expect(source).toContain("TAB_PANEL_BODY_CLASS");
+      expect(source).toContain("SettingsTabPanel");
       expect(source).toContain("SETTINGS_SECTION_CLASS");
     }
   });
@@ -68,12 +73,14 @@ describe("popup chrome (header + About developer section)", () => {
   it("all settings panels use shared SettingsChoiceRow and layout spacing tokens", () => {
     const paPanel = readSource("src/popup/components/PowerAutomatePanel.tsx");
     const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
-    const app = readSource("src/popup/App.tsx");
+    const aboutPanel = readSource("src/popup/components/AboutPanel.tsx");
     const choiceRow = readSource("src/popup/components/SettingsChoiceRow.tsx");
     const sectionHeader = readSource("src/popup/components/SettingsSectionHeader.tsx");
+    const tabPanel = readSource("src/popup/components/SettingsTabPanel.tsx");
     const layout = readSource("src/popup/popup-layout.ts");
+    const app = readSource("src/popup/App.tsx");
 
-    for (const source of [paPanel, appsPanel, app]) {
+    for (const source of [paPanel, appsPanel, aboutPanel]) {
       expect(source).toContain("@helvety/ui/radio-group");
       expect(source).toContain("SettingsChoiceRow");
       expect(source).toContain("SETTINGS_RADIO_GROUP_CLASS");
@@ -88,6 +95,8 @@ describe("popup chrome (header + About developer section)", () => {
     expect(sectionHeader).toContain("SETTINGS_SECTION_TITLE_CLASS");
     expect(sectionHeader).toContain("SettingsInfoAlert");
     expect(sectionHeader).toContain("hideBusyHint");
+    expect(tabPanel).toContain("TAB_PANEL_BODY_CLASS");
+    expect(tabPanel).toContain("TAB_PANEL_CLASS");
     expect(choiceRow).toContain("RadioGroupItem");
     expect(choiceRow).toContain("settingsChoiceRowClass");
     expect(choiceRow).toContain("SETTINGS_CHOICE_RADIO_CLASS");
@@ -102,8 +111,8 @@ describe("popup chrome (header + About developer section)", () => {
     expect(layout).toContain("TAB_PANEL_CLASS");
     expect(layout).toContain("pt-1");
     expect(layout).toContain("py-2.5");
-    expect(layout).toContain("ABOUT_CARD_HEADER_CLASS");
-    expect(layout).toContain("ABOUT_DEVELOPER_LINK_CLASS");
+    expect(layout).toContain("SETTINGS_DEVELOPER_LINK_CLASS");
+    expect(layout).toContain("SETTINGS_MUTED_LIST_CLASS");
 
     expect(appsPanel).toContain('value="hide"');
     expect(appsPanel).toContain('value="show"');
@@ -115,7 +124,8 @@ describe("popup chrome (header + About developer section)", () => {
     expect(appsPanel).toContain("hideBusyHint");
     expect(appsPanel).not.toContain("disabled={");
     expect(appsPanel).not.toContain("statusClearTimerRef");
-    expect(appsPanel).toContain("Separator");
+    expect(appsPanel).toContain("SettingsTabPanel");
+    expect(appsPanel).not.toContain("Separator");
 
     expect(app).toContain("POPUP_SYNC_SETTINGS_KEYS");
     expect(app).toContain("settingsLoaded");
@@ -132,19 +142,19 @@ describe("popup chrome (header + About developer section)", () => {
   });
 
   it("About appearance radios use SettingsChoiceRow (no Sun/Moon between radio and label)", () => {
-    const app = readSource("src/popup/App.tsx");
-    expect(app).toContain('id="theme-light"');
-    expect(app).toContain('id="theme-dark"');
-    expect(app).toContain("<SettingsChoiceRow");
-    expect(app).toContain("<SettingsSectionHeader");
-    expect(app).toContain("ABOUT_CARD_HEADER_CLASS");
-    expect(app).toContain("ABOUT_CARD_CONTENT_CLASS");
-    expect(app).toContain("ABOUT_DEVELOPER_LINK_CLASS");
-    expect(app).toContain("SETTINGS_CODE_CLASS");
-    expect(app).not.toContain('className="pr-2"');
-    expect(app).not.toContain("popupChoiceRowClass");
-    expect(app).not.toMatch(/\bSun\b/);
-    expect(app).not.toMatch(/\bMoon\b/);
+    const about = readSource("src/popup/components/AboutPanel.tsx");
+    expect(about).toContain('id="theme-light"');
+    expect(about).toContain('id="theme-dark"');
+    expect(about).toContain("<SettingsChoiceRow");
+    expect(about).toContain("<SettingsSectionHeader");
+    expect(about).toContain("SettingsTabPanel");
+    expect(about).toContain("SettingsDeveloperLink");
+    expect(about).toContain("SETTINGS_CODE_CLASS");
+    expect(about).not.toContain("@helvety/ui/card");
+    expect(about).not.toContain("Separator");
+    expect(about).not.toContain("popupChoiceRowClass");
+    expect(about).not.toMatch(/\bSun\b/);
+    expect(about).not.toMatch(/\bMoon\b/);
   });
 
   it("popup flex chain fills height below tabs (host + stacked tab layers)", () => {

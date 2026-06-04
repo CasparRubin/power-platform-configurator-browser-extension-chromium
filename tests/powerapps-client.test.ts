@@ -120,6 +120,8 @@ describe("formatPowerAppsActionError", () => {
       1,
     );
     expect(message).toContain("inject");
+    expect(message).toContain("Reload the page");
+    expect(message).not.toContain("Reload the form tab");
     expect(message).toContain("tab not found");
     expect(message).toContain("Checked 1 frame");
   });

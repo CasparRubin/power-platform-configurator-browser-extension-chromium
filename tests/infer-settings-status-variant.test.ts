@@ -25,6 +25,10 @@ describe("inferSettingsStatusVariant", () => {
 
   it("detects success messages", () => {
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.saved)).toBe("success");
+    expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.savedReloaded)).toBe("success");
+    expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.savedReloadPage)).toBe(
+      "success",
+    );
     expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saved)).toBe("success");
     expect(inferSettingsStatusVariant("Unhid 3 elements.")).toBe("success");
     expect(inferSettingsStatusVariant("Unlocked 1 control.")).toBe("success");

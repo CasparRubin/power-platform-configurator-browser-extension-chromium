@@ -97,7 +97,30 @@ describe("persistPolicyPreferenceAndOptionalReload", () => {
     expect(reloadMock).toHaveBeenCalledWith("true");
     expect(setReloadBusy).toHaveBeenCalledWith(true);
     expect(setReloadBusy).toHaveBeenCalledWith(false);
+    expect(setStatus).toHaveBeenCalledWith(POWER_AUTOMATE_PERSIST_STATUS.savedReloaded);
     expect(scheduleClear).toHaveBeenCalledWith(3800);
+  });
+
+  it("prompts manual reload when enforcement is on but no tab was reloaded", async () => {
+    reloadMock.mockResolvedValue(false);
+
+    await persistPolicyPreferenceAndOptionalReload({
+      storagePatch: { [STORAGE_KEY_ENFORCED_V3]: "false" },
+      logLabel: "enforcedV3",
+      getReloadPreference: () => "false",
+      mountedRef,
+      beginSyncWrite,
+      endSyncWrite,
+      clearPendingStatusDismiss,
+      setStatus,
+      setIsTargetTabReloadBusy: setReloadBusy,
+      resyncFromStorage: resync,
+      scheduleStatusClear: scheduleClear,
+      onResyncHardFailure,
+    } as PersistArgs);
+
+    expect(setStatus).toHaveBeenCalledWith(POWER_AUTOMATE_PERSIST_STATUS.savedReloadPage);
+    expect(scheduleClear).toHaveBeenCalledWith(2000);
   });
 
   it("calls getReloadPreference only after storage succeeds", async () => {
