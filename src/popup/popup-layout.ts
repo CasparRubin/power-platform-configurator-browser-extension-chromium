@@ -3,8 +3,8 @@ import { cn } from "@helvety/shared/utils";
 /**
  * Central Tailwind class strings for the popup shell and settings UI.
  * Import these constants (and `settingsChoiceRowClass`) from panels and `App.tsx` so padding,
- * section gaps, and radio rows stay consistent. Do not use `@helvety/extension-chrome/popup-shell`
- * `popupChoiceRowClass` in this extension.
+ * section gaps, and choice-card radio rows stay consistent. Do not use
+ * `@helvety/extension-chrome/popup-shell` `popupChoiceRowClass` in this extension.
  */
 
 /** Chrome extension popup maximum dimensions (content-driven sizing). */
@@ -37,9 +37,12 @@ export const SETTINGS_RADIO_GROUP_CLASS = "flex flex-col gap-2";
 
 export const SETTINGS_CHOICE_TEXT_COLUMN_CLASS = "flex min-w-0 flex-col gap-0.5";
 
-export const SETTINGS_CHOICE_LABEL_CLASS = "cursor-pointer text-sm font-medium leading-snug";
+export const SETTINGS_CHOICE_LABEL_CLASS = "text-sm font-medium leading-snug";
 
 export const SETTINGS_CHOICE_DESCRIPTION_CLASS = "text-xs leading-relaxed text-muted-foreground";
+
+/** Slightly larger radio control inside choice rows. */
+export const SETTINGS_CHOICE_RADIO_CLASS = "mt-0.5 h-5 w-5 shrink-0";
 
 /** Inline code in option descriptions and About copy. */
 export const SETTINGS_CODE_CLASS =
@@ -59,7 +62,8 @@ export const ABOUT_DEVELOPER_LINK_CLASS =
 /** Radio / choice row (consistent padding; replaces package `popupChoiceRowClass` in this popup). */
 export function settingsChoiceRowClass(selected: boolean): string {
   return cn(
-    "flex cursor-pointer items-start gap-3 rounded-sm p-3 transition-colors",
-    selected ? "bg-muted" : "hover:bg-muted/60",
+    "flex cursor-pointer items-start gap-3 rounded-sm border p-3 transition-colors",
+    "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-0",
+    selected ? "border-primary/40 bg-muted" : "border-transparent hover:bg-muted/60",
   );
 }

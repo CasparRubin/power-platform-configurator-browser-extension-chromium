@@ -29,13 +29,19 @@ import { Separator } from "@helvety/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@helvety/ui/tabs";
 import {
   DEFAULT_ENFORCEMENT_PREFERENCE,
+  DEFAULT_POWERAPPS_HIDDEN_FIELDS,
+  DEFAULT_POWERAPPS_READ_ONLY,
   parseEnforcementPreference,
+  parsePowerAppsPreferencesFromSync,
   parseV3SurveyEnabled,
+  POPUP_SYNC_SETTINGS_KEYS,
   STORAGE_KEY_ENFORCED_V3,
   STORAGE_KEY_POPUP_THEME,
   STORAGE_KEY_V3SURVEY_ENABLED,
   SYNC_POLICY_KEYS,
   type EnforcementPreference,
+  type PowerAppsHiddenFieldsMode,
+  type PowerAppsReadOnlyMode,
 } from "../constants";
 import {
   DEVELOPER_NAME,
@@ -48,6 +54,7 @@ import { PopupHeader } from "./components/PopupHeader";
 import { TabProductIcon } from "./components/TabProductIcon";
 import { PowerAppsPanel } from "./components/PowerAppsPanel";
 import { PowerAutomatePanel } from "./components/PowerAutomatePanel";
+import { SettingsBusyHint } from "./components/SettingsBusyHint";
 import { SettingsChoiceRow } from "./components/SettingsChoiceRow";
 import { SettingsSectionHeader } from "./components/SettingsSectionHeader";
 import { persistPolicyPreferenceAndOptionalReload } from "./persist-policy-preference";
@@ -59,9 +66,15 @@ type SurveyEnabledSync = "true" | "false";
 export default function App() {
   const [value, setValue] = useState<EnforcementPreference>(DEFAULT_ENFORCEMENT_PREFERENCE);
   const [surveyMode, setSurveyMode] = useState<SurveyEnabledSync>("false");
+  const [hiddenMode, setHiddenMode] = useState<PowerAppsHiddenFieldsMode>(
+    DEFAULT_POWERAPPS_HIDDEN_FIELDS,
+  );
+  const [readOnlyMode, setReadOnlyMode] = useState<PowerAppsReadOnlyMode>(
+    DEFAULT_POWERAPPS_READ_ONLY,
+  );
   const { themePreference, themeLoaded, saveTheme } = usePopupTheme(STORAGE_KEY_POPUP_THEME);
-  const [policyLoaded, setPolicyLoaded] = useState(false);
-  const loaded = themeLoaded && policyLoaded;
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const loaded = themeLoaded && settingsLoaded;
   const [status, setStatus] = useState<string>("");
   const [isPolicySyncBusy, setIsPolicySyncBusy] = useState(false);
   const [isTargetTabReloadBusy, setIsTargetTabReloadBusy] = useState(false);
@@ -105,16 +118,20 @@ export default function App() {
 
   useEffect(() => {
     void chrome.storage.sync
-      .get([...SYNC_POLICY_KEYS])
+      .get([...POPUP_SYNC_SETTINGS_KEYS])
       .then((syncResult) => {
         if (!mountedRef.current) {
           return;
         }
-        setValue(parseEnforcementPreference(syncResult[STORAGE_KEY_ENFORCED_V3]));
+        const record = syncResult as Record<string, unknown>;
+        setValue(parseEnforcementPreference(record[STORAGE_KEY_ENFORCED_V3]));
         setSurveyMode(
-          parseV3SurveyEnabled(syncResult[STORAGE_KEY_V3SURVEY_ENABLED]) ? "true" : "false",
+          parseV3SurveyEnabled(record[STORAGE_KEY_V3SURVEY_ENABLED]) ? "true" : "false",
         );
-        setPolicyLoaded(true);
+        const powerAppsPrefs = parsePowerAppsPreferencesFromSync(record);
+        setHiddenMode(powerAppsPrefs.hidden);
+        setReadOnlyMode(powerAppsPrefs.readOnly);
+        setSettingsLoaded(true);
       })
       .catch(() => {
         if (!mountedRef.current) {
@@ -122,7 +139,9 @@ export default function App() {
         }
         setValue(DEFAULT_ENFORCEMENT_PREFERENCE);
         setSurveyMode("false");
-        setPolicyLoaded(true);
+        setHiddenMode(DEFAULT_POWERAPPS_HIDDEN_FIELDS);
+        setReadOnlyMode(DEFAULT_POWERAPPS_READ_ONLY);
+        setSettingsLoaded(true);
       });
   }, []);
 
@@ -297,7 +316,12 @@ export default function App() {
           </TabsContent>
 
           <TabsContent value="power-apps" className={TAB_CONTENT_CLASS}>
-            <PowerAppsPanel />
+            <PowerAppsPanel
+              hiddenMode={hiddenMode}
+              readOnlyMode={readOnlyMode}
+              onHiddenModeChange={setHiddenMode}
+              onReadOnlyModeChange={setReadOnlyMode}
+            />
           </TabsContent>
 
           <TabsContent value="about" className={TAB_CONTENT_CLASS}>
@@ -321,6 +345,7 @@ export default function App() {
                           Appearance
                         </span>
                       }
+                      trailing={themeLoaded ? null : <SettingsBusyHint mode="loading" />}
                       description="If nothing is saved yet, light or dark is chosen from your system theme. Your choice below is saved on this device only."
                     />
                     <RadioGroup

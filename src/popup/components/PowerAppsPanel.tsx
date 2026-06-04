@@ -2,14 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { RadioGroup } from "@helvety/ui/radio-group";
 import { Separator } from "@helvety/ui/separator";
-import {
-  DEFAULT_POWERAPPS_HIDDEN_FIELDS,
-  DEFAULT_POWERAPPS_READ_ONLY,
-  parsePowerAppsPreferencesFromSync,
-  POWERAPPS_SYNC_KEYS,
-  type PowerAppsHiddenFieldsMode,
-  type PowerAppsReadOnlyMode,
-} from "../../constants";
+import { type PowerAppsHiddenFieldsMode, type PowerAppsReadOnlyMode } from "../../constants";
 import { isPowerAppsEnforcementActive } from "../../powerapps/apply-preferences";
 import {
   SETTINGS_RADIO_GROUP_CLASS,
@@ -22,18 +15,25 @@ import { formatPowerAppsPreferencesApplyStatus } from "../format-powerapps-prefe
 import { persistPowerAppsPreference } from "../persist-powerapps-preference";
 import { requestPowerAppsApplyPreferencesOnActiveTab } from "../powerapps-client";
 import { createAsyncQueue } from "../sync-write-queue";
+import { powerAppsPanelBusyMode, SettingsBusyHint } from "./SettingsBusyHint";
 import { SettingsChoiceRow } from "./SettingsChoiceRow";
 import { SettingsSectionHeader } from "./SettingsSectionHeader";
 
-export function PowerAppsPanel() {
-  const [hiddenMode, setHiddenMode] = useState<PowerAppsHiddenFieldsMode>(
-    DEFAULT_POWERAPPS_HIDDEN_FIELDS,
-  );
-  const [readOnlyMode, setReadOnlyMode] = useState<PowerAppsReadOnlyMode>(
-    DEFAULT_POWERAPPS_READ_ONLY,
-  );
-  const [prefsLoaded, setPrefsLoaded] = useState(false);
+type PowerAppsPanelProps = {
+  hiddenMode: PowerAppsHiddenFieldsMode;
+  readOnlyMode: PowerAppsReadOnlyMode;
+  onHiddenModeChange: (next: PowerAppsHiddenFieldsMode) => void;
+  onReadOnlyModeChange: (next: PowerAppsReadOnlyMode) => void;
+};
+
+export function PowerAppsPanel({
+  hiddenMode,
+  readOnlyMode,
+  onHiddenModeChange,
+  onReadOnlyModeChange,
+}: PowerAppsPanelProps) {
   const [isSyncBusy, setIsSyncBusy] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
   const [status, setStatus] = useState("");
   const mountedRef = useRef(true);
   const statusClearTimerRef = useRef<number | null>(null);
@@ -80,28 +80,6 @@ export function PowerAppsPanel() {
     };
   }, []);
 
-  useEffect(() => {
-    void chrome.storage.sync
-      .get([...POWERAPPS_SYNC_KEYS])
-      .then((result) => {
-        if (!mountedRef.current) {
-          return;
-        }
-        const prefs = parsePowerAppsPreferencesFromSync(result as Record<string, unknown>);
-        setHiddenMode(prefs.hidden);
-        setReadOnlyMode(prefs.readOnly);
-        setPrefsLoaded(true);
-      })
-      .catch(() => {
-        if (!mountedRef.current) {
-          return;
-        }
-        setHiddenMode(DEFAULT_POWERAPPS_HIDDEN_FIELDS);
-        setReadOnlyMode(DEFAULT_POWERAPPS_READ_ONLY);
-        setPrefsLoaded(true);
-      });
-  }, []);
-
   const savePreferences = useCallback(
     (nextHidden: PowerAppsHiddenFieldsMode, nextReadOnly: PowerAppsReadOnlyMode) => {
       const prefs = { hidden: nextHidden, readOnly: nextReadOnly };
@@ -119,11 +97,18 @@ export function PowerAppsPanel() {
           scheduleStatusClear,
           onAfterSave: applyAfterSave
             ? async () => {
-                const response = await requestPowerAppsApplyPreferencesOnActiveTab();
-                if (!mountedRef.current) {
-                  return;
+                setIsApplying(true);
+                try {
+                  const response = await requestPowerAppsApplyPreferencesOnActiveTab();
+                  if (!mountedRef.current) {
+                    return;
+                  }
+                  setStatus(formatPowerAppsPreferencesApplyStatus(response));
+                } finally {
+                  if (mountedRef.current) {
+                    setIsApplying(false);
+                  }
                 }
-                setStatus(formatPowerAppsPreferencesApplyStatus(response));
               }
             : undefined,
         }),
@@ -132,10 +117,11 @@ export function PowerAppsPanel() {
     [beginSyncWrite, clearPendingStatusDismiss, endSyncWrite, scheduleStatusClear, writeQueue],
   );
 
-  const busy = isSyncBusy || !prefsLoaded;
+  const busyMode = powerAppsPanelBusyMode(isSyncBusy, isApplying);
+  const panelBusy = isSyncBusy || isApplying;
 
   return (
-    <div className={TAB_PANEL_CLASS} aria-busy={busy}>
+    <div className={TAB_PANEL_CLASS} aria-busy={panelBusy}>
       <div className={TAB_PANEL_BODY_CLASS}>
         {status ? (
           <p
@@ -143,7 +129,7 @@ export function PowerAppsPanel() {
             role="status"
             aria-live="polite"
           >
-            {isSyncBusy ? (
+            {panelBusy ? (
               <span className="inline-flex items-center gap-1.5">
                 <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
                 {status}
@@ -157,6 +143,7 @@ export function PowerAppsPanel() {
         <section className={SETTINGS_SECTION_CLASS}>
           <SettingsSectionHeader
             title="Hidden fields"
+            trailing={<SettingsBusyHint mode={busyMode} />}
             description={
               <>
                 On an open <span className="font-medium text-foreground">record form</span> in a
@@ -174,13 +161,12 @@ export function PowerAppsPanel() {
           <RadioGroup
             className={SETTINGS_RADIO_GROUP_CLASS}
             aria-label="Hidden fields on model-driven forms"
-            disabled={busy}
             value={hiddenMode}
             onValueChange={(v) => {
               if (v !== "hide" && v !== "show") {
                 return;
               }
-              setHiddenMode(v);
+              onHiddenModeChange(v);
               savePreferences(v, readOnlyMode);
             }}
           >
@@ -210,6 +196,7 @@ export function PowerAppsPanel() {
         <section className={SETTINGS_SECTION_CLASS}>
           <SettingsSectionHeader
             title="Read-only fields"
+            trailing={<SettingsBusyHint mode={busyMode} />}
             description={
               <>
                 Client-side only; does not bypass server security on save. Canvas apps are not
@@ -224,13 +211,12 @@ export function PowerAppsPanel() {
           <RadioGroup
             className={SETTINGS_RADIO_GROUP_CLASS}
             aria-label="Read-only fields on model-driven forms"
-            disabled={busy}
             value={readOnlyMode}
             onValueChange={(v) => {
               if (v !== "lock" && v !== "unlock") {
                 return;
               }
-              setReadOnlyMode(v);
+              onReadOnlyModeChange(v);
               savePreferences(hiddenMode, v);
             }}
           >

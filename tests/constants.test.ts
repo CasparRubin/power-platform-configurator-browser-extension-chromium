@@ -16,6 +16,7 @@ import {
   parsePowerAppsReadOnlyMode,
   parsePowerAppsPreferencesFromSync,
   parseV3SurveyEnabled,
+  POPUP_SYNC_SETTINGS_KEYS,
   POWERAPPS_SYNC_KEYS,
   STORAGE_KEY_ENFORCED_V3,
   STORAGE_KEY_POWERAPPS_HIDDEN_FIELDS,
@@ -143,6 +144,15 @@ describe("storage and default mode constants", () => {
 
   it("exports sync policy key tuple for chrome.storage.get", () => {
     expect(SYNC_POLICY_KEYS).toEqual(["enforcedV3", "v3surveyEnabled"]);
+  });
+
+  it("exports popup combined sync keys for one storage read on open", () => {
+    expect(POPUP_SYNC_SETTINGS_KEYS).toEqual([
+      "enforcedV3",
+      "v3surveyEnabled",
+      "powerAppsHiddenFields",
+      "powerAppsReadOnly",
+    ]);
   });
 
   it("exports Power Apps sync keys and parsers", () => {

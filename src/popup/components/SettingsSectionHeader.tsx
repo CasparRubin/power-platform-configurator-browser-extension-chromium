@@ -11,7 +11,7 @@ type SettingsSectionHeaderProps = {
   trailing?: ReactNode;
 };
 
-/** Section title and description; optional `trailing` slot (e.g. save/reload hint). */
+/** Section title and description; optional `trailing` slot (e.g. `SettingsBusyHint`). */
 export function SettingsSectionHeader({
   title,
   description,

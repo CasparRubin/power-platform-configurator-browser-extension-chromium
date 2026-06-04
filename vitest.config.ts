@@ -5,7 +5,8 @@ import { defineConfig } from "vitest/config";
  * browser-only bundles (Power Apps MAIN-world inject), the React
  * popup shell, `persist-policy-preference.ts`, `policy-popup-log.ts`, and `@helvety/ui` primitives
  * are excluded so thresholds reflect logic we test in Node. Popup chrome (layout, SettingsChoiceRow,
- * tab host) is guarded by `tests/popup-chrome.test.ts` and docs drift tests; Power Apps by
+ * SettingsBusyHint, tab host) is guarded by `tests/popup-chrome.test.ts`, `tests/popup-layout.test.ts`,
+ * `tests/settings-busy-hint.test.ts`, and docs drift tests; Power Apps by
  * `tests/powerapps-*.test.ts` (form helpers, inject script, apply-form-actions, constants,
  * datacenter-region table, host/manifest alignment, `host_not_permitted`, client formatting,
  * apply-preferences scheduler/retry, persist/format Power Apps popup saves, powerapps-client messaging).

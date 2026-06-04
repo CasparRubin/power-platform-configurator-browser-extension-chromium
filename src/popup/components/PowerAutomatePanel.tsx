@@ -9,7 +9,7 @@ import {
   TAB_PANEL_BODY_CLASS,
   TAB_PANEL_CLASS,
 } from "../popup-layout";
-import { PolicyPanelBusyHint } from "./PolicyPanelBusyHint";
+import { policyPanelBusyMode, SettingsBusyHint } from "./SettingsBusyHint";
 import { SettingsChoiceRow } from "./SettingsChoiceRow";
 import { SettingsSectionHeader } from "./SettingsSectionHeader";
 
@@ -32,20 +32,16 @@ export function PowerAutomatePanel({
   onSave,
   onSaveSurvey,
 }: PowerAutomatePanelProps) {
-  const busy = isPolicySyncBusy || isTargetTabReloadBusy;
+  const busyMode = policyPanelBusyMode(isPolicySyncBusy, isTargetTabReloadBusy);
+  const panelBusy = isPolicySyncBusy || isTargetTabReloadBusy;
 
   return (
-    <div className={TAB_PANEL_CLASS} aria-busy={busy}>
+    <div className={TAB_PANEL_CLASS} aria-busy={panelBusy}>
       <div className={TAB_PANEL_BODY_CLASS}>
         <section className={SETTINGS_SECTION_CLASS}>
           <SettingsSectionHeader
             title="Flow designer"
-            trailing={
-              <PolicyPanelBusyHint
-                isPolicySyncBusy={isPolicySyncBusy}
-                isTargetTabReloadBusy={isTargetTabReloadBusy}
-              />
-            }
+            trailing={<SettingsBusyHint mode={busyMode} />}
             description={
               <>
                 Choose how flow and run links open in Power Automate: classic designer, new
@@ -57,7 +53,6 @@ export function PowerAutomatePanel({
           <RadioGroup
             className={SETTINGS_RADIO_GROUP_CLASS}
             aria-label="Flow designer for flow and run links"
-            disabled={isPolicySyncBusy}
             value={value}
             onValueChange={(v) => {
               if (v === "true" || v === "false" || v === "off") {
@@ -106,12 +101,7 @@ export function PowerAutomatePanel({
                 Survey prompt (<code className={SETTINGS_CODE_CLASS}>v3survey</code>)
               </>
             }
-            trailing={
-              <PolicyPanelBusyHint
-                isPolicySyncBusy={isPolicySyncBusy}
-                isTargetTabReloadBusy={isTargetTabReloadBusy}
-              />
-            }
+            trailing={<SettingsBusyHint mode={busyMode} />}
             description={
               <span className="flex flex-col gap-1">
                 <span>
@@ -135,7 +125,6 @@ export function PowerAutomatePanel({
           <RadioGroup
             className={SETTINGS_RADIO_GROUP_CLASS}
             aria-label="Survey visibility (v3survey)"
-            disabled={isPolicySyncBusy}
             value={surveyMode}
             onValueChange={(v) => {
               if (v === "true" || v === "false") {

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import {
   SETTINGS_CHOICE_DESCRIPTION_CLASS,
   SETTINGS_CHOICE_LABEL_CLASS,
+  SETTINGS_CHOICE_RADIO_CLASS,
   SETTINGS_CHOICE_TEXT_COLUMN_CLASS,
   settingsChoiceRowClass,
 } from "../popup-layout";
@@ -16,7 +17,7 @@ type SettingsChoiceRowProps = {
   description?: ReactNode;
 };
 
-/** One radio option row (`RadioGroupItem` + label + description); padding from `settingsChoiceRowClass`. */
+/** One radio option row; full-row Label wraps radio + text for a single click target. */
 export function SettingsChoiceRow({
   id,
   value,
@@ -25,14 +26,12 @@ export function SettingsChoiceRow({
   description,
 }: SettingsChoiceRowProps) {
   return (
-    <div className={settingsChoiceRowClass(selected)}>
-      <RadioGroupItem value={value} id={id} className="mt-1 shrink-0" />
+    <Label className={settingsChoiceRowClass(selected)}>
+      <RadioGroupItem value={value} id={id} className={SETTINGS_CHOICE_RADIO_CLASS} />
       <div className={SETTINGS_CHOICE_TEXT_COLUMN_CLASS}>
-        <Label htmlFor={id} className={SETTINGS_CHOICE_LABEL_CLASS}>
-          {label}
-        </Label>
+        <span className={SETTINGS_CHOICE_LABEL_CLASS}>{label}</span>
         {description ? <p className={SETTINGS_CHOICE_DESCRIPTION_CLASS}>{description}</p> : null}
       </div>
-    </div>
+    </Label>
   );
 }

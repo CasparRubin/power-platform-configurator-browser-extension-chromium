@@ -35,6 +35,9 @@ export const POWERAPPS_SYNC_KEYS = [
   STORAGE_KEY_POWERAPPS_READ_ONLY,
 ] as const;
 
+/** Policy + Power Apps keys loaded together by the popup on open. */
+export const POPUP_SYNC_SETTINGS_KEYS = [...SYNC_POLICY_KEYS, ...POWERAPPS_SYNC_KEYS] as const;
+
 export type PowerAppsHiddenFieldsMode = "hide" | "show";
 export type PowerAppsReadOnlyMode = "lock" | "unlock";
 

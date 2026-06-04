@@ -42,6 +42,11 @@ describe("README popup and icon documentation", () => {
     expect(section).not.toMatch(/not persisted across popup|Choices are not persisted/i);
     expect(section).toMatch(/800\s*[×x]\s*600|800×600/i);
     expect(section).toContain("SettingsChoiceRow");
+    expect(section).toContain("SettingsBusyHint");
+    expect(section).toContain("POPUP_SYNC_SETTINGS_KEYS");
+    expect(section).toMatch(/stay enabled|full.row click/i);
+    expect(section).not.toMatch(/radio groups are disabled only while/i);
+    expect(section).not.toMatch(/radios briefly disable only while/i);
     expect(section).toContain("popup-layout.ts");
     expect(section).not.toMatch(/Tabs:\s*\*\*Editor\*\*/);
     expect(section).not.toContain("Flow Inspector");
@@ -93,6 +98,14 @@ describe("README popup and icon documentation", () => {
     expect(chrome).toContain("settingsChoiceRowClass");
     expect(chrome).toContain("TAB_PANEL_BODY_CLASS");
     expect(chrome).toContain("ABOUT_CARD_HEADER_CLASS");
+    expect(chrome).toContain("settings UX");
+    expect(chrome).toContain("SettingsBusyHint");
     expect(chrome).not.toContain("popupChoiceRowClass(themePreference");
+  });
+
+  it("repository layout documents SettingsBusyHint and popup preload keys", () => {
+    const layout = readmeSection(readme, "## Repository layout");
+    expect(layout).toContain("SettingsBusyHint");
+    expect(readme).toContain("POPUP_SYNC_SETTINGS_KEYS");
   });
 });

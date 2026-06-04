@@ -41,7 +41,27 @@ const POPUP_SETTINGS_SOURCE_PATHS = [
   "src/popup/components/PowerAppsPanel.tsx",
   "src/popup/components/SettingsChoiceRow.tsx",
   "src/popup/components/SettingsSectionHeader.tsx",
+  "src/popup/components/SettingsBusyHint.tsx",
 ] as const;
+
+/** Retired busy hint and per-panel storage load for Power Apps prefs. */
+const LEGACY_POPUP_SETTINGS_UX_PHRASES = [
+  /\bPolicyPanelBusyHint\b/,
+  /\bprefsLoaded\b/,
+  /\bpolicyLoaded\b/,
+  /disabled=\{busy\}/,
+  /disabled=\{isPolicySyncBusy\}/,
+] as const;
+
+/** User-facing copy that claimed radios lock during sync (removed in settings UX pass). */
+const OUTDATED_POPUP_RADIO_DISABLE_COPY = [
+  /radio groups are disabled only while/i,
+  /radios briefly disable only while/i,
+  /disable only while the sync write/i,
+  /disabled only while the sync write/i,
+] as const;
+
+const POPUP_USER_FACING_DOC_PATHS = ["README.md", "docs/chrome-web-store.md"] as const;
 
 /** Power Apps popup used action buttons before radio settings (Hide/Show, Lock/Unlock). */
 const LEGACY_POWER_APPS_POPUP_UI_PHRASES = [
@@ -220,8 +240,36 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
       expect(storeDoc).not.toMatch(pattern);
     }
     const panel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
-    expect(panel).toMatch(/persistPowerAppsPreference|POWERAPPS_SYNC_KEYS/i);
+    const app = readRepoFile("src/popup/App.tsx");
+    expect(panel).toMatch(/persistPowerAppsPreference|SettingsBusyHint/i);
     expect(panel).toMatch(/stays on|auto-apply/i);
+    expect(app).toMatch(/POPUP_SYNC_SETTINGS_KEYS|parsePowerAppsPreferencesFromSync/i);
+    expect(panel).not.toMatch(/chrome\.storage\.sync/);
+  });
+
+  it("README and store doc do not claim settings radios disable during sync", () => {
+    for (const path of POPUP_USER_FACING_DOC_PATHS) {
+      const text = readRepoFile(path);
+      for (const pattern of OUTDATED_POPUP_RADIO_DISABLE_COPY) {
+        expect(text).not.toMatch(pattern);
+      }
+      expect(text).toMatch(/SettingsBusyHint|POPUP_SYNC_SETTINGS_KEYS|stay enabled|full.row/i);
+    }
+  });
+
+  it("popup settings sources use unified choice rows and do not lock radios during save", () => {
+    for (const path of POPUP_SETTINGS_SOURCE_PATHS) {
+      const text = readRepoFile(path);
+      for (const pattern of LEGACY_POPUP_SETTINGS_UX_PHRASES) {
+        expect(text).not.toMatch(pattern);
+      }
+    }
+    const choiceRow = readRepoFile("src/popup/components/SettingsChoiceRow.tsx");
+    expect(choiceRow).toMatch(/<Label className=\{settingsChoiceRowClass/);
+    expect(choiceRow).not.toContain("htmlFor=");
+    const appsPanel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
+    expect(appsPanel).toContain("onHiddenModeChange");
+    expect(appsPanel).toContain("powerAppsPanelBusyMode");
   });
 
   it("Power Apps user-facing source avoids vague inject-only error copy", () => {

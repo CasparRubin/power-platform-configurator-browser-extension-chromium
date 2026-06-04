@@ -88,9 +88,12 @@ describe("popup chrome (header + About developer section)", () => {
     expect(sectionHeader).toContain("SETTINGS_SECTION_TITLE_CLASS");
     expect(choiceRow).toContain("RadioGroupItem");
     expect(choiceRow).toContain("settingsChoiceRowClass");
-    expect(choiceRow).toContain('className="mt-1 shrink-0"');
+    expect(choiceRow).toContain("SETTINGS_CHOICE_RADIO_CLASS");
+    expect(choiceRow).toMatch(/<Label className=\{settingsChoiceRowClass/);
     expect(layout).toContain("settingsChoiceRowClass");
-    expect(layout).toContain("gap-3 rounded-sm p-3");
+    expect(layout).toContain("SETTINGS_CHOICE_RADIO_CLASS");
+    expect(layout).toContain("border-primary/40");
+    expect(layout).toContain("gap-3 rounded-sm border p-3");
     expect(layout).toContain("SETTINGS_RADIO_GROUP_CLASS");
     expect(layout).toContain("gap-2");
     expect(layout).toContain("TAB_PANEL_BODY_CLASS");
@@ -107,8 +110,16 @@ describe("popup chrome (header + About developer section)", () => {
     expect(appsPanel).toContain("persistPowerAppsPreference");
     expect(appsPanel).toContain("requestPowerAppsApplyPreferencesOnActiveTab");
     expect(appsPanel).toContain("formatPowerAppsPreferencesApplyStatus");
-    expect(appsPanel).toContain("POWERAPPS_SYNC_KEYS");
+    expect(appsPanel).toContain("SettingsBusyHint");
+    expect(appsPanel).not.toContain("disabled={");
     expect(appsPanel).toContain("Separator");
+
+    expect(app).toContain("POPUP_SYNC_SETTINGS_KEYS");
+    expect(app).toContain("settingsLoaded");
+    expect(app).toContain("onHiddenModeChange={setHiddenMode}");
+    expect(paPanel).toContain("SettingsBusyHint");
+    expect(paPanel).not.toContain("PolicyPanelBusyHint");
+    expect(paPanel).not.toContain("disabled={");
   });
 
   it("About appearance radios use SettingsChoiceRow (no Sun/Moon between radio and label)", () => {
@@ -230,6 +241,52 @@ describe("popup chrome (header + About developer section)", () => {
     for (const svgName of importedSvgs) {
       expectIconExists(publicIconsDir, svgName);
     }
+  });
+});
+
+describe("settings UX (choice rows, preload, busy hints)", () => {
+  it("SettingsBusyHint module exists and PolicyPanelBusyHint was removed", () => {
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsBusyHint.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/PolicyPanelBusyHint.tsx"))).toBe(false);
+  });
+
+  it("SettingsChoiceRow uses a full-row Label (no nested htmlFor title-only label)", () => {
+    const choiceRow = readSource("src/popup/components/SettingsChoiceRow.tsx");
+    expect(choiceRow).toMatch(/<Label className=\{settingsChoiceRowClass/);
+    expect(choiceRow).not.toContain("htmlFor=");
+    expect(choiceRow).not.toMatch(/<div className=\{settingsChoiceRowClass/);
+  });
+
+  it("App preloads policy and Power Apps prefs in one sync read", () => {
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain("POPUP_SYNC_SETTINGS_KEYS");
+    expect(app).toContain("parsePowerAppsPreferencesFromSync");
+    expect(app).toContain("settingsLoaded");
+    expect(app).not.toContain("policyLoaded");
+    expect(app).toMatch(
+      /chrome\.storage\.sync\s*\n?\s*\.get\(\[\.\.\.POPUP_SYNC_SETTINGS_KEYS\]\)/,
+    );
+  });
+
+  it("PowerAppsPanel is controlled from App and does not load sync on mount", () => {
+    const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
+    expect(appsPanel).toContain("hiddenMode:");
+    expect(appsPanel).toContain("onHiddenModeChange");
+    expect(appsPanel).toContain("onReadOnlyModeChange");
+    expect(appsPanel).toContain("powerAppsPanelBusyMode");
+    expect(appsPanel).toContain("setIsApplying");
+    expect(appsPanel).not.toContain("prefsLoaded");
+    expect(appsPanel).not.toContain("POWERAPPS_SYNC_KEYS");
+    expect(appsPanel).not.toMatch(/chrome\.storage\.sync/);
+    expect(appsPanel).not.toContain("disabled={");
+  });
+
+  it("product settings panels show SettingsBusyHint on every section header", () => {
+    const paPanel = readSource("src/popup/components/PowerAutomatePanel.tsx");
+    const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
+    expect(paPanel.match(/<SettingsBusyHint mode=\{busyMode\} \/>/g)?.length).toBe(2);
+    expect(appsPanel.match(/<SettingsBusyHint mode=\{busyMode\} \/>/g)?.length).toBe(2);
+    expect(paPanel).toContain("policyPanelBusyMode");
   });
 });
 

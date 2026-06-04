@@ -57,6 +57,10 @@ describe("README and docs accuracy (current product scope)", () => {
     const section = readmeSection(readme, "## What it does");
     expect(section).toMatch(/800\s*[×x]\s*600|800×600/i);
     expect(section).toContain("SettingsChoiceRow");
+    expect(section).toContain("SettingsBusyHint");
+    expect(section).toContain("POPUP_SYNC_SETTINGS_KEYS");
+    expect(section).toMatch(/stay enabled|full.row/i);
+    expect(section).not.toMatch(/radio groups are disabled only while/i);
     expect(section).toContain("TAB_PANEL_HOST_CLASS");
     expect(section).toContain("Power Automate");
     expect(section).toContain("Power Apps");
@@ -85,6 +89,8 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toContain("About");
     expect(section).toMatch(/record form/i);
     expect(section).toMatch(/status line/i);
+    expect(section).toMatch(/SettingsBusyHint|stay enabled/i);
+    expect(section).not.toMatch(/radios briefly disable only while/i);
     expect(section).toMatch(/saves to sync|stay selected|stay visible/i);
     expect(section).toMatch(/powerAppsHiddenFields|powerAppsReadOnly/i);
     expect(section).not.toMatch(/no API call/i);
@@ -134,6 +140,8 @@ describe("README and docs accuracy (current product scope)", () => {
     const layout = readmeSection(readme, "## Repository layout");
     expect(layout).toContain("popup-layout.ts");
     expect(layout).toContain("SettingsChoiceRow");
+    expect(layout).toContain("SettingsBusyHint");
+    expect(readme).toContain("POPUP_SYNC_SETTINGS_KEYS");
     expect(layout).not.toContain("src/inspector");
     expect(layout).not.toContain("FlowInspectorLauncherCard");
     expect(layout).not.toContain("content-main-hook");
@@ -143,6 +151,9 @@ describe("README and docs accuracy (current product scope)", () => {
   it("popup settings components exist on disk", () => {
     expect(existsSync(join(repoRoot, "src/popup/components/SettingsChoiceRow.tsx"))).toBe(true);
     expect(existsSync(join(repoRoot, "src/popup/components/SettingsSectionHeader.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "src/popup/components/SettingsBusyHint.tsx"))).toBe(true);
+    expect(existsSync(join(repoRoot, "tests/settings-busy-hint.test.ts"))).toBe(true);
+    expect(existsSync(join(repoRoot, "tests/popup-layout.test.ts"))).toBe(true);
   });
 });
 
