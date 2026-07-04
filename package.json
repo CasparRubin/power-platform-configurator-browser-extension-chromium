@@ -31,7 +31,7 @@
     "@eslint/js": "^9.39.4",
     "@types/chrome": "^0.0.287",
     "@types/node": "^22.19.0",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
     "@vitest/coverage-v8": "^4.1.6",
@@ -55,14 +55,14 @@
     "@helvety/shared": "file:.helvety/packages/shared",
     "@helvety/ui": "file:.helvety/packages/ui",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.16.0",
+    "lucide-react": "^1.23.0",
     "tailwind-merge": "^3.6.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "overrides": {
     "esbuild": "^0.25.12",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "react": "$react",
     "react-dom": "$react-dom",
