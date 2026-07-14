@@ -192,7 +192,7 @@ if (!globalScope[CONTENT_BOOTSTRAP_KEY]) {
     });
   }
 
-  void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {
+  void chrome.storage.sync.get([...SYNC_POLICY_KEYS]).then((result) => {
     applyPolicyFromSyncResult(result);
     startCanonicalizer();
   });
@@ -231,7 +231,7 @@ if (!globalScope[CONTENT_BOOTSTRAP_KEY]) {
       return;
     }
 
-    void chrome.storage.sync.get(SYNC_POLICY_KEYS).then((result) => {
+    void chrome.storage.sync.get([...SYNC_POLICY_KEYS]).then((result) => {
       const merged = { ...result };
       if (hasEnforcedChange) {
         merged[STORAGE_KEY_ENFORCED_V3] = syncChanges[STORAGE_KEY_ENFORCED_V3]?.newValue;

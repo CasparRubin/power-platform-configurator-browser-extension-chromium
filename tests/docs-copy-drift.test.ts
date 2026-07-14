@@ -308,6 +308,24 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     }
     expect(doc).toMatch(/Hide hidden fields|Show hidden fields/i);
     expect(doc).toMatch(/Lock read-only|Unlock read-only/i);
+    expect(doc).toMatch(/Chrome Web Store only/i);
+    expect(doc).toContain("minimum_chrome_version");
+    expect(doc).toContain("action.default_icon");
+  });
+
+  it("README store section is Chrome Web Store–first (no separate Edge Add-ons upload path)", () => {
+    const readme = readRepoFile("README.md");
+    expect(readme).toMatch(/## Chrome Web Store/);
+    expect(readme).not.toMatch(
+      /uploading to Chrome Web Store or Edge Add-ons|Chrome Web Store \/ Edge Add-ons note/i,
+    );
+    expect(readme).not.toMatch(/Chrome Web Store \/ Edge uploads/i);
+    expect(readme).not.toMatch(/Partner Center/i);
+    expect(readme).not.toMatch(/each store'?s developer dashboard/i);
+    expect(readme).toMatch(/Chrome Web Store developer dashboard/i);
+    expect(readme).toMatch(/Chrome Web Store upload is still manual/i);
+    expect(readme).toMatch(/Chromium Edge can install the same listing from the Chrome Web Store/i);
+    expect(readme).toContain("action.default_icon");
   });
 
   it("README avoids legacy Power Apps button and one-shot UI copy", () => {

@@ -82,10 +82,8 @@ function enforceCanonicalOnTab(tabId: number, urlValue: string): void {
     lastCanonicalKeyByTabId[tabId] = nextCanonicalKey;
   }
 
-  chrome.tabs.update(tabId, { url: nextUrl }, () => {
-    if (chrome.runtime.lastError) {
-      clearTabCanonicalKey(tabId);
-    }
+  void chrome.tabs.update(tabId, { url: nextUrl }).catch(() => {
+    clearTabCanonicalKey(tabId);
   });
 }
 
@@ -109,7 +107,7 @@ async function applyRulesetsForPreference(mode: EnforcementPreference): Promise<
 
 async function reconcileFromStorage(): Promise<void> {
   try {
-    const result = await chrome.storage.sync.get(SYNC_POLICY_KEYS);
+    const result = await chrome.storage.sync.get([...SYNC_POLICY_KEYS]);
     const preference = parseEnforcementPreference(result[STORAGE_KEY_ENFORCED_V3]);
     const surveyOn = parseV3SurveyEnabled(result[STORAGE_KEY_V3SURVEY_ENABLED]);
     PowerAutomateUrlPolicy.configure({ preference, v3surveyEnabled: surveyOn });

@@ -1,12 +1,13 @@
 # Chrome Web Store submission checklist
 
-Use this when uploading **Power Platform Configurator** from a tagged release (`dist/` zip). Edge Add-ons uses the same MV3 package; dashboard copy may differ slightly.
+Use this when uploading **Power Platform Configurator** from a tagged release (`dist/` zip). Distribution is **Chrome Web Store only**; Chromium Edge users can install the same listing from the Chrome Web Store (no separate Edge Add-ons package).
 
 ## Package to upload
 
 - Build from a release tag: `npm run build` then `npm run package:zip` (or download the GitHub Release asset).
 - Upload the generated zip (`power-platform-configurator-vX.Y.Z.zip`). **`manifest.json` must be at the archive root** (e.g. `manifest.json`, not `dist/manifest.json` or `./manifest.json`). On Windows, do **not** use `tar -a` to zip `dist/` — use `npm run package:zip` or the Linux `zip` command from [Release](.github/workflows/release.yml).
 - Confirm **no DNR warnings** on `chrome://extensions` when loaded unpacked before submitting.
+- Manifest ships `minimum_chrome_version` **102** and `action.default_icon` (same PNGs as top-level `icons`). Permissions and host lists must stay aligned with the table below.
 
 ## Listing fields (dashboard)
 
@@ -37,6 +38,7 @@ Explain that the extension adjusts **Power Automate flow/run URLs** on permitted
 | Asset                           | Path                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------------ |
 | Extension icons                 | `public/icons/ppconfigurator_{16,32,48,128}.png`                                           |
+| Toolbar / action icons          | Same paths via manifest `action.default_icon`                                              |
 | Popup tab product marks         | `public/icons/Power_Automate_Scalable.svg`, `Power_Apps_Scalable.svg` via `TabProductIcon` |
 | Popup header icon (48px source) | `assets/ppconfigurator_48.png` via `PopupHeader`                                           |
 | Marquee promo (1400×560)        | `assets/MarqueePromoTile_1400x560.png`                                                     |

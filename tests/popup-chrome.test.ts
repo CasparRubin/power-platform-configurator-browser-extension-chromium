@@ -43,6 +43,14 @@ describe("popup chrome (header + About developer section)", () => {
     expect(app).not.toMatch(/<header[^>]*>[\s\S]*<HelvetyMark/);
   });
 
+  it("App reads extension version via lazy useState (not setState-in-effect)", () => {
+    const app = readSource("src/popup/App.tsx");
+    expect(app).toContain('from "@helvety/extension-chrome/extension-version"');
+    expect(app).toMatch(/useState\(\(\)\s*=>\s*readExtensionVersion\(\)\)/);
+    expect(app).not.toContain("setExtensionVersion");
+    expect(app).not.toMatch(/useEffect\(\(\)\s*=>\s*\{\s*setExtensionVersion/);
+  });
+
   it("popup tabs are Power Automate, Power Apps, and About (not legacy Editor/Survey triggers)", () => {
     const app = readSource("src/popup/App.tsx");
     expect(app).toContain("Power Automate");

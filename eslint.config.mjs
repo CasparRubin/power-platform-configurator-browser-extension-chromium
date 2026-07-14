@@ -17,20 +17,21 @@ export default tseslint.config(
       sourceType: "module",
       globals: {
         ...globals.browser,
-        ...globals.es2021,
+        ...globals.es2022,
       },
     },
   },
   {
     files: ["src/popup/**/*.{ts,tsx}"],
+    ...reactHooks.configs.flat.recommended,
     plugins: {
+      ...reactHooks.configs.flat.recommended.plugins,
       react,
-      "react-hooks": reactHooks,
     },
     rules: {
+      ...reactHooks.configs.flat.recommended.rules,
       ...react.configs.recommended.rules,
       ...react.configs["jsx-runtime"].rules,
-      ...reactHooks.configs.recommended.rules,
     },
     settings: {
       react: {

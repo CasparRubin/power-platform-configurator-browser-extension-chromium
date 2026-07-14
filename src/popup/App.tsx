@@ -58,7 +58,7 @@ export default function App() {
   const [isTargetTabReloadBusy, setIsTargetTabReloadBusy] = useState(false);
   const [isPowerAppsSyncBusy, setIsPowerAppsSyncBusy] = useState(false);
   const [isPowerAppsApplying, setIsPowerAppsApplying] = useState(false);
-  const [extensionVersion, setExtensionVersion] = useState<string>("");
+  const [extensionVersion] = useState(() => readExtensionVersion());
   const powerAutomateStatusClearTimerRef = useRef<number | null>(null);
   const powerAppsStatusClearTimerRef = useRef<number | null>(null);
   const mountedRef = useRef(true);
@@ -107,10 +107,6 @@ export default function App() {
     return () => {
       mountedRef.current = false;
     };
-  }, []);
-
-  useEffect(() => {
-    setExtensionVersion(readExtensionVersion());
   }, []);
 
   useEffect(() => {

@@ -6,17 +6,59 @@ import { describe, expect, it } from "vitest";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-function resolveHelvetyDriftScript(): string {
-  const candidates = [
+type DriftVersions = {
+  react?: string;
+  "react-dom"?: string;
+  "lucide-react"?: string;
+};
+
+/**
+ * Helvety moved required versions into `workspace-version-drift.config.json`.
+ * Older clones still embed `["dep", "version"]` pairs in the drift script.
+ */
+function resolveHelvetyDriftVersions(): DriftVersions {
+  const configCandidates = [
+    join(repoRoot, ".helvety/scripts/workspace-version-drift.config.json"),
+    join(repoRoot, "../helvety/scripts/workspace-version-drift.config.json"),
+  ];
+  for (const path of configCandidates) {
+    if (!existsSync(path)) {
+      continue;
+    }
+    const parsed = JSON.parse(readFileSync(path, "utf8")) as {
+      requiredVersionByDep?: Record<string, string>;
+    };
+    const map = parsed.requiredVersionByDep ?? {};
+    return {
+      react: map.react,
+      "react-dom": map["react-dom"],
+      "lucide-react": map["lucide-react"],
+    };
+  }
+
+  const scriptCandidates = [
     join(repoRoot, ".helvety/scripts/check-workspace-version-drift.mjs"),
     join(repoRoot, "../helvety/scripts/check-workspace-version-drift.mjs"),
   ];
-  for (const path of candidates) {
-    if (existsSync(path)) {
-      return readFileSync(path, "utf8");
+  for (const path of scriptCandidates) {
+    if (!existsSync(path)) {
+      continue;
     }
+    const drift = readFileSync(path, "utf8");
+    const extract = (dep: string) => {
+      const match = drift.match(
+        new RegExp(`\\["${dep.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}",\\s*"([^"]+)"\\]`),
+      );
+      return match?.[1];
+    };
+    return {
+      react: extract("react"),
+      "react-dom": extract("react-dom"),
+      "lucide-react": extract("lucide-react"),
+    };
   }
-  throw new Error("Helvety drift script not found; run preinstall or link ../helvety");
+
+  throw new Error("Helvety drift config/script not found; run preinstall or link ../helvety");
 }
 
 describe("power-platform extension dependency pins", () => {
@@ -26,22 +68,25 @@ describe("power-platform extension dependency pins", () => {
   };
 
   it("aligns react and lucide with Helvety monorepo drift minimums", () => {
-    const drift = resolveHelvetyDriftScript();
-    const extract = (dep: string) => {
-      const match = drift.match(
-        new RegExp(`\\["${dep.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}",\\s*"([^"]+)"\\]`),
-      );
-      return match?.[1];
-    };
+    const drift = resolveHelvetyDriftVersions();
 
-    expect(packageJson.dependencies?.react).toBe(extract("react"));
-    expect(packageJson.dependencies?.["react-dom"]).toBe(extract("react-dom"));
-    expect(packageJson.dependencies?.["lucide-react"]).toBe(extract("lucide-react"));
+    expect(packageJson.dependencies?.react).toBe(drift.react);
+    expect(packageJson.dependencies?.["react-dom"]).toBe(drift["react-dom"]);
+    expect(packageJson.dependencies?.["lucide-react"]).toBe(drift["lucide-react"]);
   });
 
   it("keeps legacy toolchain on Tailwind 3 / Vite 7 until dedicated migration", () => {
     expect(packageJson.devDependencies?.tailwindcss).toMatch(/^\^3\./);
     expect(packageJson.devDependencies?.vite).toMatch(/^\^7\./);
     expect(packageJson.devDependencies?.typescript).toMatch(/^\^5\./);
+  });
+
+  it("pins current Chrome typings and React Hooks ESLint flat config major", () => {
+    expect(packageJson.devDependencies?.["@types/chrome"]).toMatch(/^\^0\.1\./);
+    expect(packageJson.devDependencies?.["eslint-plugin-react-hooks"]).toMatch(/^\^7\./);
+    const eslintConfig = readFileSync(join(repoRoot, "eslint.config.mjs"), "utf8");
+    expect(eslintConfig).toContain("globals.es2022");
+    expect(eslintConfig).toContain("reactHooks.configs.flat.recommended");
+    expect(eslintConfig).not.toContain("globals.es2021");
   });
 });

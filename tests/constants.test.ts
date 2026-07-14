@@ -38,10 +38,15 @@ type PublicManifest = {
   manifest_version?: number;
   name?: string;
   description?: string;
+  minimum_chrome_version?: string;
   permissions?: string[];
   host_permissions?: string[];
   background?: { service_worker?: string; type?: string };
-  action?: { default_popup?: string; default_title?: string };
+  action?: {
+    default_popup?: string;
+    default_title?: string;
+    default_icon?: Record<string, string>;
+  };
   content_scripts?: Array<{
     matches?: string[];
     js?: string[];
@@ -191,7 +196,7 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     expect(manifest.description).toBe(EXPECTED_MANIFEST_DESCRIPTION);
   });
 
-  it("description stays within Chrome / Edge manifest length limit", () => {
+  it("description stays within Chrome Web Store / Chromium manifest length limit", () => {
     const manifest = readPublicManifest();
     const description = manifest.description ?? "";
     expect(description.length).toBeLessThanOrEqual(MANIFEST_DESCRIPTION_MAX_LENGTH);
@@ -203,6 +208,17 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
   it("is MV3 with expected API permissions", () => {
     const manifest = readPublicManifest();
     expect(manifest.manifest_version).toBe(3);
+    expect(manifest.minimum_chrome_version).toBe("102");
+    expect(manifest.action?.default_icon).toEqual({
+      "16": "icons/ppconfigurator_16.png",
+      "32": "icons/ppconfigurator_32.png",
+      "48": "icons/ppconfigurator_48.png",
+      "128": "icons/ppconfigurator_128.png",
+    });
+    expect(manifest.action?.default_icon).toEqual(manifest.icons);
+    for (const relativePath of Object.values(manifest.action?.default_icon ?? {})) {
+      expect(existsSync(join(repoRoot, "public", relativePath))).toBe(true);
+    }
     expect([...(manifest.permissions ?? [])].sort()).toEqual(
       ["declarativeNetRequest", "scripting", "storage", "tabs", "webNavigation"].sort(),
     );

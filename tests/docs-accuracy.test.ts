@@ -212,6 +212,8 @@ describe("chrome-web-store.md accuracy", () => {
     const manifest = JSON.parse(readRepoFile("public/manifest.json")) as {
       permissions?: string[];
       host_permissions?: string[];
+      minimum_chrome_version?: string;
+      action?: { default_icon?: Record<string, string> };
     };
     expect(doc).toContain("`declarativeNetRequest`");
     expect(doc).toContain("`scripting`");
@@ -228,5 +230,30 @@ describe("chrome-web-store.md accuracy", () => {
     for (const api of apiHosts) {
       expect(doc).not.toContain(api);
     }
+  });
+
+  it("documents Chrome Web Store–only distribution and current manifest polish keys", () => {
+    const manifest = JSON.parse(readRepoFile("public/manifest.json")) as {
+      minimum_chrome_version?: string;
+      action?: { default_icon?: Record<string, string> };
+    };
+    expect(doc).toMatch(/Chrome Web Store only/i);
+    expect(doc).toMatch(/Chromium Edge users can install/i);
+    expect(doc).not.toMatch(/Partner Center/i);
+    expect(doc).not.toMatch(/upload(?:ing)? to (?:Chrome Web Store or )?Edge Add-ons/i);
+    expect(doc).not.toMatch(/Chrome Web Store \/ Edge/i);
+    expect(doc).toContain("minimum_chrome_version");
+    expect(doc).toContain(manifest.minimum_chrome_version ?? "");
+    expect(doc).toContain("action.default_icon");
+    expect(manifest.action?.default_icon).toBeDefined();
+  });
+});
+
+describe("package-dist-zip script copy", () => {
+  it("describes Chrome Web Store packaging only (not a separate Edge Add-ons upload)", () => {
+    const script = readRepoFile("scripts/package-dist-zip.mjs");
+    expect(script).toMatch(/Chrome Web Store/);
+    expect(script).not.toMatch(/Chrome Web Store \/ Edge/i);
+    expect(script).not.toMatch(/Edge Add-ons/i);
   });
 });

@@ -51,19 +51,32 @@ describe("dist/ bundle (post-build)", () => {
     const publicManifest = JSON.parse(
       readFileSync(join(repoRoot, "public", "manifest.json"), "utf8"),
     ) as {
+      minimum_chrome_version?: string;
       host_permissions?: string[];
+      action?: { default_icon?: Record<string, string> };
+      icons?: Record<string, string>;
       content_scripts?: Array<{ js?: string[]; matches?: string[]; world?: string }>;
     };
     const distManifest = JSON.parse(
       readFileSync(join(repoRoot, "dist", "manifest.json"), "utf8"),
     ) as {
+      minimum_chrome_version?: string;
       permissions?: string[];
       host_permissions?: string[];
+      action?: { default_icon?: Record<string, string> };
+      icons?: Record<string, string>;
       side_panel?: unknown;
       content_scripts?: Array<{ js?: string[]; matches?: string[]; world?: string }>;
     };
     expect(distManifest.side_panel).toBeUndefined();
     expect(distManifest.permissions).not.toContain("sidePanel");
+    expect(distManifest.minimum_chrome_version).toBe(publicManifest.minimum_chrome_version);
+    expect(distManifest.minimum_chrome_version).toBe("102");
+    expect(distManifest.action?.default_icon).toEqual(publicManifest.action?.default_icon);
+    expect(distManifest.action?.default_icon).toEqual(distManifest.icons);
+    for (const relativePath of Object.values(distManifest.action?.default_icon ?? {})) {
+      expect(existsSync(join(repoRoot, "dist", relativePath))).toBe(true);
+    }
     expect(distManifest.host_permissions?.sort()).toEqual(
       [...(publicManifest.host_permissions ?? [])].sort(),
     );

@@ -8,7 +8,8 @@ import { describe, expect, it } from "vitest";
  * must not use inline script blocks. Run `npm run build` before relying on this test in CI.
  *
  * Chrome Web Store: single-purpose description and permission/host justifications stay manual;
- * align copy with `declarativeNetRequest`, `webNavigation`, `storage`, and manifest host patterns.
+ * align copy with `declarativeNetRequest`, `webNavigation`, `scripting`, `storage`, `tabs`,
+ * and manifest host patterns (see `docs/chrome-web-store.md`).
  */
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const popupHtmlPath = resolve(repoRoot, "dist", "popup.html");

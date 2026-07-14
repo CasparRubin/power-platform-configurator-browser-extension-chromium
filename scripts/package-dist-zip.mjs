@@ -1,4 +1,4 @@
-// Zip dist/ for Chrome Web Store / Edge — manifest.json at archive root (no "./" prefix).
+// Zip dist/ for Chrome Web Store — manifest.json at archive root (no "./" prefix).
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -38,7 +38,9 @@ if (process.platform === "win32") {
 
 const buf = fs.readFileSync(outPath);
 if (buf.includes(Buffer.from("./manifest.json"))) {
-  console.error("package-dist-zip: zip contains ./manifest.json — Chrome Web Store will reject it.");
+  console.error(
+    "package-dist-zip: zip contains ./manifest.json — Chrome Web Store will reject it.",
+  );
   process.exit(1);
 }
 if (!buf.includes(Buffer.from("manifest.json"))) {
