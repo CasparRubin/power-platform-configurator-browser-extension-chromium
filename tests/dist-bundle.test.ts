@@ -71,7 +71,7 @@ describe("dist/ bundle (post-build)", () => {
     expect(distManifest.side_panel).toBeUndefined();
     expect(distManifest.permissions).not.toContain("sidePanel");
     expect(distManifest.minimum_chrome_version).toBe(publicManifest.minimum_chrome_version);
-    expect(distManifest.minimum_chrome_version).toBe("102");
+    expect(distManifest.minimum_chrome_version).toBe("111");
     expect(distManifest.action?.default_icon).toEqual(publicManifest.action?.default_icon);
     expect(distManifest.action?.default_icon).toEqual(distManifest.icons);
     for (const relativePath of Object.values(distManifest.action?.default_icon ?? {})) {

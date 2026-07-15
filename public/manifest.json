@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Power Platform Configurator",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "description": "Power Automate flow URLs (classic/new, survey). Unhide or unlock fields on model-driven Power Apps forms.",
   "homepage_url": "https://helvety.com",
   "permissions": ["declarativeNetRequest", "webNavigation", "scripting", "storage", "tabs"],
@@ -56,7 +56,7 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "minimum_chrome_version": "102",
+  "minimum_chrome_version": "111",
   "action": {
     "default_popup": "popup.html",
     "default_title": "Power Platform Configurator",

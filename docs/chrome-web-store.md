@@ -7,7 +7,7 @@ Use this when uploading **Power Platform Configurator** from a tagged release (`
 - Build from a release tag: `npm run build` then `npm run package:zip` (or download the GitHub Release asset).
 - Upload the generated zip (`power-platform-configurator-vX.Y.Z.zip`). **`manifest.json` must be at the archive root** (e.g. `manifest.json`, not `dist/manifest.json` or `./manifest.json`). On Windows, do **not** use `tar -a` to zip `dist/` — use `npm run package:zip` or the Linux `zip` command from [Release](.github/workflows/release.yml).
 - Confirm **no DNR warnings** on `chrome://extensions` when loaded unpacked before submitting.
-- Manifest ships `minimum_chrome_version` **102** and `action.default_icon` (same PNGs as top-level `icons`). Permissions and host lists must stay aligned with the table below.
+- Manifest ships `minimum_chrome_version` **111** and `action.default_icon` (same PNGs as top-level `icons`). Permissions and host lists must stay aligned with the table below. (111 is the floor for the popup's OKLCH design tokens, `color-mix()`, and `scripting` MAIN-world enforcement.)
 
 ## Listing fields (dashboard)
 

@@ -1,3 +1,12 @@
+/**
+ * Design tokens are full OKLCH colors from `@helvety/extension-chrome/extension-tokens.css`,
+ * so reference them directly. Never re-wrap a token in an `hsl()` function: that emits invalid
+ * `hsl(oklch(...))` which browsers drop (missing colors, white borders). The `color-mix` alpha
+ * slot keeps Tailwind opacity modifiers (e.g. `bg-muted/40`) working and matches Tailwind v4's
+ * `color-mix(in oklab, ...)` output used by the sibling extension.
+ */
+const alpha = (name) => `color-mix(in oklab, var(${name}) calc(<alpha-value> * 100%), transparent)`;
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
@@ -9,38 +18,38 @@ export default {
   theme: {
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border: alpha("--border"),
+        input: alpha("--input"),
+        ring: alpha("--ring"),
+        background: alpha("--background"),
+        foreground: alpha("--foreground"),
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: alpha("--primary"),
+          foreground: alpha("--primary-foreground"),
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: alpha("--secondary"),
+          foreground: alpha("--secondary-foreground"),
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: alpha("--destructive"),
+          foreground: alpha("--destructive-foreground"),
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: alpha("--muted"),
+          foreground: alpha("--muted-foreground"),
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: alpha("--accent"),
+          foreground: alpha("--accent-foreground"),
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: alpha("--popover"),
+          foreground: alpha("--popover-foreground"),
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: alpha("--card"),
+          foreground: alpha("--card-foreground"),
         },
       },
       borderRadius: {

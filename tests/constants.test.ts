@@ -208,7 +208,7 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
   it("is MV3 with expected API permissions", () => {
     const manifest = readPublicManifest();
     expect(manifest.manifest_version).toBe(3);
-    expect(manifest.minimum_chrome_version).toBe("102");
+    expect(manifest.minimum_chrome_version).toBe("111");
     expect(manifest.action?.default_icon).toEqual({
       "16": "icons/ppconfigurator_16.png",
       "32": "icons/ppconfigurator_32.png",
