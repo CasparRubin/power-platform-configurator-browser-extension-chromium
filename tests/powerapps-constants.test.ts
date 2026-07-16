@@ -8,14 +8,12 @@ import { describe, expect, it } from "vitest";
 import {
   DATAVERSE_ORG_HOST_SUFFIXES,
   DATAVERSE_SPECIAL_ORG_HOST_SUFFIXES,
-  dynamicsApiHostPermission,
   dynamicsOrgHostPermission,
   dynamicsOrgUrlPattern,
   hostMatchesDataverseOrgSuffix,
   hostMatchesDynamicsOrgPattern,
   isPowerAppsHostUrl,
   isValidChromeHostMatchPattern,
-  POWERAPPS_DYNAMICS_API_HOST_PERMISSIONS,
   POWERAPPS_DYNAMICS_ORG_HOST_PERMISSIONS,
   POWERAPPS_HOST_PERMISSIONS,
 } from "../src/powerapps/constants";
@@ -23,27 +21,24 @@ import {
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 describe("Dataverse host permission builders", () => {
-  it("builds org, API, and URL patterns from a suffix", () => {
+  it("builds org and URL patterns from a suffix", () => {
     expect(dynamicsOrgHostPermission("crm17.dynamics.com")).toBe("https://*.crm17.dynamics.com/*");
-    expect(dynamicsApiHostPermission("crm.dynamics.cn")).toBe("https://*.api.crm.dynamics.cn/*");
     expect(dynamicsOrgUrlPattern("crm.microsoftdynamics.de")).toBe(
       "*://*.crm.microsoftdynamics.de/*",
     );
   });
 
-  it("declares paired org and API permissions for every org suffix", () => {
+  it("declares org permissions for every org suffix (no API host permissions)", () => {
     expect(POWERAPPS_DYNAMICS_ORG_HOST_PERMISSIONS).toHaveLength(
       DATAVERSE_ORG_HOST_SUFFIXES.length,
     );
-    expect(POWERAPPS_DYNAMICS_API_HOST_PERMISSIONS).toHaveLength(
-      DATAVERSE_ORG_HOST_SUFFIXES.length,
-    );
-    expect(POWERAPPS_HOST_PERMISSIONS).toHaveLength(DATAVERSE_ORG_HOST_SUFFIXES.length * 2 + 1);
+    expect(POWERAPPS_HOST_PERMISSIONS).toHaveLength(DATAVERSE_ORG_HOST_SUFFIXES.length + 1);
+    expect(POWERAPPS_HOST_PERMISSIONS.every((h) => !h.includes(".api."))).toBe(true);
   });
 });
 
 describe("hostMatchesDataverseOrgSuffix", () => {
-  it("requires an org label before the suffix", () => {
+  it("requires a single org label before the suffix", () => {
     expect(hostMatchesDataverseOrgSuffix("contoso.crm17.dynamics.com", "crm17.dynamics.com")).toBe(
       true,
     );
@@ -51,6 +46,9 @@ describe("hostMatchesDataverseOrgSuffix", () => {
     expect(hostMatchesDataverseOrgSuffix("contoso.crm17.dynamics.com", "crm.dynamics.com")).toBe(
       false,
     );
+    expect(
+      hostMatchesDataverseOrgSuffix("contoso.api.crm17.dynamics.com", "crm17.dynamics.com"),
+    ).toBe(false);
   });
 });
 

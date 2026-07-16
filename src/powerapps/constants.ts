@@ -83,20 +83,12 @@ export function dynamicsOrgHostPermission(orgHostSuffix: string): string {
   return `https://*.${orgHostSuffix}/*`;
 }
 
-export function dynamicsApiHostPermission(orgHostSuffix: string): string {
-  return `https://*.api.${orgHostSuffix}/*`;
-}
-
 export function dynamicsOrgUrlPattern(orgHostSuffix: string): string {
   return `*://*.${orgHostSuffix}/*`;
 }
 
 export const POWERAPPS_DYNAMICS_ORG_HOST_PERMISSIONS = DATAVERSE_ORG_HOST_SUFFIXES.map((suffix) =>
   dynamicsOrgHostPermission(suffix),
-);
-
-export const POWERAPPS_DYNAMICS_API_HOST_PERMISSIONS = DATAVERSE_ORG_HOST_SUFFIXES.map((suffix) =>
-  dynamicsApiHostPermission(suffix),
 );
 
 /**
@@ -111,16 +103,25 @@ export const POWERAPPS_URL_PATTERNS = [
 /** Manifest host_permissions for Dataverse / Power Apps (keep in sync with public/manifest.json). */
 export const POWERAPPS_HOST_PERMISSIONS = [
   ...POWERAPPS_DYNAMICS_ORG_HOST_PERMISSIONS,
-  ...POWERAPPS_DYNAMICS_API_HOST_PERMISSIONS,
   "https://apps.powerapps.com/*",
 ] as const;
 
-/** True when hostname is `{org}.{suffix}` for a known Dataverse org suffix. */
+/**
+ * True when hostname is `{org}.{suffix}` for a known Dataverse org suffix.
+ * Rejects Web API shards (`*.api.*`) and multi-label hosts that only share a suffix.
+ */
 export function hostMatchesDataverseOrgSuffix(hostname: string, suffix: string): boolean {
   const lower = hostname.toLowerCase();
   const normalized = suffix.toLowerCase();
+  if (lower.includes(".api.")) {
+    return false;
+  }
   const needle = `.${normalized}`;
-  return lower.endsWith(needle) && lower.length > needle.length;
+  if (!lower.endsWith(needle) || lower.length <= needle.length) {
+    return false;
+  }
+  const orgLabel = lower.slice(0, lower.length - needle.length);
+  return orgLabel.length > 0 && !orgLabel.includes(".");
 }
 
 /** True when hostname is a model-driven org URL we declare in the manifest. */

@@ -22,6 +22,8 @@ type TabScheduleState = {
   retryTimerId: ReturnType<typeof setTimeout> | null;
   attempt: number;
   inFlight: boolean;
+  /** True when apply was requested while another apply was already running. */
+  pending: boolean;
 };
 
 const tabScheduleState = new Map<number, TabScheduleState>();
@@ -64,6 +66,7 @@ function getOrCreateTabState(tabId: number): TabScheduleState {
       retryTimerId: null,
       attempt: 0,
       inFlight: false,
+      pending: false,
     };
     tabScheduleState.set(tabId, state);
   }
@@ -156,14 +159,17 @@ async function runApplyForTab(tabId: number, prefs: PowerAppsPreferences): Promi
 
   if (!isPowerAppsEnforcementActive(prefs)) {
     clearTabRetry(state);
+    state.pending = false;
     return;
   }
 
   if (state.inFlight) {
+    state.pending = true;
     return;
   }
 
   state.inFlight = true;
+  state.pending = false;
   try {
     const results = await applyPowerAppsPreferencesOnTab(tabId, prefs);
     const needsRetry = results.some((r) => shouldRetryResult(r));
@@ -174,9 +180,12 @@ async function runApplyForTab(tabId: number, prefs: PowerAppsPreferences): Promi
     }
   } finally {
     state.inFlight = false;
+    if (state.pending) {
+      state.pending = false;
+      void runApplyForTab(tabId, prefs);
+    }
   }
 }
-
 export function schedulePowerAppsApplyForTab(tabId: number): void {
   const state = getOrCreateTabState(tabId);
 

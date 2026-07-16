@@ -220,7 +220,7 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
       expect(existsSync(join(repoRoot, "public", relativePath))).toBe(true);
     }
     expect([...(manifest.permissions ?? [])].sort()).toEqual(
-      ["declarativeNetRequest", "scripting", "storage", "tabs", "webNavigation"].sort(),
+      ["declarativeNetRequest", "scripting", "storage", "webNavigation"].sort(),
     );
     expect(manifest.host_permissions?.sort()).toEqual(
       [

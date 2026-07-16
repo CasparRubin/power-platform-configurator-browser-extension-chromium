@@ -60,8 +60,9 @@ describe("hostMatchesDynamicsOrgPattern", () => {
     expect(hostMatchesDynamicsOrgPattern("apps.powerapps.com")).toBe(false);
   });
 
-  it("matches three-label API hosts under dynamics.com", () => {
-    expect(hostMatchesDynamicsOrgPattern("contoso.api.crm17.dynamics.com")).toBe(true);
+  it("rejects three-label API hosts under dynamics.com", () => {
+    expect(hostMatchesDynamicsOrgPattern("contoso.api.crm17.dynamics.com")).toBe(false);
+    expect(isPowerAppsHostUrl("https://contoso.api.crm17.dynamics.com/api/data/v9.2")).toBe(false);
   });
 
   it("matches sovereign org hosts from Microsoft Learn special suffixes", () => {

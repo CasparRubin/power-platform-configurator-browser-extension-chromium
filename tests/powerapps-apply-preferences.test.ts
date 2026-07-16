@@ -455,6 +455,39 @@ describe("schedulePowerAppsApplyForTab concurrency", () => {
     expect(executeScript).toHaveBeenCalledTimes(1);
   });
 
+  it("re-runs once after in-flight apply when another schedule arrived", async () => {
+    let resolveFirst!: (value: unknown) => void;
+    const executeScript = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirst = resolve;
+          }),
+      )
+      .mockResolvedValue([{ result: { ok: true, action: "unhide", unhidden: 1 } }]);
+    vi.stubGlobal(
+      "chrome",
+      chromePrefsStub({ powerAppsHiddenFields: "show", powerAppsReadOnly: "lock" }, executeScript),
+    );
+
+    schedulePowerAppsApplyForTab(TAB_ID);
+    await vi.advanceTimersByTimeAsync(150);
+    expect(executeScript).toHaveBeenCalledTimes(1);
+
+    schedulePowerAppsApplyForTab(TAB_ID);
+    await vi.advanceTimersByTimeAsync(150);
+    // Let the second debounced path mark `pending` while the first apply is still open.
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(executeScript).toHaveBeenCalledTimes(1);
+
+    resolveFirst([{ result: { ok: true, action: "unhide", unhidden: 1 } }]);
+    await vi.waitFor(() => {
+      expect(executeScript).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it("does not stack retry timers when apply fails twice before retry fires", async () => {
     const executeScript = vi
       .fn()
