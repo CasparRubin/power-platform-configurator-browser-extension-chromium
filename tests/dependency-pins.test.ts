@@ -13,8 +13,7 @@ type DriftVersions = {
 };
 
 /**
- * Helvety moved required versions into `workspace-version-drift.config.json`.
- * Older clones still embed `["dep", "version"]` pairs in the drift script.
+ * Resolve Helvety drift pins from vendored or sibling `workspace-version-drift.config.json`.
  */
 function resolveHelvetyDriftVersions(): DriftVersions {
   const configCandidates = [
@@ -36,29 +35,9 @@ function resolveHelvetyDriftVersions(): DriftVersions {
     };
   }
 
-  const scriptCandidates = [
-    join(repoRoot, ".helvety/scripts/check-workspace-version-drift.mjs"),
-    join(repoRoot, "../helvety/scripts/check-workspace-version-drift.mjs"),
-  ];
-  for (const path of scriptCandidates) {
-    if (!existsSync(path)) {
-      continue;
-    }
-    const drift = readFileSync(path, "utf8");
-    const extract = (dep: string) => {
-      const match = drift.match(
-        new RegExp(`\\["${dep.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}",\\s*"([^"]+)"\\]`),
-      );
-      return match?.[1];
-    };
-    return {
-      react: extract("react"),
-      "react-dom": extract("react-dom"),
-      "lucide-react": extract("lucide-react"),
-    };
-  }
-
-  throw new Error("Helvety drift config/script not found; run preinstall or link ../helvety");
+  throw new Error(
+    "Helvety drift config not found; run preinstall or place ../helvety beside this repo",
+  );
 }
 
 describe("power-platform extension dependency pins", () => {
@@ -78,7 +57,7 @@ describe("power-platform extension dependency pins", () => {
   it("keeps legacy toolchain on Tailwind 3 / Vite 7 until dedicated migration", () => {
     expect(packageJson.devDependencies?.tailwindcss).toMatch(/^\^3\./);
     expect(packageJson.devDependencies?.vite).toMatch(/^\^7\./);
-    expect(packageJson.devDependencies?.typescript).toMatch(/^\^5\./);
+    expect(packageJson.devDependencies?.typescript).toBe("^5.9.3");
   });
 
   it("pins current Chrome typings and React Hooks ESLint flat config major", () => {

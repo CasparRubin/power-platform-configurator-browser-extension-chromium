@@ -17,6 +17,11 @@ describe("README Helvety vendor documentation", () => {
     expect(vendorSection).not.toMatch(/symlink.*\.\.\/helvety/i);
   });
 
+  it("documents skipping node_modules and build caches when copying", () => {
+    expect(vendorSection).toMatch(/skips.*node_modules/i);
+    expect(vendorSection).toMatch(/\.turbo/);
+  });
+
   it("documents @helvety/ui instead of app-local shadcn tree", () => {
     expect(vendorSection).toContain("@helvety/ui");
     expect(vendorSection).toMatch(/not app-local.*components\/ui/i);
