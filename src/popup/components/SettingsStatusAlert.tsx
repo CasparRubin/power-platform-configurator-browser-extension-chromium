@@ -16,13 +16,17 @@ type SettingsStatusAlertProps = {
 function StatusIcon({ variant }: { variant: SettingsStatusVariant }) {
   switch (variant) {
     case "loading":
-      return <Loader2 className="animate-spin" aria-hidden />;
+      return <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden />;
     case "success":
-      return <CheckCircle2 aria-hidden />;
+      return <CheckCircle2 className="h-4 w-4" aria-hidden />;
     case "error":
-      return <CircleAlert aria-hidden />;
-    default:
-      return <Info aria-hidden />;
+      return <CircleAlert className="h-4 w-4" aria-hidden />;
+    case "info":
+      return <Info className="h-4 w-4" aria-hidden />;
+    default: {
+      const exhaustiveVariant: never = variant;
+      return exhaustiveVariant;
+    }
   }
 }
 
@@ -38,8 +42,8 @@ export function SettingsStatusAlert({
   return (
     <Alert
       variant={alertVariant}
-      role="status"
-      aria-live="polite"
+      role={variant === "error" ? "alert" : "status"}
+      aria-live={variant === "error" ? "assertive" : "polite"}
       className={cn(POPUP_NOTIFICATION_ALERT_CLASS, "items-center")}
     >
       {showSpinner || variant === "loading" ? (

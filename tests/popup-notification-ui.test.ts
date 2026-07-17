@@ -28,7 +28,7 @@ const NOTIFICATION_SOURCE_PATHS = [
   "src/popup/popup-notification-visibility.ts",
 ] as const;
 
-/** Inline panel status was replaced by the shared region below the tab bar. */
+/** Inline panel status was replaced by the floating region anchored below the tab bar. */
 const LEGACY_INLINE_PANEL_STATUS_PHRASES = [
   /role="status"[\s\S]{0,120}text-muted-foreground/,
   /<p\s+className="text-xs leading-snug text-muted-foreground"/,
@@ -41,7 +41,7 @@ describe("popup notification UI modules exist", () => {
   });
 });
 
-describe("App notification region (below tabs, above scroll)", () => {
+describe("App notification region (anchored below tabs over the panel)", () => {
   const app = readSource("src/popup/App.tsx");
 
   it("uses controlled tabs and per-product status state", () => {
@@ -102,9 +102,11 @@ describe("section info callouts", () => {
   const sectionHeader = readSource("src/popup/components/SettingsSectionHeader.tsx");
   const infoAlert = readSource("src/popup/components/SettingsInfoAlert.tsx");
 
-  it("SettingsSectionHeader uses SettingsInfoAlert for descriptions", () => {
+  it("uses quiet supporting copy by default and reserves callouts for explicit info", () => {
     expect(sectionHeader).toContain("SettingsInfoAlert");
-    expect(sectionHeader).not.toMatch(/<p className=\{SETTINGS_SECTION_DESCRIPTION_CLASS\}>/);
+    expect(sectionHeader).toContain("SETTINGS_SECTION_DESCRIPTION_CLASS");
+    expect(sectionHeader).toContain('descriptionTone = "supporting"');
+    expect(sectionHeader).toContain('descriptionTone === "info"');
     expect(sectionHeader).toContain("hideBusyHint");
   });
 
@@ -131,8 +133,9 @@ describe("SettingsStatusAlert and layout tokens", () => {
   it("maps variants to Alert and lucide icons", () => {
     expect(statusAlert).toContain("variantProp ?? inferSettingsStatusVariant");
     expect(statusAlert).toContain("inferSettingsStatusVariant");
-    expect(statusAlert).toContain('role="status"');
-    expect(statusAlert).toContain("aria-live");
+    expect(statusAlert).toContain('role={variant === "error" ? "alert" : "status"}');
+    expect(statusAlert).toContain('aria-live={variant === "error" ? "assertive" : "polite"}');
+    expect(statusAlert).toContain("motion-reduce:animate-none");
     expect(statusAlert).toContain("Loader2");
     expect(statusAlert).toContain("CheckCircle2");
     expect(statusAlert).toContain("CircleAlert");
@@ -140,9 +143,10 @@ describe("SettingsStatusAlert and layout tokens", () => {
 
   it("popup-layout exports notification region classes", () => {
     expect(layout).toContain("POPUP_NOTIFICATION_REGION_CLASS");
+    expect(layout).toContain("POPUP_NOTIFICATION_SLOT_CLASS");
     expect(layout).toContain("POPUP_NOTIFICATION_ALERT_CLASS");
     expect(layout).toMatch(/w-full/);
-    expect(layout).toMatch(/pt-2/);
+    expect(layout).toMatch(/top-2/);
     expect(readSource("src/popup/components/ui/alert.tsx")).toContain("flex");
     expect(readSource("src/popup/components/ui/alert.tsx")).not.toContain("[&>svg]:absolute");
   });

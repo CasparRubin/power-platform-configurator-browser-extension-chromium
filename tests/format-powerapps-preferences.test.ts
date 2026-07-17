@@ -60,7 +60,29 @@ describe("formatPowerAppsPreferencesApplyStatus", () => {
       ok: false,
       results: [{ ok: false, action: "unhide", error: "no_controls_updated", framesChecked: 4 }],
     });
-    expect(status.message).toBe(POWER_APPS_PERSIST_STATUS.savedNoControlsOnForm);
+    expect(status.message).toBe(POWER_APPS_PERSIST_STATUS.savedNothingToReveal);
+    expect(status.variant).toBe("info");
+  });
+
+  it("uses action-specific copy when disabled controls need no change", () => {
+    const status = formatPowerAppsPreferencesApplyStatus({
+      ok: false,
+      results: [{ ok: false, action: "unlock", error: "no_controls_updated" }],
+    });
+    expect(status.message).toBe(POWER_APPS_PERSIST_STATUS.savedNothingToUnlock);
+    expect(status.variant).toBe("info");
+  });
+
+  it("combines no-change copy without repeating the saved prefix", () => {
+    const status = formatPowerAppsPreferencesApplyStatus({
+      ok: false,
+      results: [
+        { ok: false, action: "unhide", error: "no_controls_updated" },
+        { ok: false, action: "unlock", error: "no_controls_updated" },
+      ],
+    });
+    expect(status.message).toBe(POWER_APPS_PERSIST_STATUS.savedNothingToRevealOrUnlock);
+    expect(status.message.match(/Preference saved/g)).toHaveLength(1);
     expect(status.variant).toBe("info");
   });
 
@@ -74,7 +96,7 @@ describe("formatPowerAppsPreferencesApplyStatus", () => {
     });
     expect(status.variant).toBe("success");
     expect(status.message).toContain("Unhid 1 element");
-    expect(status.message).not.toContain(POWER_APPS_PERSIST_STATUS.savedNoControlsOnForm);
+    expect(status.message).not.toContain(POWER_APPS_PERSIST_STATUS.savedNothingToUnlock);
   });
 
   it("surfaces unknown apply errors as hard errors", () => {

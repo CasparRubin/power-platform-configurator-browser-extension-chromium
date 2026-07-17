@@ -44,9 +44,9 @@ export function PowerAutomatePanel({
           description={
             <>
               Choose how flow and run links open in Power Automate: classic designer, new designer,
-              or paused. Paused turns off link changes until you pick a designer again. Changing
-              designer or survey settings reloads an open flow or run page when possible; otherwise
-              reload the page yourself.
+              or paused. Paused turns off link changes until you pick a designer again and needs no
+              reload. While a designer is active, changing designer or survey settings reloads the
+              active flow or run page when possible; otherwise reload the page yourself.
             </>
           }
         />

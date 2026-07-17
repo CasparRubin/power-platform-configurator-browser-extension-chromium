@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@helvety/shared/utils";
 
 const alertVariants = cva(
-  "relative flex w-full gap-2.5 rounded-lg border px-3 py-2 text-sm [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-foreground",
+  "relative flex w-full gap-2.5 rounded-none border px-3 py-2 text-sm [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-foreground",
   {
     variants: {
       variant: {

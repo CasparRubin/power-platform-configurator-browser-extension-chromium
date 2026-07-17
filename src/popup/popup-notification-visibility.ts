@@ -1,6 +1,6 @@
 export type SettingsProductTab = "power-automate" | "power-apps";
 
-/** Whether the shared notification slot below the tab bar should render for a product tab. */
+/** Whether the floating notification anchored below the tab bar should render for a product tab. */
 export function shouldShowPopupTabNotification(
   activeTab: string,
   productTab: SettingsProductTab,

@@ -48,11 +48,11 @@ function formatPowerAppsActionErrorMessage(
       return "No active browser tab found.";
     case "no_form_context":
       return appendDetail(
-        "The record form is still loading on this tab. Reload the page to apply.",
+        "No model-driven record form was available on this tab. Open or reload a record form and try again.",
         detail,
       );
     case "no_controls_updated":
-      return appendDetail("No hidden or locked fields were found on this form.", detail);
+      return appendDetail("No applicable form elements needed changing.", detail);
     case "scripting_unavailable":
       return appendDetail("Chrome scripting API is not available for this extension.", detail);
     case "inject_no_result":
@@ -77,7 +77,7 @@ function formatPowerAppsActionErrorMessage(
   }
 }
 
-/** User-facing popup notification errors (no per-frame diagnostics). */
+/** User-facing errors omit a separate frame summary; optional diagnostic detail may be appended. */
 export function formatPowerAppsActionErrorForNotification(
   error: string | undefined,
   detail?: string,

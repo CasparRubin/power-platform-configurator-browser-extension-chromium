@@ -65,10 +65,11 @@ describe("formatPowerAppsActionErrorForNotification", () => {
     expect(message).not.toContain("Checked");
   });
 
-  it("maps no_form_context for notifications without frame diagnostics", () => {
+  it("maps no_form_context without assuming the form is merely loading", () => {
     const message = formatPowerAppsActionErrorForNotification("no_form_context");
-    expect(message).toContain("still loading");
-    expect(message).toContain("Reload the page");
+    expect(message).toContain("No model-driven record form was available");
+    expect(message).toContain("Open or reload");
+    expect(message).not.toContain("still loading");
     expect(message).not.toContain("Checked");
   });
 
@@ -85,7 +86,7 @@ describe("formatPowerAppsActionErrorForNotification", () => {
 
   it("maps no_controls_updated without implying injection failure", () => {
     const message = formatPowerAppsActionErrorForNotification("no_controls_updated");
-    expect(message).toContain("No hidden or locked fields");
+    expect(message).toContain("No applicable form elements needed changing");
     expect(message).not.toContain("inject");
   });
 

@@ -65,18 +65,12 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toContain("SettingsTabPanel");
     expect(section).toMatch(/persist-status-messages|format-powerapps-preferences/i);
     expect(section).toMatch(/Reload the (flow or run page|page)/i);
-    expect(section).toMatch(
-      /in-popup retries|still loading|Reload the page to apply on this record form/i,
-    );
+    expect(section).toMatch(/in-popup retries|could not be applied to the active tab/i);
     expect(section).toContain("Power Automate");
     expect(section).toContain("Power Apps");
     expect(section).toContain("v3survey");
-    expect(section).toMatch(
-      /Hide hidden fields|Show hidden fields|\*\*Hide\*\*.*hidden fields|\*\*Show\*\*.*hidden fields/i,
-    );
-    expect(section).toMatch(
-      /Lock read-only|Unlock read-only|\*\*Lock\*\*.*read-only|\*\*Unlock\*\*.*read-only/i,
-    );
+    expect(section).toMatch(/Keep hidden|Reveal hidden elements/i);
+    expect(section).toMatch(/Keep disabled|Enable disabled controls/i);
     expect(section).not.toMatch(/one-shot/i);
     expect(section).not.toMatch(/action buttons on an open model-driven/i);
     expect(section).toMatch(/executeScript|MAIN world|powerAppsFormActionInPage/i);
@@ -94,11 +88,11 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toContain("Power Apps");
     expect(section).toContain("About");
     expect(section).toMatch(/record form/i);
-    expect(section).toMatch(/notification (area|slot|alert)/i);
+    expect(section).toMatch(/floating alert/i);
     expect(section).toMatch(/SettingsInfoAlert|SettingsStatusAlert/i);
     expect(section).toMatch(/SettingsBusyHint|stay enabled/i);
-    expect(section).toMatch(/reload the page|Reload the flow or run page/i);
-    expect(section).toMatch(/Preference saved\. Reload the page|blue reload hint|still loading/i);
+    expect(section).toMatch(/reload open record forms|Reload the flow or run page/i);
+    expect(section).toMatch(/informational active-tab guidance|could not be applied/i);
     expect(section).not.toMatch(/radios briefly disable only while/i);
     expect(section).not.toMatch(/specific error such as ["']open a record form/i);
     expect(section).toMatch(/saves to sync|stay selected|stay visible/i);
@@ -114,8 +108,8 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toMatch(/Power Apps/i);
     expect(section).toMatch(/record form/i);
     expect(section).toMatch(/getVisible|setVisible|setDisabled/i);
-    expect(section).toMatch(/notification (area|region)|inject/i);
-    expect(section).toMatch(/blue reload hint|still loading|Preference saved/i);
+    expect(section).toMatch(/floating popup notification|informational guidance/i);
+    expect(section).toMatch(/informational guidance|active-tab apply could not complete/i);
     expect(section).not.toMatch(/optional frame count and detail/i);
     expect(section).not.toMatch(/distinguishes ["']open a record form/i);
   });
@@ -128,7 +122,7 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).toMatch(/apply-preferences|persist-powerapps-preference|SCHEDULE_APPLY/i);
     expect(section).toMatch(/powerAppsHiddenFields|powerAppsReadOnly/i);
     expect(section).toMatch(/format-powerapps-preferences|POPUP_ACTIVE_TAB_RETRY_DELAYS_MS/i);
-    expect(section).toMatch(/formatPowerAppsActionErrorForNotification|Checked N frames/i);
+    expect(section).toMatch(/frame-count summary|diagnostic detail/i);
     expect(section).not.toMatch(/only sends `pp:powerapps:apply-form-action`/i);
   });
 
@@ -191,17 +185,23 @@ describe("README and docs accuracy (current product scope)", () => {
 describe("chrome-web-store.md accuracy", () => {
   const doc = readRepoFile("docs/chrome-web-store.md");
 
+  it("small promo URL demonstrates a supported flow route", () => {
+    const promo = readRepoFile("assets/chrome web store/smallPromoTile.html");
+    expect(promo).toMatch(/make\.powerautomate\.com\/[^"]*\/flows\/[^"?]*\?/i);
+    expect(promo).not.toContain("make.powerautomate.com/flows?");
+  });
+
   it("smoke test steps match three popup tabs and radio-style Power Apps settings", () => {
     expect(doc).toContain("Power Automate tab");
     expect(doc).toContain("Power Apps tab");
     expect(doc).toContain("About");
     expect(doc).not.toMatch(/Flow Inspector/i);
-    expect(doc).toMatch(/Show hidden fields/i);
-    expect(doc).toMatch(/Unlock read-only/i);
+    expect(doc).toMatch(/Reveal hidden elements/i);
+    expect(doc).toMatch(/Enable disabled controls/i);
     expect(doc).toMatch(/record form/i);
     expect(doc).toMatch(/notification (area|slot|region)|SettingsStatusAlert/i);
     expect(doc).toMatch(/SettingsInfoAlert/i);
-    expect(doc).toMatch(/Reload the page/i);
+    expect(doc).toMatch(/reload open record forms|Open or reload/i);
     expect(doc).toMatch(/Reload the flow or run page|Reloaded/i);
     expect(doc).toMatch(/SettingsTabPanel|no card frame/i);
     expect(doc).toMatch(/self-contained/i);

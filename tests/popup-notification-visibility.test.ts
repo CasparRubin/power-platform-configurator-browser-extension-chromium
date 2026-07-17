@@ -18,7 +18,7 @@ describe("shouldShowPopupTabNotification", () => {
     expect(shouldShowPopupTabNotification("power-apps", "power-apps", "   ", true)).toBe(true);
   });
 
-  it("hides when inactive tab, empty message, and not busy", () => {
+  it("hides on the matching active tab when the message is empty and it is not busy", () => {
     expect(shouldShowPopupTabNotification("power-automate", "power-automate", "", false)).toBe(
       false,
     );

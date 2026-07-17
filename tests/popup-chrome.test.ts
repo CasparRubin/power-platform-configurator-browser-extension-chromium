@@ -112,13 +112,13 @@ describe("popup chrome (header + About developer section)", () => {
     expect(layout).toContain("settingsChoiceRowClass");
     expect(layout).toContain("SETTINGS_CHOICE_RADIO_CLASS");
     expect(layout).toContain("border-primary/40");
-    expect(layout).toContain("gap-3 rounded-sm border p-3");
+    expect(layout).toContain("gap-3 rounded-none border p-3");
     expect(layout).toContain("SETTINGS_RADIO_GROUP_CLASS");
     expect(layout).toContain("gap-2");
     expect(layout).toContain("TAB_PANEL_BODY_CLASS");
     expect(layout).toContain("TAB_PANEL_CLASS");
     expect(layout).toContain("pt-1");
-    expect(layout).toContain("py-2.5");
+    expect(layout).toContain("py-3");
     expect(layout).toContain("SETTINGS_DEVELOPER_LINK_CLASS");
     expect(layout).toContain("SETTINGS_MUTED_LIST_CLASS");
 
@@ -173,6 +173,8 @@ describe("popup chrome (header + About developer section)", () => {
     expect(css).toContain("h-full");
     expect(css).toContain("min-h-0");
     expect(css).toContain("overflow-hidden");
+    expect(css).toContain("prefers-reduced-motion: reduce");
+    expect(css).toContain("transition-duration: 0.01ms !important");
 
     const indexHtml = readSource("src/popup/index.html");
     expect(indexHtml).toContain('id="root"');
@@ -194,10 +196,12 @@ describe("popup chrome (header + About developer section)", () => {
     expect(app).not.toMatch(/<TabsContent[^>]*\n[^<]*className="mt-2 flex min-h-0 flex-1/);
   });
 
-  it("uses Chrome maximum popup dimensions via popup-layout (not legacy 320px shell)", () => {
+  it("uses one fixed Chrome action-popup viewport with a fill-size app shell", () => {
     const layout = readSource("src/popup/popup-layout.ts");
-    expect(layout).toContain("w-[800px]");
-    expect(layout).toContain("h-[600px]");
+    expect(layout).toContain("h-full");
+    expect(layout).toContain("w-full");
+    expect(layout).not.toContain("w-[800px]");
+    expect(layout).not.toContain("h-[600px]");
     expect(layout).toContain("TAB_PANEL_CLASS");
     expect(layout).not.toContain("max-h-72");
 
@@ -208,6 +212,9 @@ describe("popup chrome (header + About developer section)", () => {
 
     const app = readSource("src/popup/App.tsx");
     expect(app).toContain("POPUP_ROOT_CLASS");
+    expect(app).toContain("TAB_TRIGGER_CLASS");
+    expect(app).toContain("data-[active]:after:opacity-100");
+    expect(app).toContain("POPUP_NOTIFICATION_SLOT_CLASS");
     expect(app).toContain("./popup-layout");
     expect(app).not.toContain("POPUP_WIDTH_CLASS");
 
@@ -310,7 +317,7 @@ describe("settings UX (choice rows, preload, busy hints)", () => {
     expect(appsPanel).not.toContain("disabled={");
   });
 
-  it("product settings panels show SettingsBusyHint on every section header", () => {
+  it("product settings panels wire SettingsBusyHint into every section header", () => {
     const paPanel = readSource("src/popup/components/PowerAutomatePanel.tsx");
     const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
     expect(paPanel.match(/<SettingsBusyHint mode=\{busyMode\} \/>/g)?.length).toBe(2);

@@ -225,7 +225,7 @@ describe("applyPowerAppsPreferencesOnActiveTab", () => {
     expect(response.results).toHaveLength(2);
   });
 
-  it("retries on the active tab before returning no_form_context", async () => {
+  it("retries no_form_context on the active tab and returns the later success", async () => {
     vi.useFakeTimers();
     const executeScript = vi
       .fn()

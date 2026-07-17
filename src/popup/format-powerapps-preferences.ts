@@ -1,9 +1,9 @@
 /**
  * Maps active-tab apply results to popup notification `{ message, variant }`.
- * Retryable misses (form still loading) use info copy from `persist-status-messages.ts`;
- * hard host/inject failures stay error; successes omit frame diagnostics.
+ * Retryable form-context and injection misses use informational deferred copy;
+ * non-retryable host, permission, and messaging failures stay errors.
  */
-import type { PowerAppsFormActionResult } from "../powerapps/constants";
+import type { PowerAppsFormAction, PowerAppsFormActionResult } from "../powerapps/constants";
 import { shouldRetryApplyError } from "../powerapps/apply-preferences";
 import type { PowerAppsApplyPreferencesActiveTabResponse } from "../powerapps/constants";
 import type { SettingsStatusVariant } from "./infer-settings-status-variant";
@@ -38,8 +38,8 @@ export function formatPowerAppsPreferencesApplyStatus(
 
   const successLines: string[] = [];
   const hardErrorLines: string[] = [];
+  const benignActions = new Set<PowerAppsFormAction>();
   let hasRetryable = false;
-  let hasBenign = false;
 
   for (const result of response.results) {
     if (result.ok) {
@@ -47,7 +47,7 @@ export function formatPowerAppsPreferencesApplyStatus(
     } else if (shouldRetryApplyError(result.error)) {
       hasRetryable = true;
     } else if (isBenignApplyError(result.error)) {
-      hasBenign = true;
+      benignActions.add(result.action);
     } else {
       hardErrorLines.push(formatHardError(result));
     }
@@ -60,7 +60,7 @@ export function formatPowerAppsPreferencesApplyStatus(
     };
   }
 
-  if (successLines.length > 0 && !hasRetryable && !hasBenign) {
+  if (successLines.length > 0 && !hasRetryable && benignActions.size === 0) {
     return {
       message: successLines.join(" "),
       variant: "success",
@@ -74,7 +74,7 @@ export function formatPowerAppsPreferencesApplyStatus(
     };
   }
 
-  if (successLines.length > 0 && hasBenign) {
+  if (successLines.length > 0 && benignActions.size > 0) {
     return {
       message: successLines.join(" "),
       variant: "success",
@@ -88,9 +88,15 @@ export function formatPowerAppsPreferencesApplyStatus(
     };
   }
 
-  if (hasBenign) {
+  if (benignActions.size > 0) {
+    const message =
+      benignActions.size === 2
+        ? POWER_APPS_PERSIST_STATUS.savedNothingToRevealOrUnlock
+        : benignActions.has("unhide")
+          ? POWER_APPS_PERSIST_STATUS.savedNothingToReveal
+          : POWER_APPS_PERSIST_STATUS.savedNothingToUnlock;
     return {
-      message: POWER_APPS_PERSIST_STATUS.savedNoControlsOnForm,
+      message,
       variant: "info",
     };
   }

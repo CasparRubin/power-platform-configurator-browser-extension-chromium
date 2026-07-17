@@ -74,7 +74,7 @@ const OUTDATED_POPUP_RADIO_DISABLE_COPY = [
 
 const POPUP_USER_FACING_DOC_PATHS = ["README.md", "docs/chrome-web-store.md"] as const;
 
-/** Save feedback copy that predates the shared notification slot below the tab bar. */
+/** Save feedback copy that predates the floating notification anchored below the tab bar. */
 const LEGACY_POPUP_NOTIFICATION_DOC_PHRASES = [
   /top status spinner/i,
   /plus a top status/i,
@@ -205,7 +205,7 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(messages).toMatch(/savedReloaded/);
     expect(messages).toMatch(/savedReloadPage/);
     expect(messages).toMatch(/savedApplyDeferred/);
-    expect(messages).toMatch(/Preference saved\. Reload the page to apply on this record form/i);
+    expect(messages).toMatch(/could not be applied to the active tab/i);
     expect(messages).toMatch(/Reload the flow or run page/i);
     expect(messages).toMatch(/Reload the page/i);
   });
@@ -306,8 +306,8 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     for (const pattern of LEGACY_POWER_APPS_POPUP_UI_PHRASES) {
       expect(doc).not.toMatch(pattern);
     }
-    expect(doc).toMatch(/Hide hidden fields|Show hidden fields/i);
-    expect(doc).toMatch(/Lock read-only|Unlock read-only/i);
+    expect(doc).toMatch(/Keep hidden|Reveal hidden elements/i);
+    expect(doc).toMatch(/Keep disabled|Enable disabled controls/i);
     expect(doc).toMatch(/Chrome Web Store only/i);
     expect(doc).toContain("minimum_chrome_version");
     expect(doc).toContain("action.default_icon");
@@ -342,9 +342,7 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     for (const pattern of OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES) {
       expect(readme).not.toMatch(pattern);
     }
-    expect(readme).toMatch(
-      /savedApplyDeferred|Preference saved\. Reload the page to apply on this record form/i,
-    );
+    expect(readme).toMatch(/savedApplyDeferred|could not be applied to the active tab/i);
   });
 
   it("README and store doc document global persisted Power Apps enforcement", () => {
@@ -384,8 +382,8 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
   it("README and store doc describe reload outcomes in save feedback (not only Saved.)", () => {
     for (const path of POPUP_USER_FACING_DOC_PATHS) {
       const text = readRepoFile(path);
-      expect(text).toMatch(/Reload the flow or run page|Reloaded the open flow or run page/i);
-      expect(text).toMatch(/Reload the page/i);
+      expect(text).toMatch(/Reload the flow or run page|Reloaded the active flow or run page/i);
+      expect(text).toMatch(/reload (the page|open record forms)/i);
     }
   });
 
@@ -411,10 +409,12 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(readRepoFile("src/popup/components/PopupNotificationRegion.tsx")).toContain(
       "SettingsStatusAlert",
     );
-    expect(readRepoFile("src/popup/components/SettingsSectionHeader.tsx")).toContain(
-      "SettingsInfoAlert",
-    );
-    expect(readRepoFile("src/popup/components/PowerAppsPanel.tsx")).not.toMatch(/role="status"/);
+    const sectionHeader = readRepoFile("src/popup/components/SettingsSectionHeader.tsx");
+    expect(sectionHeader).toContain("SettingsInfoAlert");
+    expect(sectionHeader).toContain('descriptionTone === "info"');
+    const powerAppsPanel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
+    expect(powerAppsPanel).toContain('descriptionTone="info"');
+    expect(powerAppsPanel).not.toMatch(/role="status"/);
   });
 
   it("popup settings sources use unified choice rows and do not lock radios during save", () => {
@@ -469,16 +469,12 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
       }
     }
     const whatItDoes = readmeSection(readme, "## What it does");
-    expect(whatItDoes).toMatch(
-      /Hide hidden fields|Show hidden fields|\*\*Hide\*\*.*hidden fields|\*\*Show\*\*.*hidden fields/i,
-    );
-    expect(whatItDoes).toMatch(
-      /Lock read-only|Unlock read-only|\*\*Lock\*\*.*read-only|\*\*Unlock\*\*.*read-only/i,
-    );
+    expect(whatItDoes).toMatch(/Keep hidden|Reveal hidden elements/i);
+    expect(whatItDoes).toMatch(/Keep disabled|Enable disabled controls/i);
     const validation = readmeSection(readme, "## Validation checklist");
-    expect(validation).toMatch(/Hide hidden|Show hidden|hidden fields/i);
-    expect(validation).toMatch(/Unlock read-only|Lock read-only|read-only/i);
-    expect(validation).toMatch(/saves to sync|stay visible|enforcement stops/i);
+    expect(validation).toMatch(/Keep hidden|Reveal hidden elements/i);
+    expect(validation).toMatch(/Keep disabled|Enable disabled controls/i);
+    expect(validation).toMatch(/saves to sync|stay visible|automatic action stops/i);
     for (const pattern of OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES) {
       expect(validation).not.toMatch(pattern);
     }

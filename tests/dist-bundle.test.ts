@@ -47,7 +47,7 @@ describe("dist/ bundle (post-build)", () => {
     expect(html).toMatch(/h-\[600px\]/);
   });
 
-  it("dist manifest matches public manifest (no side panel or inspector hosts)", () => {
+  it("dist manifest exactly matches public manifest", () => {
     const publicManifest = JSON.parse(
       readFileSync(join(repoRoot, "public", "manifest.json"), "utf8"),
     ) as {
@@ -68,6 +68,7 @@ describe("dist/ bundle (post-build)", () => {
       side_panel?: unknown;
       content_scripts?: Array<{ js?: string[]; matches?: string[]; world?: string }>;
     };
+    expect(distManifest).toEqual(publicManifest);
     expect(distManifest.side_panel).toBeUndefined();
     expect(distManifest.permissions).not.toContain("sidePanel");
     expect(distManifest.minimum_chrome_version).toBe(publicManifest.minimum_chrome_version);
@@ -107,5 +108,20 @@ describe("dist/ bundle (post-build)", () => {
     expect(existsSync(popupAssetsDir)).toBe(true);
     const assets = readdirSync(popupAssetsDir);
     expect(assets.some((name) => name.includes("ppconfigurator"))).toBe(true);
+  });
+
+  it("compiled popup CSS includes active-tab and reduced-motion behavior", () => {
+    const cssFiles = readdirSync(popupAssetsDir).filter((name) => name.endsWith(".css"));
+    expect(cssFiles).toHaveLength(1);
+    const css = cssFiles.map((name) => readFileSync(join(popupAssetsDir, name), "utf8")).join("\n");
+
+    // Base UI emits the boolean `data-active` attribute. These generated selectors prove
+    // Tailwind compiled the arbitrary attribute variants rather than silently dropping them.
+    expect(css).toContain(".data-\\[active\\]\\:bg-background[data-active]");
+    expect(css).toContain(".data-\\[active\\]\\:font-semibold[data-active]");
+    expect(css).toContain(".data-\\[active\\]\\:after\\:opacity-100[data-active]:after");
+
+    expect(css).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(css).toContain("transition-duration:.01ms!important");
   });
 });

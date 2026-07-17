@@ -42,13 +42,26 @@ describe("POWER_APPS_PERSIST_STATUS", () => {
       "saveFailed",
       "saved",
       "savedApplyDeferred",
-      "savedNoControlsOnForm",
+      "savedNothingToReveal",
+      "savedNothingToRevealOrUnlock",
+      "savedNothingToUnlock",
       "saving",
     ]);
   });
 
-  it("saved and apply-failed paths mention reloading the page", () => {
-    expect(POWER_APPS_PERSIST_STATUS.saved).toMatch(/Reload the page/i);
+  it("inactive and apply-failed paths give distinct reload guidance", () => {
+    expect(POWER_APPS_PERSIST_STATUS.saved).toMatch(/Reload open record forms/i);
+    expect(POWER_APPS_PERSIST_STATUS.saved).toMatch(/restore platform defaults/i);
     expect(POWER_APPS_PERSIST_STATUS.applyFailed).toMatch(/Reload the page/i);
+  });
+
+  it("uses accurate deferred and action-specific no-change copy", () => {
+    expect(POWER_APPS_PERSIST_STATUS.savedApplyDeferred).toMatch(
+      /could not be applied to the active tab/i,
+    );
+    expect(POWER_APPS_PERSIST_STATUS.savedNothingToReveal).toMatch(
+      /hidden tabs, sections, or controls/i,
+    );
+    expect(POWER_APPS_PERSIST_STATUS.savedNothingToUnlock).toMatch(/disabled controls/i);
   });
 });

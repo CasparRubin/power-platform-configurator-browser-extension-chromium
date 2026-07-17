@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BadgeInfo } from "lucide-react";
 import { readExtensionVersion } from "@helvety/extension-chrome/extension-version";
-import { POPUP_ROOT_CLASS, TAB_CONTENT_CLASS, TAB_PANEL_HOST_CLASS } from "./popup-layout";
+import {
+  POPUP_NOTIFICATION_SLOT_CLASS,
+  POPUP_ROOT_CLASS,
+  TAB_CONTENT_CLASS,
+  TAB_PANEL_HOST_CLASS,
+} from "./popup-layout";
 import { usePopupTheme } from "@helvety/extension-chrome/use-popup-theme";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@helvety/ui/tabs";
 import {
@@ -35,6 +40,9 @@ import type { ThemePreference } from "@helvety/extension-chrome/theme-preference
 type SurveyEnabledSync = "true" | "false";
 
 type PopupTab = "power-automate" | "power-apps" | "about";
+
+const TAB_TRIGGER_CLASS =
+  "relative flex flex-col gap-1 rounded-none border border-transparent px-2 py-2 text-xs shadow-none transition-colors after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-primary data-[active]:border-border data-[active]:bg-background data-[active]:font-semibold data-[active]:text-foreground data-[active]:after:opacity-100 dark:data-[active]:border-border dark:data-[active]:bg-background";
 
 export default function App() {
   const [value, setValue] = useState<EnforcementPreference>(DEFAULT_ENFORCEMENT_PREFERENCE);
@@ -303,45 +311,41 @@ export default function App() {
         <div className="flex-shrink-0">
           <PopupHeader version={extensionVersion} />
         </div>
-        <TabsList className="grid h-auto w-full flex-shrink-0 grid-cols-3 gap-0.5 bg-muted p-1 text-xs">
-          <TabsTrigger
-            value="power-automate"
-            className="flex flex-col gap-0.5 px-2 py-2 text-xs shadow-none"
-          >
+        <TabsList
+          aria-label="Power Platform settings"
+          className="grid h-auto w-full flex-shrink-0 grid-cols-3 gap-0.5 rounded-none border border-border/60 bg-muted/70 p-1 text-xs"
+        >
+          <TabsTrigger value="power-automate" className={TAB_TRIGGER_CLASS}>
             <TabProductIcon product="power-automate" />
             <span>Power Automate</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="power-apps"
-            className="flex flex-col gap-0.5 px-2 py-2 text-xs shadow-none"
-          >
+          <TabsTrigger value="power-apps" className={TAB_TRIGGER_CLASS}>
             <TabProductIcon product="power-apps" />
             <span>Power Apps</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="about"
-            className="flex flex-col gap-0.5 px-2 py-2 text-xs shadow-none"
-          >
-            <BadgeInfo className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          <TabsTrigger value="about" className={TAB_TRIGGER_CLASS}>
+            <BadgeInfo className="h-4 w-4 shrink-0" aria-hidden />
             <span>About</span>
           </TabsTrigger>
         </TabsList>
 
-        {showPowerAutomateNotification ? (
-          <PopupNotificationRegion
-            message={powerAutomateStatus}
-            showSpinner={powerAutomatePanelBusy && !powerAutomateStatus}
-            busyLabel={powerAutomateBusyLabel}
-          />
-        ) : null}
-        {showPowerAppsNotification ? (
-          <PopupNotificationRegion
-            message={powerAppsStatusMessage}
-            variant={powerAppsStatusVariant}
-            showSpinner={powerAppsPanelBusy && !powerAppsStatusMessage}
-            busyLabel={powerAppsBusyLabel}
-          />
-        ) : null}
+        <div className={POPUP_NOTIFICATION_SLOT_CLASS}>
+          {showPowerAutomateNotification ? (
+            <PopupNotificationRegion
+              message={powerAutomateStatus}
+              showSpinner={powerAutomatePanelBusy && !powerAutomateStatus}
+              busyLabel={powerAutomateBusyLabel}
+            />
+          ) : null}
+          {showPowerAppsNotification ? (
+            <PopupNotificationRegion
+              message={powerAppsStatusMessage}
+              variant={powerAppsStatusVariant}
+              showSpinner={powerAppsPanelBusy && !powerAppsStatusMessage}
+              busyLabel={powerAppsBusyLabel}
+            />
+          ) : null}
+        </div>
 
         <div className={TAB_PANEL_HOST_CLASS}>
           <TabsContent value="power-automate" className={TAB_CONTENT_CLASS}>

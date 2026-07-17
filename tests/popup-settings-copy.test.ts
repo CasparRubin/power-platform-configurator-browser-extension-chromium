@@ -49,7 +49,8 @@ describe("Power Automate panel copy", () => {
   });
 
   it("documents reload expectations in section copy", () => {
-    expect(panel).toMatch(/reloads an open flow or run page when possible/i);
+    expect(panel).toMatch(/reloads the\s+active flow or run page when possible/i);
+    expect(panel).toMatch(/Paused.*needs no\s+reload/is);
     expect(panel).toMatch(/reload the page yourself/i);
     expect(panel).toMatch(/Reload the flow or run page after changing/i);
   });
@@ -63,7 +64,11 @@ describe("Power Automate panel copy", () => {
 describe("Power Apps panel reload copy", () => {
   const panel = readSource("src/popup/components/PowerAppsPanel.tsx");
 
-  it("tells users to reload the page when turning enforcement off", () => {
+  it("accurately distinguishes the two automatic actions", () => {
+    expect(panel).toContain("Hidden form elements");
+    expect(panel).toContain("Disabled controls");
+    expect(panel).toContain("stops automatic");
+    expect(panel).not.toContain("stops auto-apply");
     expect(panel).toMatch(/reload the\s+page on open record forms/i);
     expect(panel).toMatch(/Reload the page to restore/i);
     expect(panel).not.toMatch(/Reload the form to restore/i);
@@ -127,8 +132,9 @@ describe("status strings stay aligned with persist modules", () => {
 
   it("documents deferred apply and benign form outcomes", () => {
     expect(messages).toContain("savedApplyDeferred");
-    expect(messages).toContain("savedNoControlsOnForm");
+    expect(messages).toContain("savedNothingToReveal");
+    expect(messages).toContain("savedNothingToUnlock");
     expect(messages).toContain("applyFinishRemaining");
-    expect(messages).toMatch(/Preference saved\. Reload the page to apply on this record form/i);
+    expect(messages).toMatch(/could not be applied to the active tab/i);
   });
 });

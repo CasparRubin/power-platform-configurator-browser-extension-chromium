@@ -18,7 +18,7 @@
     "watch": "vite build --config vite.popup.config.ts --watch",
     "test": "vitest run --exclude tests/dist-bundle.test.ts --exclude tests/package-dist-zip.test.ts",
     "test:dist": "vitest run tests/dist-bundle.test.ts tests/dnr-static-rules.test.ts tests/package-dist-zip.test.ts",
-    "test:coverage": "vitest run --coverage --exclude tests/dist-bundle.test.ts",
+    "test:coverage": "vitest run --coverage --exclude tests/dist-bundle.test.ts --exclude tests/package-dist-zip.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

@@ -1,7 +1,7 @@
 /** Infer alert variant from message text when the popup does not pass an explicit `variant` (Power Automate). */
 export type SettingsStatusVariant = "loading" | "success" | "error" | "info";
 
-const LOADING_PREFIXES = ["Saving preference", "Refreshing open Power Automate"] as const;
+const LOADING_PREFIXES = ["Saving preference", "Refreshing the active Power Automate"] as const;
 
 const SUCCESS_PATTERNS = [/^Saved\./] as const;
 

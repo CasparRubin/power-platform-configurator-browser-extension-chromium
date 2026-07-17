@@ -1,6 +1,6 @@
 /**
- * Global Power Apps form enforcement: reads sync prefs and applies unhide/unlock on tabs
- * with debounce and retry until Xrm form context is available.
+ * Global Power Apps form enforcement: reads sync prefs and applies unhide/unlock on supported
+ * host tabs with debounce and a bounded retry schedule for Xrm form context.
  */
 import {
   POWERAPPS_SYNC_KEYS,

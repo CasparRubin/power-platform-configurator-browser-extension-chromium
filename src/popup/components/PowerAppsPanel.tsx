@@ -107,23 +107,23 @@ export function PowerAppsPanel({
     <SettingsTabPanel ariaBusy={panelBusy}>
       <section className={SETTINGS_SECTION_CLASS}>
         <SettingsSectionHeader
-          title="Hidden fields"
+          title="Hidden form elements"
           trailing={<SettingsBusyHint mode={busyMode} />}
           hideBusyHint={hideBusyHint}
           description={
             <>
               On an open <span className="font-medium text-foreground">record form</span> in a
               model-driven app. <span className="font-medium text-foreground">Show</span> stays on
-              across tabs and record navigation until you choose Hide.{" "}
-              <span className="font-medium text-foreground">Hide</span> stops auto-apply; reload the
-              page on open record forms to restore platform defaults.
+              across tabs and record navigation until you choose Keep hidden.{" "}
+              <span className="font-medium text-foreground">Keep hidden</span> stops automatic
+              revealing; reload the page on open record forms to restore platform defaults.
             </>
           }
         />
 
         <RadioGroup
           className={SETTINGS_RADIO_GROUP_CLASS}
-          aria-label="Hidden fields on model-driven forms"
+          aria-label="Hidden form elements on model-driven forms"
           value={hiddenMode}
           onValueChange={(v) => {
             if (v !== "hide" && v !== "show") {
@@ -139,16 +139,16 @@ export function PowerAppsPanel({
             selected={hiddenMode === "hide"}
             label={
               <>
-                Hide hidden fields <span className="text-muted-foreground">(default)</span>
+                Keep hidden <span className="text-muted-foreground">(default)</span>
               </>
             }
-            description="Stops auto-apply. Reload the page to restore what the platform hid."
+            description="Stops automatically revealing hidden tabs, sections, and controls. Reload the page to restore platform defaults."
           />
           <SettingsChoiceRow
             id="hidden-show"
             value="show"
             selected={hiddenMode === "show"}
-            label="Show hidden fields"
+            label="Reveal hidden elements"
             description="Reveal hidden tabs, sections, and controls on every record form you open."
           />
         </RadioGroup>
@@ -156,23 +156,24 @@ export function PowerAppsPanel({
 
       <section className={SETTINGS_SECTION_CLASS}>
         <SettingsSectionHeader
-          title="Read-only fields"
+          title="Disabled controls"
+          descriptionTone="info"
           trailing={<SettingsBusyHint mode={busyMode} />}
           hideBusyHint={hideBusyHint}
           description={
             <>
               Client-side only; does not bypass server security on save. Canvas apps are not
               supported. <span className="font-medium text-foreground">Unlock</span> stays on across
-              tabs and navigation until you choose Lock.{" "}
-              <span className="font-medium text-foreground">Lock</span> stops auto-apply; reload the
-              page on open record forms to restore read-only controls.
+              tabs and navigation until you choose Keep disabled.{" "}
+              <span className="font-medium text-foreground">Keep disabled</span> stops automatic
+              unlocking; reload the page on open record forms to restore disabled controls.
             </>
           }
         />
 
         <RadioGroup
           className={SETTINGS_RADIO_GROUP_CLASS}
-          aria-label="Read-only fields on model-driven forms"
+          aria-label="Disabled controls on model-driven forms"
           value={readOnlyMode}
           onValueChange={(v) => {
             if (v !== "lock" && v !== "unlock") {
@@ -188,16 +189,16 @@ export function PowerAppsPanel({
             selected={readOnlyMode === "lock"}
             label={
               <>
-                Lock read-only <span className="text-muted-foreground">(default)</span>
+                Keep disabled <span className="text-muted-foreground">(default)</span>
               </>
             }
-            description="Stops auto-apply. Reload the page to restore read-only controls."
+            description="Stops automatically unlocking disabled controls. Reload the page to restore platform defaults."
           />
           <SettingsChoiceRow
             id="readonly-unlock"
             value="unlock"
             selected={readOnlyMode === "unlock"}
-            label="Unlock read-only"
+            label="Enable disabled controls"
             description="Enable disabled controls on every record form you open."
           />
         </RadioGroup>

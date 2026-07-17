@@ -29,24 +29,18 @@ describe("README popup and icon documentation", () => {
     expect(section).toMatch(/About.*Developer/i);
     expect(section).toContain("Power Automate");
     expect(section).toContain("Power Apps");
-    expect(section).toMatch(
-      /Hide hidden fields|Show hidden fields|\*\*Hide\*\*.*hidden fields|\*\*Show\*\*.*hidden fields/i,
-    );
-    expect(section).toMatch(
-      /Lock read-only|Unlock read-only|\*\*Lock\*\*.*read-only|\*\*Unlock\*\*.*read-only/i,
-    );
+    expect(section).toMatch(/Keep hidden|Reveal hidden elements/i);
+    expect(section).toMatch(/Keep disabled|Enable disabled controls/i);
     expect(section).not.toMatch(/action buttons on an open model-driven/i);
     expect(section).not.toMatch(/one-shot\s+\*\*Unhide hidden fields\*\*/i);
     expect(section).toMatch(/executeScript|MAIN world|powerAppsFormActionInPage/i);
-    expect(section).toMatch(/powerAppsHiddenFields|chrome\.storage\.sync|stays on|auto-apply/i);
+    expect(section).toMatch(/powerAppsHiddenFields|chrome\.storage\.sync|remain active/i);
     expect(section).not.toMatch(/not persisted across popup|Choices are not persisted/i);
     expect(section).toMatch(/800\s*[×x]\s*600|800×600/i);
     expect(section).toContain("SettingsChoiceRow");
     expect(section).toContain("SettingsBusyHint");
-    expect(section).toMatch(/PopupNotificationRegion|notification slot|notification area/i);
-    expect(section).toMatch(
-      /Preference saved\. Reload the page to apply on this record form|short in-popup retries/i,
-    );
+    expect(section).toMatch(/PopupNotificationRegion|floating notification/i);
+    expect(section).toMatch(/could not be applied to the active tab|short in-popup retries/i);
     expect(section).toContain("SettingsInfoAlert");
     expect(section).toContain("POPUP_SYNC_SETTINGS_KEYS");
     expect(section).not.toMatch(/top status spinner/i);
@@ -63,7 +57,7 @@ describe("README popup and icon documentation", () => {
     const section = readmeSection(readme, "## Known limitations");
     expect(section).toMatch(/crm17|dynamics\.cn|microsoftdynamics\.de|datacenter-regions/i);
     expect(section).toMatch(/DATAVERSE_ORG_HOST_SUFFIXES|host_not_permitted|reload the extension/i);
-    expect(section).toMatch(/Hide.*Lock.*stop enforcement|stops enforcement/i);
+    expect(section).toMatch(/Keep hidden.*automatic revealing|Keep disabled.*automatic unlocking/i);
     expect(section).not.toMatch(/not persisted across popup|Choices are not persisted/i);
   });
 
@@ -96,7 +90,7 @@ describe("README popup and icon documentation", () => {
     expect(layout).toContain("SettingsChoiceRow");
     expect(layout).toContain("PopupNotificationRegion");
     expect(layout).toContain("SettingsInfoAlert");
-    expect(layout).toContain("settingsChoiceRowClass");
+    expect(readme).toContain("settingsChoiceRowClass");
     expect(existsSync(join(repoRoot, "src/popup/components/SettingsChoiceRow.tsx"))).toBe(true);
     expect(existsSync(join(repoRoot, "src/popup/components/SettingsSectionHeader.tsx"))).toBe(true);
   });
