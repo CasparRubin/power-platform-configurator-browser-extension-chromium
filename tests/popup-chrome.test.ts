@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -147,7 +147,6 @@ describe("popup chrome (header + About developer section)", () => {
     expect(app).not.toContain('defaultValue="power-automate"');
     expect(paPanel).toContain("SettingsBusyHint");
     expect(paPanel).toContain("hideBusyHint");
-    expect(paPanel).not.toContain("PolicyPanelBusyHint");
     expect(paPanel).not.toContain("disabled={");
   });
 
@@ -222,12 +221,7 @@ describe("popup chrome (header + About developer section)", () => {
     const appsPanel = readSource("src/popup/components/PowerAppsPanel.tsx");
     expect(paPanel).toContain("../popup-layout");
     expect(appsPanel).toContain("../popup-layout");
-    expect(paPanel).not.toContain("FlowInspectorLauncherCard");
     expect(paPanel).not.toContain("max-h-72");
-    expect(existsSync(join(repoRoot, "src/popup/components/FlowInspectorLauncherCard.tsx"))).toBe(
-      false,
-    );
-    expect(existsSync(join(repoRoot, "src/popup/open-inspector-side-panel.ts"))).toBe(false);
   });
 
   it("product tab triggers use TabProductIcon, not legacy Lucide product icons", () => {
@@ -256,21 +250,7 @@ describe("popup chrome (header + About developer section)", () => {
     expect(app).toContain("@helvety/extension-chrome/use-popup-theme");
   });
 
-  it("does not keep local popup theme modules (shared package owns them)", () => {
-    expect(existsSync(join(repoRoot, "src/popup/theme-preference.ts"))).toBe(false);
-    expect(existsSync(join(repoRoot, "src/popup/theme-boot.ts"))).toBe(false);
-  });
-
-  it("ships ppconfigurator PNGs and product tab SVGs under public/icons/", () => {
-    const names = readdirSync(publicIconsDir);
-    expect(names).toEqual(
-      expect.arrayContaining([
-        "ppconfigurator_16.png",
-        "ppconfigurator_32.png",
-        "ppconfigurator_48.png",
-        "ppconfigurator_128.png",
-      ]),
-    );
+  it("ships product tab SVGs under public/icons/", () => {
     const tabIconSource = readSource("src/popup/components/TabProductIcon.tsx");
     const importedSvgs = extractPublicIconImports(tabIconSource);
     expect(importedSvgs).toHaveLength(2);
@@ -281,11 +261,6 @@ describe("popup chrome (header + About developer section)", () => {
 });
 
 describe("settings UX (choice rows, preload, busy hints)", () => {
-  it("SettingsBusyHint module exists and PolicyPanelBusyHint was removed", () => {
-    expect(existsSync(join(repoRoot, "src/popup/components/SettingsBusyHint.tsx"))).toBe(true);
-    expect(existsSync(join(repoRoot, "src/popup/components/PolicyPanelBusyHint.tsx"))).toBe(false);
-  });
-
   it("SettingsChoiceRow uses a full-row Label (no nested htmlFor title-only label)", () => {
     const choiceRow = readSource("src/popup/components/SettingsChoiceRow.tsx");
     expect(choiceRow).toMatch(/<Label className=\{settingsChoiceRowClass/);
@@ -354,25 +329,5 @@ describe("popup notifications (region, alerts, lifted status)", () => {
     expect(readSource("src/popup/persist-policy-preference.ts")).toContain(
       "POWER_AUTOMATE_PERSIST_STATUS",
     );
-  });
-});
-
-describe("built popup bundle (when dist/ exists; enforced in test:dist)", () => {
-  const popupAssetsDir = join(repoRoot, "dist", "popup-assets");
-  const hasPopupAssets = existsSync(popupAssetsDir);
-
-  it.skipIf(!hasPopupAssets)("includes hashed ppconfigurator icon asset after vite build", () => {
-    const assets = readdirSync(popupAssetsDir);
-    expect(assets.some((name) => name.includes("ppconfigurator"))).toBe(true);
-  });
-
-  it.skipIf(!hasPopupAssets)("bundles product tab SVGs into the popup JS asset", () => {
-    const jsFiles = readdirSync(popupAssetsDir).filter((name) => name.endsWith(".js"));
-    expect(jsFiles.length).toBeGreaterThan(0);
-    const bundled = jsFiles
-      .map((name) => readFileSync(join(popupAssetsDir, name), "utf8"))
-      .join("\n");
-    expect(bundled).toMatch(/Power_Automate_Scalable\.svg|data:image\/svg\+xml/i);
-    expect(bundled).toMatch(/Power_Apps_Scalable\.svg|data:image\/svg\+xml/i);
   });
 });

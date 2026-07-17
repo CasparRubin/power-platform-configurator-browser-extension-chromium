@@ -70,12 +70,8 @@ export async function persistPolicyPreferenceAndOptionalReload(options: {
         onResyncHardFailure();
       }
     }
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Save failed. Check Chrome sync sign-in, then try again.";
     if (mountedRef.current) {
-      setStatus(message);
+      setStatus(POWER_AUTOMATE_PERSIST_STATUS.saveFailed);
     }
   } finally {
     endSyncWrite();

@@ -297,7 +297,12 @@ describe("applyPowerAppsPreferencesToAllHostTabs", () => {
     await applyPowerAppsPreferencesToAllHostTabs();
     await vi.advanceTimersByTimeAsync(150);
 
-    expect(executeScript).toHaveBeenCalled();
+    expect(executeScript).toHaveBeenCalledTimes(1);
+    expect(executeScript).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: expect.objectContaining({ tabId: TAB_ID }),
+      }),
+    );
   });
 });
 

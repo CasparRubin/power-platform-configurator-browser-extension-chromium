@@ -8,12 +8,20 @@ import { describe, expect, it } from "vitest";
 import { expectIconExists } from "./test-helpers/icon-paths";
 
 /**
- * Post-build checks (run via `npm run test:dist` after `npm run build`).
- * Fails fast if `dist/` is missing so CI cannot silently skip CSP guards.
+ * Post-build checks run directly through `test:dist:built`; `test:dist` performs the build first.
+ * Fails fast if `dist/` is missing so local release checks cannot skip CSP guards.
  */
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const popupHtmlPath = join(repoRoot, "dist", "popup.html");
 const popupAssetsDir = join(repoRoot, "dist", "popup-assets");
+
+function listDistFiles(relative = ""): string[] {
+  const directory = join(repoRoot, "dist", relative);
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = relative ? `${relative}/${entry.name}` : entry.name;
+    return entry.isDirectory() ? listDistFiles(path) : [path];
+  });
+}
 
 describe("dist/ bundle (post-build)", () => {
   it("exists and includes packaged static assets", () => {
@@ -21,14 +29,21 @@ describe("dist/ bundle (post-build)", () => {
     expect(existsSync(join(repoRoot, "dist", "dnr-classic-editor.json"))).toBe(true);
     expect(existsSync(join(repoRoot, "dist", "dnr-new-designer.json"))).toBe(true);
     expect(existsSync(join(repoRoot, "dist", "manifest.json"))).toBe(true);
+    expect(existsSync(join(repoRoot, "dist", "background.js"))).toBe(true);
     expect(existsSync(join(repoRoot, "dist", "content-powerapps.js"))).toBe(true);
     expect(existsSync(join(repoRoot, "dist", "content.js"))).toBe(true);
   });
 
-  it("does not ship Flow Inspector or content-main-hook artifacts", () => {
-    expect(existsSync(join(repoRoot, "dist", "inspector.html"))).toBe(false);
-    expect(existsSync(join(repoRoot, "dist", "inspector-assets"))).toBe(false);
-    expect(existsSync(join(repoRoot, "dist", "content-main-hook.js"))).toBe(false);
+  it("ships only the expected executable entry points", () => {
+    const executableFiles = listDistFiles().filter((path) => /\.(html|js)$/.test(path));
+    const rootExecutables = executableFiles.filter((path) => !path.startsWith("popup-assets/"));
+    const popupChunks = executableFiles.filter((path) => path.startsWith("popup-assets/"));
+
+    expect(rootExecutables.sort()).toEqual(
+      ["background.js", "content-powerapps.js", "content.js", "popup.html"].sort(),
+    );
+    expect(popupChunks.length).toBeGreaterThan(0);
+    expect(popupChunks.every((path) => /^popup-assets\/[^/]+\.js$/.test(path))).toBe(true);
   });
 
   it("copies product tab SVGs from public/icons into dist/icons", () => {
@@ -36,6 +51,18 @@ describe("dist/ bundle (post-build)", () => {
     expect(existsSync(distIconsDir)).toBe(true);
     expectIconExists(distIconsDir, "Power_Automate_Scalable.svg");
     expectIconExists(distIconsDir, "Power_Apps_Scalable.svg");
+  });
+
+  it("bundles the popup header and product icons", () => {
+    const assets = readdirSync(popupAssetsDir);
+    expect(assets.some((name) => name.includes("ppconfigurator"))).toBe(true);
+
+    const bundled = assets
+      .filter((name) => name.endsWith(".js"))
+      .map((name) => readFileSync(join(popupAssetsDir, name), "utf8"))
+      .join("\n");
+    expect(bundled).toMatch(/Power_Automate_Scalable\.svg|data:image\/svg\+xml/i);
+    expect(bundled).toMatch(/Power_Apps_Scalable\.svg|data:image\/svg\+xml/i);
   });
 
   it("popup.html has no inline script and no remote script URLs (MV3 CSP)", () => {
@@ -99,15 +126,10 @@ describe("dist/ bundle (post-build)", () => {
     );
     expect(distPowerApps?.matches?.sort()).toEqual(publicPowerApps?.matches?.sort());
     const scripts = distManifest.content_scripts ?? [];
-    expect(scripts).toHaveLength(2);
-    expect(scripts.some((s) => s.js?.includes("content-main-hook.js"))).toBe(false);
+    expect(scripts.flatMap((script) => script.js ?? []).sort()).toEqual(
+      ["content-powerapps.js", "content.js"].sort(),
+    );
     expect(scripts.every((s) => s.world !== "MAIN")).toBe(true);
-  });
-
-  it("popup-assets includes hashed ppconfigurator icon from vite build", () => {
-    expect(existsSync(popupAssetsDir)).toBe(true);
-    const assets = readdirSync(popupAssetsDir);
-    expect(assets.some((name) => name.includes("ppconfigurator"))).toBe(true);
   });
 
   it("compiled popup CSS includes active-tab and reduced-motion behavior", () => {

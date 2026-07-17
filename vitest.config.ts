@@ -1,10 +1,10 @@
 import { defineConfig } from "vitest/config";
 
 /**
- * Coverage is scoped to modules exercised by unit tests. Entry points (`background`, `content`),
- * browser-only bundles (Power Apps MAIN-world inject), the React
- * popup shell, `persist-policy-preference.ts`, `policy-popup-log.ts`, and `@helvety/ui` primitives
- * are excluded so thresholds reflect logic we test in Node. Popup source structure (layout,
+ * Coverage is scoped to modules exercised directly by unit tests. Browser entry points
+ * (`background`, `content`, `content-powerapps`), the Power Apps injection bridge,
+ * the React popup shell/components, `persist-policy-preference.ts`, and `policy-popup-log.ts`
+ * are excluded so thresholds reflect logic executed in Node. Popup source structure (layout,
  * SettingsChoiceRow, SettingsBusyHint, tab host, notification region) is guarded by
  * `tests/popup-chrome.test.ts`,
  * `tests/popup-layout.test.ts`, `tests/popup-notification-ui.test.ts`,

@@ -16,7 +16,7 @@ const vendorPackages = path.join(vendor, "packages");
 const siblingPackages = path.join(sibling, "packages");
 const repo = "https://github.com/CasparRubin/helvety.git";
 
-export const requiredPackages = ["shared", "ui", "brand", "extension-chrome", "config"];
+const requiredPackages = ["shared", "ui", "brand", "extension-chrome", "config"];
 
 /** Directories that must not be copied from the monorepo workspace packages. */
 export const SKIP_DIR_NAMES = new Set(["node_modules", ".turbo", "coverage", "dist", ".next"]);
@@ -24,7 +24,7 @@ export const SKIP_DIR_NAMES = new Set(["node_modules", ".turbo", "coverage", "di
 /**
  * @param {string} dir
  */
-export function hasWorkspacePackages(dir) {
+function hasWorkspacePackages(dir) {
   return requiredPackages.every((name) =>
     fs.existsSync(path.join(dir, "packages", name, "package.json")),
   );

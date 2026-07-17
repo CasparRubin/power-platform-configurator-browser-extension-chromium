@@ -30,6 +30,15 @@ describe("PowerAutomateUrlPolicy (v3=false, hide survey)", () => {
     expect(PowerAutomateUrlPolicy.isTargetUrl("not-a-url")).toBe(false);
   });
 
+  it("targets HTTPS only, matching extension permissions and DNR rules", () => {
+    expect(PowerAutomateUrlPolicy.isTargetUrl("http://flow.microsoft.com/flows/id")).toBe(false);
+    expect(PowerAutomateUrlPolicy.isTargetUrl("ftp://emea.powerautomate.com/runs/id")).toBe(false);
+    expect(PowerAutomateUrlPolicy.getCanonicalKey("http://flow.microsoft.com/flows/id")).toBeNull();
+    expect(
+      PowerAutomateUrlPolicy.canonicalizeToEnforced("http://flow.microsoft.com/flows/id"),
+    ).toBeNull();
+  });
+
   it("canonicalizes v3 to false when missing and adds v3survey=false (hide)", () => {
     const nextUrl = PowerAutomateUrlPolicy.canonicalizeToEnforced(
       "https://emea.powerautomate.com/environments/foo/flows/bar/details?x=1",
@@ -71,7 +80,7 @@ describe("PowerAutomateUrlPolicy (v3=false, hide survey)", () => {
     ).toBeNull();
   });
 
-  it("uses canonical keys to dedupe encoding variants", () => {
+  it("canonical keys intentionally ignore unrelated query parameter encodings", () => {
     const keyWithPercent20 = PowerAutomateUrlPolicy.getCanonicalKey(
       "https://emea.powerautomate.com/environments/default/flows/new?name=hello%20world&v3=false&v3survey=false",
     );

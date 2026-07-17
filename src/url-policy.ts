@@ -24,6 +24,10 @@ function isSupportedHost(hostname: string): boolean {
   return HOST_PATTERNS.some((re) => re.test(hostname));
 }
 
+function isSupportedUrl(url: URL): boolean {
+  return url.protocol === "https:" && isSupportedHost(url.hostname);
+}
+
 function isTargetPath(pathname: string): boolean {
   return TARGET_PATH_SEGMENTS.some((seg) => pathname.includes(seg));
 }
@@ -169,7 +173,7 @@ export const PowerAutomateUrlPolicy = {
     } catch {
       return false;
     }
-    return isSupportedHost(parsed.hostname) && isTargetPath(parsed.pathname);
+    return isSupportedUrl(parsed) && isTargetPath(parsed.pathname);
   },
 
   getCanonicalKey(urlValue: string): string | null {
@@ -179,7 +183,7 @@ export const PowerAutomateUrlPolicy = {
     } catch {
       return null;
     }
-    if (!isSupportedHost(parsed.hostname) || !isTargetPath(parsed.pathname)) {
+    if (!isSupportedUrl(parsed) || !isTargetPath(parsed.pathname)) {
       return null;
     }
     const canonicalV3 = canonicalTokenForParam(parsed.searchParams, V3_PARAM_KEY);
@@ -212,7 +216,7 @@ export const PowerAutomateUrlPolicy = {
     } catch {
       return null;
     }
-    if (!isSupportedHost(parsed.hostname) || !isTargetPath(parsed.pathname)) {
+    if (!isSupportedUrl(parsed) || !isTargetPath(parsed.pathname)) {
       return null;
     }
     if (isCompliant(parsed)) {

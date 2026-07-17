@@ -324,7 +324,9 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(readme).not.toMatch(/each store'?s developer dashboard/i);
     expect(readme).toMatch(/Chrome Web Store developer dashboard/i);
     expect(readme).toMatch(/Chrome Web Store upload is still manual/i);
-    expect(readme).toMatch(/Chromium Edge can install the same listing from the Chrome Web Store/i);
+    expect(readme).toMatch(
+      /Chromium-based Edge can install the same listing when third-party extension stores are allowed/i,
+    );
     expect(readme).toContain("action.default_icon");
   });
 

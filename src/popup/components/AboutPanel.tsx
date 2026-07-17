@@ -43,8 +43,8 @@ export function AboutPanel({
             <>
               Power Automate: align flow and run URLs with the classic or new designer, optional{" "}
               <span className="font-medium text-foreground">v3survey</span> Hide/Show, and pause.
-              Power Apps: show hidden fields or unlock read-only controls on model-driven record
-              forms (client-side only).
+              Power Apps: reveal hidden tabs, sections, and controls or enable disabled controls on
+              supported model-driven record forms (client-side only).
             </>
           }
         />

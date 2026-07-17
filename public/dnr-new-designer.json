@@ -13,7 +13,7 @@
       }
     },
     "condition": {
-      "regexFilter": "^https://([a-z0-9-]+\\.)*powerautomate\\.com/.*/(flows|runs)/.*",
+      "regexFilter": "^https://([a-z0-9-]+\\.)*powerautomate\\.com/(.*/)?(flows|runs)/.*",
       "resourceTypes": ["main_frame"]
     }
   },
@@ -31,7 +31,7 @@
       }
     },
     "condition": {
-      "regexFilter": "^https://flow\\.microsoft\\.com/.*/(flows|runs)/.*",
+      "regexFilter": "^https://flow\\.microsoft\\.com/(.*/)?(flows|runs)/.*",
       "resourceTypes": ["main_frame"]
     }
   }

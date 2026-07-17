@@ -9,7 +9,7 @@ import {
 } from "../src/powerapps/constants";
 
 /**
- * Region → org host suffix from Microsoft Learn (Dynamics 365 datacenter regions).
+ * Region → org host suffix snapshot verified against Microsoft Learn on 2026-07-17.
  * @see https://learn.microsoft.com/en-us/power-platform/admin/new-datacenter-regions
  */
 const MICROSOFT_LEARN_REGION_HOSTS: ReadonlyArray<{ region: string; orgHostSuffix: string }> = [
@@ -33,11 +33,12 @@ const MICROSOFT_LEARN_REGION_HOSTS: ReadonlyArray<{ region: string; orgHostSuffi
   { region: "CHN", orgHostSuffix: "crm.dynamics.cn" },
   { region: "NOR", orgHostSuffix: "crm19.dynamics.com" },
   { region: "SGP", orgHostSuffix: "crm20.dynamics.com" },
+  { region: "SWE", orgHostSuffix: "crm22.dynamics.com" },
   { region: "KOR", orgHostSuffix: "crm21.dynamics.com" },
 ];
 
 describe("Microsoft Learn datacenter region coverage", () => {
-  it("declares every Learn table org host suffix", () => {
+  it("declares every org host suffix in the verified Microsoft Learn snapshot", () => {
     const declared = new Set(DATAVERSE_ORG_HOST_SUFFIXES);
     for (const { region, orgHostSuffix } of MICROSOFT_LEARN_REGION_HOSTS) {
       expect(declared.has(orgHostSuffix), `${region} → ${orgHostSuffix}`).toBe(true);

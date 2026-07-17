@@ -31,6 +31,11 @@ describe("isPowerAppsHostUrl", () => {
     expect(isPowerAppsHostUrl("https://apps.powerapps.com/play/e/abc")).toBe(true);
   });
 
+  it("requires HTTPS to match manifest host permissions", () => {
+    expect(isPowerAppsHostUrl("http://contoso.crm17.dynamics.com/main.aspx")).toBe(false);
+    expect(isPowerAppsHostUrl("ftp://apps.powerapps.com/play/e/abc")).toBe(false);
+  });
+
   it("rejects malformed URLs", () => {
     expect(isPowerAppsHostUrl("not-a-url")).toBe(false);
   });

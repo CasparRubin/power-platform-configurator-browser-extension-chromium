@@ -1,8 +1,7 @@
 /**
- * Fail the build if superseded name strings appear anywhere under the repo
- * (excluding node_modules, dist, .git, .helvety vendor copy). Patterns include a retired Helvety
- * Store slug fragment,
- * legacy GitHub/repo slugs, and a retired browser display title — see the `forbidden` list.
+ * Fail `verify:naming` when superseded names appear in supported text files up to 512 KiB.
+ * The scan excludes this script plus node_modules, dist, .git, and the .helvety vendor copy.
+ * See `scanExtensions` and `forbidden` for the exact scope.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";

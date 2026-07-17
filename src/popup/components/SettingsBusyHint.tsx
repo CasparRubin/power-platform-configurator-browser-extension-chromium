@@ -1,4 +1,4 @@
-export type SettingsBusyMode = "loading" | "saving" | "applying" | "reloading";
+type SettingsBusyMode = "loading" | "saving" | "applying" | "reloading";
 
 const MODE_LABEL: Record<SettingsBusyMode, string> = {
   loading: "Loading settings…",

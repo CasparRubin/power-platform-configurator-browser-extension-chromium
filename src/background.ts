@@ -8,8 +8,8 @@
  * **Unlock** via `apply-preferences.ts` (`tabs.onUpdated`, `storage.onChanged`, messages from `content-powerapps.js`).
  *
  * Main-frame `webNavigation` listeners await `policyQueue.awaitReconcileCaughtUp()` before URL work so
- * policy is never applied from stale default module state ahead of the first `chrome.storage.sync`-backed
- * `reconcileFromStorage` (see `src/policy-load-queue.ts`, Chrome MV3 storage preload pattern).
+ * URL handling waits for the initial `chrome.storage.sync` reconciliation attempt. If storage cannot be
+ * read, the logged failure leaves module defaults in place (see `src/policy-load-queue.ts`).
  */
 import {
   installPowerAppsRouter,

@@ -36,7 +36,7 @@ export type PowerAppsApplyPreferencesActiveTabResponse = {
 /**
  * Dataverse org host suffixes for manifest `host_permissions` and runtime host checks.
  * When Microsoft adds a region, update the arrays here and sync `public/manifest.json`
- * (must match `POWERAPPS_HOST_PERMISSIONS` / `POWERAPPS_URL_PATTERNS`; CI drift tests).
+ * (must match `POWERAPPS_HOST_PERMISSIONS` / `POWERAPPS_URL_PATTERNS`; guarded by local drift tests).
  *
  * Commercial `*.dynamics.com` cluster labels (NAM, SAM, CHE, …):
  * @see https://learn.microsoft.com/en-us/power-platform/admin/new-datacenter-regions
@@ -60,6 +60,7 @@ export const DATAVERSE_CRM_CLUSTER_LABELS = [
   "crm19",
   "crm20",
   "crm21",
+  "crm22",
 ] as const;
 
 /**
@@ -145,7 +146,11 @@ export function isPowerAppsHostUrl(urlValue: string | undefined): boolean {
     return false;
   }
   try {
-    const host = new URL(urlValue).hostname.toLowerCase();
+    const url = new URL(urlValue);
+    if (url.protocol !== "https:") {
+      return false;
+    }
+    const host = url.hostname.toLowerCase();
     if (host === "apps.powerapps.com") {
       return true;
     }

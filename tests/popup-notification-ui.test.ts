@@ -163,7 +163,7 @@ describe("persist status strings match variant inference", () => {
     );
   });
 
-  it("Power Apps passes explicit notification variants from App (not infer)", () => {
+  it("Power Apps formatted apply outcomes pass explicit notification variants", () => {
     const app = readSource("src/popup/App.tsx");
     expect(app).toContain("powerAppsStatusVariant");
     expect(app).toContain("variant={powerAppsStatusVariant}");

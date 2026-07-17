@@ -149,7 +149,7 @@ export function PowerAppsPanel({
             value="show"
             selected={hiddenMode === "show"}
             label="Reveal hidden elements"
-            description="Reveal hidden tabs, sections, and controls on every record form you open."
+            description="Reveal hidden tabs, sections, and controls on supported model-driven record forms."
           />
         </RadioGroup>
       </section>
@@ -199,7 +199,7 @@ export function PowerAppsPanel({
             value="unlock"
             selected={readOnlyMode === "unlock"}
             label="Enable disabled controls"
-            description="Enable disabled controls on every record form you open."
+            description="Enable disabled controls on supported model-driven record forms."
           />
         </RadioGroup>
       </section>

@@ -85,7 +85,7 @@ describe("persistPowerAppsPreference", () => {
     expect(setStatus).toHaveBeenCalledWith(POWER_APPS_PERSIST_STATUS.saveFailed);
   });
 
-  it("does not call onAfterSave when callback is omitted", async () => {
+  it("reports saved when no active-tab apply callback is requested", async () => {
     const set = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal("chrome", {
       storage: { sync: { set } },
@@ -103,7 +103,10 @@ describe("persistPowerAppsPreference", () => {
       scheduleStatusClear: vi.fn(),
     });
 
-    expect(setStatus).toHaveBeenCalledWith(POWER_APPS_PERSIST_STATUS.saved);
+    expect(setStatus.mock.calls.map(([message]) => message)).toEqual([
+      POWER_APPS_PERSIST_STATUS.saving,
+      POWER_APPS_PERSIST_STATUS.saved,
+    ]);
   });
 
   it("runs onAfterSave when callback is provided", async () => {
@@ -128,6 +131,7 @@ describe("persistPowerAppsPreference", () => {
     });
 
     expect(onAfterSave).toHaveBeenCalled();
+    expect(set.mock.invocationCallOrder[0]).toBeLessThan(onAfterSave.mock.invocationCallOrder[0]);
   });
 
   it("exits early when unmounted before save completes", async () => {
@@ -143,6 +147,7 @@ describe("persistPowerAppsPreference", () => {
 
     const mountedRef = { current: true };
     const setStatus = vi.fn();
+    const onAfterSave = vi.fn();
     const promise = persistPowerAppsPreference({
       hidden: "show",
       readOnly: "lock",
@@ -152,11 +157,12 @@ describe("persistPowerAppsPreference", () => {
       clearPendingStatusDismiss: vi.fn(),
       setStatus,
       scheduleStatusClear: vi.fn(),
-      onAfterSave: vi.fn(),
+      onAfterSave,
     });
     mountedRef.current = false;
     await promise;
-    expect(setStatus).not.toHaveBeenCalledWith(expect.stringContaining("Applying"));
+    expect(onAfterSave).not.toHaveBeenCalled();
+    expect(setStatus).not.toHaveBeenCalledWith(POWER_APPS_PERSIST_STATUS.applying);
   });
 
   it("reports apply failure when onAfterSave throws", async () => {

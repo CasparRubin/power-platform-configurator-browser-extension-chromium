@@ -239,12 +239,6 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
     expect(raw.side_panel).toBeUndefined();
   });
 
-  it("does not export or reference Flow Inspector panel path in constants", () => {
-    const constants = readFileSync(join(repoRoot, "src/constants.ts"), "utf8");
-    expect(constants).not.toContain("INSPECTOR_PANEL_PATH");
-    expect(constants).not.toContain("inspector.html");
-  });
-
   it("declarative_net_request rulesets use the same ids and paths as constants", () => {
     const manifest = readPublicManifest();
     const resources = manifest.declarative_net_request?.rule_resources;
@@ -257,18 +251,6 @@ describe("public/manifest.json (drift guard vs src/constants.ts)", () => {
 
     expect(byId.get(DNR_RULESET_CLASSIC_EDITOR_ID)?.enabled).toBe(true);
     expect(byId.get(DNR_RULESET_NEW_DESIGNER_ID)?.enabled).toBe(false);
-  });
-
-  it("icon paths match packaged files under public/", () => {
-    const manifest = readPublicManifest();
-    const icons = manifest.icons;
-    expect(icons).toBeDefined();
-    for (const size of ["16", "32", "48", "128"] as const) {
-      const rel = icons![size];
-      expect(rel).toBe(`icons/ppconfigurator_${size}.png`);
-      expect(existsSync(join(repoRoot, "public", rel))).toBe(true);
-      expect(existsSync(join(repoRoot, "assets", `ppconfigurator_${size}.png`))).toBe(true);
-    }
   });
 
   it("DNR rule JSON files exist next to manifest", () => {

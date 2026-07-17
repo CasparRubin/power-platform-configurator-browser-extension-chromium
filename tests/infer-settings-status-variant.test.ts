@@ -36,7 +36,7 @@ describe("inferSettingsStatusVariant", () => {
   it("detects error messages from persist helpers", () => {
     expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saveFailed)).toBe("error");
     expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applyFailed)).toBe("error");
-    expect(inferSettingsStatusVariant("Check Chrome sync sign-in, then try again.")).toBe("error");
+    expect(inferSettingsStatusVariant("Could not save preference. Try again.")).toBe("error");
   });
 
   it.each([
@@ -61,8 +61,8 @@ describe("inferSettingsStatusVariant", () => {
     expect(inferSettingsStatusVariant("Saved.", { busy: false })).toBe("success");
   });
 
-  it("does not infer Power Apps applying copy as loading (explicit variant from App)", () => {
-    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applying)).toBe("info");
+  it("classifies Power Apps applying copy as loading and saved guidance as info", () => {
+    expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.applying)).toBe("loading");
     expect(inferSettingsStatusVariant(POWER_APPS_PERSIST_STATUS.saved)).toBe("info");
   });
 });

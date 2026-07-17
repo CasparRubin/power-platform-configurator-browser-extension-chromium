@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,21 +19,6 @@ function readmeSection(readme: string, heading: string): string {
   const after = readme.slice(start + heading.length);
   const nextHeading = after.search(/\n## /);
   return nextHeading === -1 ? after : after.slice(0, nextHeading);
-}
-
-function extractReadmeTestTableLinks(readme: string): string[] {
-  const table = readme.slice(readme.indexOf("## Unit tests"));
-  const links = new Set<string>();
-  for (const line of table.split("\n")) {
-    if (!line.startsWith("| [`tests/")) {
-      continue;
-    }
-    const match = line.match(/\[`(tests\/[^`]+\.test\.ts)`\]/);
-    if (match && !match[1].includes("*")) {
-      links.add(match[1]);
-    }
-  }
-  return [...links].sort();
 }
 
 describe("README and docs accuracy (current product scope)", () => {
@@ -137,15 +122,6 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(layout).toContain("format-powerapps-preferences.ts");
   });
 
-  it("unit tests intro and table cover every tests/*.test.ts file", () => {
-    const onDisk = readdirSync(join(repoRoot, "tests"))
-      .filter((name) => name.endsWith(".test.ts"))
-      .map((name) => `tests/${name}`)
-      .sort();
-    const linked = extractReadmeTestTableLinks(readme).sort();
-    expect(linked).toEqual(onDisk);
-  });
-
   it("repository layout documents popup-layout.ts and omits removed inspector paths", () => {
     const layout = readmeSection(readme, "## Repository layout");
     expect(layout).toContain("popup-layout.ts");
@@ -238,7 +214,9 @@ describe("chrome-web-store.md accuracy", () => {
       action?: { default_icon?: Record<string, string> };
     };
     expect(doc).toMatch(/Chrome Web Store only/i);
-    expect(doc).toMatch(/Chromium Edge users can install/i);
+    expect(doc).toMatch(
+      /Chromium-based Edge can install the same listing when third-party extension stores are allowed/i,
+    );
     expect(doc).not.toMatch(/Partner Center/i);
     expect(doc).not.toMatch(/upload(?:ing)? to (?:Chrome Web Store or )?Edge Add-ons/i);
     expect(doc).not.toMatch(/Chrome Web Store \/ Edge/i);

@@ -42,9 +42,32 @@ function resolveHelvetyDriftVersions(): DriftVersions {
 
 describe("power-platform extension dependency pins", () => {
   const packageJson = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as {
+    version?: string;
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
+    overrides?: Record<string, string>;
   };
+  const packageLock = JSON.parse(readFileSync(join(repoRoot, "package-lock.json"), "utf8")) as {
+    version?: string;
+    packages?: {
+      ""?: {
+        version?: string;
+        dependencies?: Record<string, string>;
+        devDependencies?: Record<string, string>;
+      };
+    };
+  };
+
+  it("keeps package metadata and direct dependency specs aligned with the lockfile", () => {
+    const rootLock = packageLock.packages?.[""];
+    expect(packageLock.version).toBe(packageJson.version);
+    expect(rootLock?.version).toBe(packageJson.version);
+    expect(rootLock?.dependencies).toEqual(packageJson.dependencies);
+    expect(rootLock?.devDependencies).toEqual(packageJson.devDependencies);
+    expect(packageJson.dependencies).toHaveProperty("class-variance-authority");
+    expect(packageJson.dependencies).not.toHaveProperty("clsx");
+    expect(packageJson.dependencies).not.toHaveProperty("tailwind-merge");
+  });
 
   it("aligns react and lucide with Helvety monorepo drift minimums", () => {
     const drift = resolveHelvetyDriftVersions();
@@ -60,7 +83,7 @@ describe("power-platform extension dependency pins", () => {
     expect(packageJson.devDependencies?.typescript).toBe("^5.9.3");
   });
 
-  it("pins current Chrome typings and React Hooks ESLint flat config major", () => {
+  it("pins the expected Chrome typings and React Hooks ESLint major ranges", () => {
     expect(packageJson.devDependencies?.["@types/chrome"]).toMatch(/^\^0\.1\./);
     expect(packageJson.devDependencies?.["eslint-plugin-react-hooks"]).toMatch(/^\^7\./);
     const eslintConfig = readFileSync(join(repoRoot, "eslint.config.mjs"), "utf8");

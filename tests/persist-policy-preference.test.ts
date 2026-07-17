@@ -165,7 +165,7 @@ describe("persistPolicyPreferenceAndOptionalReload", () => {
 
     expect(resync).toHaveBeenCalled();
     expect(reloadMock).not.toHaveBeenCalled();
-    expect(setStatus).toHaveBeenCalledWith("sync down");
+    expect(setStatus).toHaveBeenCalledWith(POWER_AUTOMATE_PERSIST_STATUS.saveFailed);
     expect(scheduleClear).toHaveBeenCalledWith(2000);
   });
 
@@ -233,7 +233,7 @@ describe("persistPolicyPreferenceAndOptionalReload", () => {
     } as PersistArgs);
 
     expect(onResyncHardFailure).toHaveBeenCalledTimes(1);
-    expect(setStatus).toHaveBeenCalledWith("sync down");
+    expect(setStatus).toHaveBeenCalledWith(POWER_AUTOMATE_PERSIST_STATUS.saveFailed);
     expect(scheduleClear).toHaveBeenCalledWith(2000);
   });
 });

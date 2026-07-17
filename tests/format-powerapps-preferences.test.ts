@@ -126,7 +126,7 @@ describe("formatPowerAppsPreferencesApplyStatus", () => {
       ],
     });
     expect(status.variant).toBe("error");
-    expect(status.message).toContain("chrome://extensions");
-    expect(status.message).toContain("scripting API");
+    expect(status.message).toContain("browser's extensions page");
+    expect(status.message).toContain("browser scripting API");
   });
 });

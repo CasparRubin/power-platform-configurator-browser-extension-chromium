@@ -1,4 +1,4 @@
-export type SettingsProductTab = "power-automate" | "power-apps";
+type SettingsProductTab = "power-automate" | "power-apps";
 
 /** Whether the floating notification anchored below the tab bar should render for a product tab. */
 export function shouldShowPopupTabNotification(

@@ -41,7 +41,7 @@ function formatPowerAppsActionErrorMessage(
       return "Open a model-driven app on a Dataverse org URL (e.g. org.crm17.dynamics.com, org.crm.dynamics.cn) or apps.powerapps.com first.";
     case "host_not_permitted":
       return appendDetail(
-        "This tab URL is not permitted by the extension. Reload the extension on chrome://extensions, then try again.",
+        "This tab URL is not permitted by the extension. Open your browser's extensions page, confirm site access, reload the extension if available, then try again.",
         detail,
       );
     case "no_active_tab":
@@ -54,7 +54,7 @@ function formatPowerAppsActionErrorMessage(
     case "no_controls_updated":
       return appendDetail("No applicable form elements needed changing.", detail);
     case "scripting_unavailable":
-      return appendDetail("Chrome scripting API is not available for this extension.", detail);
+      return appendDetail("The browser scripting API is not available for this extension.", detail);
     case "inject_no_result":
       return appendDetail(
         "Could not run on this page. Use a record form (not a list or dashboard), reload the page, and try again.",

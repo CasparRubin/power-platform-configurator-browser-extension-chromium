@@ -14,10 +14,11 @@
     "build:content": "esbuild src/content.ts --bundle --outfile=dist/content.js --format=iife --platform=browser --target=es2022",
     "build:content-powerapps": "esbuild src/content-powerapps.ts --bundle --outfile=dist/content-powerapps.js --format=iife --platform=browser --target=es2022",
     "build:popup": "vite build --config vite.popup.config.ts",
-    "build": "npm run prebuild && npm run build:sw && npm run build:content && npm run build:content-powerapps && npm run build:popup",
+    "build": "npm run build:sw && npm run build:content && npm run build:content-powerapps && npm run build:popup",
     "watch": "vite build --config vite.popup.config.ts --watch",
     "test": "vitest run --exclude tests/dist-bundle.test.ts --exclude tests/package-dist-zip.test.ts",
-    "test:dist": "vitest run tests/dist-bundle.test.ts tests/dnr-static-rules.test.ts tests/package-dist-zip.test.ts",
+    "test:dist": "npm run build && npm run test:dist:built",
+    "test:dist:built": "vitest run tests/dist-bundle.test.ts tests/package-dist-zip.test.ts",
     "test:coverage": "vitest run --coverage --exclude tests/dist-bundle.test.ts --exclude tests/package-dist-zip.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "lint": "eslint .",
@@ -26,7 +27,7 @@
     "format:check": "prettier --check .",
     "verify:naming": "node scripts/verify-project-naming.mjs",
     "package:zip": "node scripts/package-dist-zip.mjs",
-    "predeploy": "npm run verify:naming && npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run test:dist && npm run package:zip"
+    "predeploy": "npm run verify:naming && npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run test:dist:built && npm run package:zip"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -55,11 +56,10 @@
     "@helvety/extension-chrome": "file:.helvety/packages/extension-chrome",
     "@helvety/shared": "file:.helvety/packages/shared",
     "@helvety/ui": "file:.helvety/packages/ui",
-    "clsx": "^2.1.1",
+    "class-variance-authority": "^0.7.1",
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "tailwind-merge": "^3.6.0"
+    "react-dom": "^19.2.7"
   },
   "overrides": {
     "esbuild": "^0.25.12",

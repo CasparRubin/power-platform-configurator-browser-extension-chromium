@@ -1,5 +1,6 @@
 /**
- * Runs `powerAppsFormActionInPage` on every frame of a tab (MAIN world) and picks the best result.
+ * Requests `powerAppsFormActionInPage` in all permitted frames of a tab (MAIN world) and picks the
+ * best returned result. Frames the browser will not expose to the extension are not inspected.
  * Used by `apply-preferences.ts` for global enforcement.
  * Surfaces `inject_no_result`, `host_not_permitted`, `injection_failed`, `framesChecked`, and `detail`
  * for apply pipeline diagnostics; popup notifications use `detail` only (no frame counts).

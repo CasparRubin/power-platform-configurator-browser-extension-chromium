@@ -1,5 +1,5 @@
 // Zip dist/ for Chrome Web Store — manifest.json at archive root (no "./" prefix).
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +17,23 @@ const version = JSON.parse(fs.readFileSync(manifestPath, "utf8")).version;
 const tag = process.argv[2] ?? `v${version}`;
 const zipBase = `power-platform-configurator-${tag}.zip`;
 const outPath = path.join(repoRoot, zipBase);
+
+function listZipEntries(zipPath) {
+  let output;
+  if (process.platform === "win32") {
+    const ps = [
+      "Add-Type -AssemblyName System.IO.Compression.FileSystem",
+      `$zip = [System.IO.Compression.ZipFile]::OpenRead(${JSON.stringify(zipPath)})`,
+      "try { $zip.Entries | ForEach-Object { $_.FullName } } finally { $zip.Dispose() }",
+    ].join("; ");
+    output = execFileSync("powershell", ["-NoProfile", "-Command", ps], {
+      encoding: "utf8",
+    });
+  } else {
+    output = execFileSync("unzip", ["-Z1", zipPath], { encoding: "utf8" });
+  }
+  return output.split(/\r?\n/).filter(Boolean);
+}
 
 fs.rmSync(outPath, { force: true });
 
@@ -36,15 +53,13 @@ if (process.platform === "win32") {
   execSync(`zip -r ${JSON.stringify(outPath)} .`, { cwd: distDir, stdio: "inherit" });
 }
 
-const buf = fs.readFileSync(outPath);
-if (buf.includes(Buffer.from("./manifest.json"))) {
-  console.error(
-    "package-dist-zip: zip contains ./manifest.json — Chrome Web Store will reject it.",
-  );
+const entries = listZipEntries(outPath);
+if (entries.some((entry) => entry.startsWith("./"))) {
+  console.error("package-dist-zip: zip contains ./-prefixed entries.");
   process.exit(1);
 }
-if (!buf.includes(Buffer.from("manifest.json"))) {
-  console.error("package-dist-zip: zip does not contain manifest.json.");
+if (!entries.includes("manifest.json")) {
+  console.error("package-dist-zip: zip does not contain manifest.json at its root.");
   process.exit(1);
 }
 

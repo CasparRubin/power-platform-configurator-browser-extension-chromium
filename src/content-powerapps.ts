@@ -1,8 +1,8 @@
 /**
  * ISOLATED-world content script on Dataverse org hosts (`POWERAPPS_URL_PATTERNS` in
- * `constants.ts`: per-cluster `*.crm*.dynamics.com`, sovereign `.de` / `.us` / `.cn`, plus
- * `apps.powerapps.com`). When sync prefs enforce Show/Unlock, asks the service worker to apply
- * on navigation and SPA updates (debounced per tab).
+ * `powerapps/constants.ts`: one explicit pattern per CRM cluster, sovereign `.de` / `.us` / `.cn`
+ * hosts, plus `apps.powerapps.com`). When sync prefs enforce Show/Unlock, asks the service worker
+ * to apply on navigation and SPA updates (debounced per tab).
  */
 import { POWERAPPS_SYNC_KEYS, parsePowerAppsPreferencesFromSync } from "./constants";
 import { isPowerAppsEnforcementActive } from "./powerapps/apply-preferences";

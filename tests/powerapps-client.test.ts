@@ -90,12 +90,13 @@ describe("formatPowerAppsActionErrorForNotification", () => {
     expect(message).not.toContain("inject");
   });
 
-  it("maps host_not_permitted with reload extension hint", () => {
+  it("maps host_not_permitted with browser-neutral site-access guidance", () => {
     const message = formatPowerAppsActionErrorForNotification(
       "host_not_permitted",
       "Extension manifest must request permission",
     );
-    expect(message).toContain("chrome://extensions");
+    expect(message).toContain("browser's extensions page");
+    expect(message).toContain("confirm site access");
   });
 
   it("maps unsupported_host for Dataverse hosts", () => {

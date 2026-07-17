@@ -7,19 +7,17 @@ import {
 } from "../src/popup/persist-status-messages";
 
 describe("POWER_AUTOMATE_PERSIST_STATUS", () => {
-  it("exports stable keys used by persist-policy-preference", () => {
-    expect(Object.keys(POWER_AUTOMATE_PERSIST_STATUS).sort()).toEqual([
-      "refreshing",
-      "saved",
-      "savedReloadPage",
-      "savedReloaded",
-      "saving",
-    ]);
+  it("provides canonical progress, failure, and success copy", () => {
+    expect(POWER_AUTOMATE_PERSIST_STATUS.saving).toMatch(/Saving/i);
+    expect(POWER_AUTOMATE_PERSIST_STATUS.refreshing).toMatch(/Refreshing/i);
+    expect(POWER_AUTOMATE_PERSIST_STATUS.saveFailed).toMatch(/Could not save/i);
+    expect(POWER_AUTOMATE_PERSIST_STATUS.saved).toBe("Saved.");
   });
 
   it.each([
     [POWER_AUTOMATE_PERSIST_STATUS.saving, "loading"],
     [POWER_AUTOMATE_PERSIST_STATUS.refreshing, "loading"],
+    [POWER_AUTOMATE_PERSIST_STATUS.saveFailed, "error"],
     [POWER_AUTOMATE_PERSIST_STATUS.saved, "success"],
     [POWER_AUTOMATE_PERSIST_STATUS.savedReloaded, "success"],
     [POWER_AUTOMATE_PERSIST_STATUS.savedReloadPage, "success"],
@@ -34,19 +32,11 @@ describe("POWER_AUTOMATE_PERSIST_STATUS", () => {
 });
 
 describe("POWER_APPS_PERSIST_STATUS", () => {
-  it("exports stable keys used by persist-powerapps-preference", () => {
-    expect(Object.keys(POWER_APPS_PERSIST_STATUS).sort()).toEqual([
-      "applyFailed",
-      "applyFinishRemaining",
-      "applying",
-      "saveFailed",
-      "saved",
-      "savedApplyDeferred",
-      "savedNothingToReveal",
-      "savedNothingToRevealOrUnlock",
-      "savedNothingToUnlock",
-      "saving",
-    ]);
+  it("provides canonical progress and failure copy", () => {
+    expect(POWER_APPS_PERSIST_STATUS.saving).toMatch(/Saving/i);
+    expect(POWER_APPS_PERSIST_STATUS.applying).toMatch(/Applying/i);
+    expect(POWER_APPS_PERSIST_STATUS.saveFailed).toMatch(/Could not save/i);
+    expect(POWER_APPS_PERSIST_STATUS.applyFailed).toMatch(/could not apply/i);
   });
 
   it("inactive and apply-failed paths give distinct reload guidance", () => {

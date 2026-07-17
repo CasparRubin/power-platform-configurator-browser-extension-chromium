@@ -31,6 +31,13 @@ function readRules(path: string): DnrRule[] {
   return JSON.parse(readFileSync(path, "utf8")) as DnrRule[];
 }
 
+function matchesAnyRule(rules: DnrRule[], url: string): boolean {
+  return rules.some((rule) => {
+    const pattern = rule.condition.regexFilter;
+    return pattern ? new RegExp(pattern).test(url) : false;
+  });
+}
+
 describe("static DNR rule JSON (Chrome declarativeNetRequest)", () => {
   const classicPath = join(repoRoot, "public", "dnr-classic-editor.json");
   const newDesignerPath = join(repoRoot, "public", "dnr-new-designer.json");
@@ -41,13 +48,40 @@ describe("static DNR rule JSON (Chrome declarativeNetRequest)", () => {
     expect(existsSync(newDesignerPath)).toBe(true);
   });
 
-  it("uses globally unique numeric rule ids across all static rulesets", () => {
-    const classic = readRules(classicPath);
-    const newDesigner = readRules(newDesignerPath);
-    const ids = [...classic, ...newDesigner].map((rule) => rule.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toEqual([1, 2, 3, 4]);
-  });
+  it.each([classicPath, newDesignerPath])(
+    "uses positive, unique numeric rule ids within %s",
+    (path) => {
+      const ids = readRules(path).map((rule) => rule.id);
+      expect(ids.every((id) => Number.isInteger(id) && id > 0)).toBe(true);
+      expect(new Set(ids).size).toBe(ids.length);
+    },
+  );
+
+  it.each([classicPath, newDesignerPath])(
+    "matches representative supported HTTPS URLs in %s",
+    (path) => {
+      const rules = readRules(path);
+      const positiveUrls = [
+        "https://make.powerautomate.com/flows/id",
+        "https://emea.powerautomate.com/environments/foo/flows/id/details?x=1",
+        "https://flow.microsoft.com/runs/id",
+        "https://flow.microsoft.com/en-us/runs/id/details",
+      ];
+      const negativeUrls = [
+        "http://make.powerautomate.com/flows/id",
+        "https://example.com/flows/id",
+        "https://make.powerautomate.com/environments/foo/home",
+        "https://flow.microsoft.com/notflows/id",
+      ];
+
+      for (const url of positiveUrls) {
+        expect(matchesAnyRule(rules, url), url).toBe(true);
+      }
+      for (const url of negativeUrls) {
+        expect(matchesAnyRule(rules, url), url).toBe(false);
+      }
+    },
+  );
 
   it("only redirects main_frame requests and only transforms the v3 query param", () => {
     for (const rules of [readRules(classicPath), readRules(newDesignerPath)]) {
