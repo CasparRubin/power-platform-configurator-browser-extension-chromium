@@ -25,7 +25,7 @@ describe("README and docs accuracy (current product scope)", () => {
   const readme = readRepoFile("README.md");
   const pkg = JSON.parse(readRepoFile("package.json")) as { scripts?: Record<string, string> };
 
-  it("documents the full npm run build pipeline", () => {
+  it("documents required build targets and omits retired inspector targets", () => {
     const scriptsSection = readmeSection(readme, "### Scripts");
     expect(scriptsSection).toMatch(/`npm run build`/);
     expect(scriptsSection).toMatch(/content-powerapps/i);
@@ -41,6 +41,8 @@ describe("README and docs accuracy (current product scope)", () => {
   it("What it does describes 800×600 popup and four core settings only", () => {
     const section = readmeSection(readme, "## What it does");
     expect(section).toMatch(/800\s*[×x]\s*600|800×600/i);
+    expect(section).toContain("React + Tailwind + Base UI");
+    expect(section).not.toContain("React + Tailwind + Radix");
     expect(section).toContain("SettingsChoiceRow");
     expect(section).toContain("SettingsBusyHint");
     expect(section).toContain("POPUP_SYNC_SETTINGS_KEYS");
@@ -111,6 +113,18 @@ describe("README and docs accuracy (current product scope)", () => {
     expect(section).not.toMatch(/only sends `pp:powerapps:apply-form-action`/i);
   });
 
+  it("does not overstate isolated-world History API interception", () => {
+    const whatItDoes = readmeSection(readme, "## What it does");
+    expect(whatItDoes).toMatch(
+      /isolated-world History wrappers do not intercept page-world `pushState` \/ `replaceState`/i,
+    );
+    expect(whatItDoes).toMatch(/webNavigation\.onHistoryStateUpdated/i);
+    expect(readme).toMatch(/late same-document.*may require a page reload/i);
+    expect(readRepoFile("src/content-powerapps.ts")).toMatch(
+      /do not intercept page-world `pushState`/i,
+    );
+  });
+
   it("repository layout documents powerapps inject and ISOLATED content-powerapps", () => {
     const layout = readmeSection(readme, "## Repository layout");
     expect(layout).toContain("xrm-page-script");
@@ -161,6 +175,12 @@ describe("README and docs accuracy (current product scope)", () => {
 describe("chrome-web-store.md accuracy", () => {
   const doc = readRepoFile("docs/chrome-web-store.md");
 
+  it("documents that the store screenshot must be captured for the current release", () => {
+    expect(existsSync(join(repoRoot, "assets/Screenshot_640x400.png"))).toBe(false);
+    expect(doc).toMatch(/capture from the current release/i);
+    expect(doc).toMatch(/no screenshot is committed/i);
+  });
+
   it("small promo URL demonstrates a supported flow route", () => {
     const promo = readRepoFile("assets/chrome web store/smallPromoTile.html");
     expect(promo).toMatch(/make\.powerautomate\.com\/[^"]*\/flows\/[^"?]*\?/i);
@@ -181,6 +201,7 @@ describe("chrome-web-store.md accuracy", () => {
     expect(doc).toMatch(/Reload the flow or run page|Reloaded/i);
     expect(doc).toMatch(/SettingsTabPanel|no card frame/i);
     expect(doc).toMatch(/self-contained/i);
+    expect(doc).toMatch(/late same-document record change may require a reload/i);
     expect(doc).not.toMatch(/\*\*Unhide hidden fields\*\* and \*\*Unlock read-only fields\*\*/);
   });
 
@@ -233,5 +254,14 @@ describe("package-dist-zip script copy", () => {
     expect(script).toMatch(/Chrome Web Store/);
     expect(script).not.toMatch(/Chrome Web Store \/ Edge/i);
     expect(script).not.toMatch(/Edge Add-ons/i);
+  });
+
+  it("requires forward-slash zip entry paths (rejects Compress-Archive backslashes)", () => {
+    const script = readRepoFile("scripts/package-dist-zip.mjs");
+    expect(script).toMatch(/forward slash/i);
+    expect(script).toContain("Compress-Archive");
+    expect(script).toContain("zipContainsBackslashPaths");
+    expect(script).toContain("psQuote");
+    expect(script).not.toMatch(/Compress-Archive -Path/);
   });
 });

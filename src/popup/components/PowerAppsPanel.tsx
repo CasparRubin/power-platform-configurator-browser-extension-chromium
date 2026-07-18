@@ -113,10 +113,12 @@ export function PowerAppsPanel({
           description={
             <>
               On an open <span className="font-medium text-foreground">record form</span> in a
-              model-driven app. <span className="font-medium text-foreground">Show</span> stays on
-              across tabs and record navigation until you choose Keep hidden.{" "}
+              model-driven app.{" "}
+              <span className="font-medium text-foreground">Reveal hidden elements</span> applies on
+              supported form loads and detected navigation until you choose Keep hidden.{" "}
               <span className="font-medium text-foreground">Keep hidden</span> stops automatic
-              revealing; reload the page on open record forms to restore platform defaults.
+              revealing; reload after an undetected same-page record change, or to restore platform
+              defaults.
             </>
           }
         />
@@ -163,10 +165,12 @@ export function PowerAppsPanel({
           description={
             <>
               Client-side only; does not bypass server security on save. Canvas apps are not
-              supported. <span className="font-medium text-foreground">Unlock</span> stays on across
-              tabs and navigation until you choose Keep disabled.{" "}
+              supported.{" "}
+              <span className="font-medium text-foreground">Enable disabled controls</span> applies
+              on supported form loads and detected navigation until you choose Keep disabled.{" "}
               <span className="font-medium text-foreground">Keep disabled</span> stops automatic
-              unlocking; reload the page on open record forms to restore disabled controls.
+              enabling; reload after an undetected same-page record change, or to restore disabled
+              controls.
             </>
           }
         />

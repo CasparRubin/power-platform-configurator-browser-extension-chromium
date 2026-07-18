@@ -61,8 +61,8 @@ describe("README popup and icon documentation", () => {
     expect(section).not.toMatch(/not persisted across popup|Choices are not persisted/i);
   });
 
-  it("layout and unit-test tables document popup components and icon paths", () => {
-    const fromUnitTests = readme.slice(readme.indexOf("## Unit tests"));
+  it("layout and test-suite tables document popup components and icon paths", () => {
+    const fromUnitTests = readme.slice(readme.indexOf("## Test suites"));
     expect(fromUnitTests).toContain("tests/popup-chrome.test.ts");
     expect(fromUnitTests).toContain("tests/popup-notification-ui.test.ts");
     expect(fromUnitTests).toContain("tests/readme-popup-docs.test.ts");

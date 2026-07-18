@@ -41,7 +41,7 @@ describe("popup notification UI modules exist", () => {
   });
 });
 
-describe("App notification region (anchored below tabs over the panel)", () => {
+describe("App notification region wiring below tabs", () => {
   const app = readSource("src/popup/App.tsx");
 
   it("uses controlled tabs and per-product status state", () => {
@@ -55,7 +55,7 @@ describe("App notification region (anchored below tabs over the panel)", () => {
     expect(app).toContain("onValueChange");
   });
 
-  it("renders PopupNotificationRegion between TabsList and tab panel host", () => {
+  it("places PopupNotificationRegion before the tab panel host in App source", () => {
     expect(app).toContain("<PopupNotificationRegion");
     expect(app).toContain("showPowerAutomateNotification");
     expect(app).toContain("showPowerAppsNotification");
@@ -152,7 +152,7 @@ describe("SettingsStatusAlert and layout tokens", () => {
   });
 });
 
-describe("persist status strings match variant inference", () => {
+describe("notification variant selection", () => {
   it("classifies Power Automate persist messages", () => {
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.saving)).toBe("loading");
     expect(inferSettingsStatusVariant(POWER_AUTOMATE_PERSIST_STATUS.refreshing)).toBe("loading");

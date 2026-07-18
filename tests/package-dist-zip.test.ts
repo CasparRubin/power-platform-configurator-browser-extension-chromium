@@ -13,22 +13,34 @@ function listFiles(root: string, relative = ""): string[] {
   });
 }
 
+/** PowerShell single-quoted string (backslashes stay literal). */
+function psQuote(value: string): string {
+  return `'${value.replaceAll("'", "''")}'`;
+}
+
 function listZipEntries(zipPath: string): string[] {
   if (process.platform === "win32") {
     const ps = [
       "Add-Type -AssemblyName System.IO.Compression.FileSystem",
-      `$zip = [System.IO.Compression.ZipFile]::OpenRead(${JSON.stringify(zipPath)})`,
+      `$zip = [System.IO.Compression.ZipFile]::OpenRead(${psQuote(zipPath)})`,
       "try { $zip.Entries | ForEach-Object { $_.FullName } } finally { $zip.Dispose() }",
     ].join("; ");
     return execFileSync("powershell", ["-NoProfile", "-Command", ps], {
       encoding: "utf8",
     })
       .split(/\r?\n/)
-      .filter(Boolean);
+      .filter(Boolean)
+      .map((entry) => entry.replaceAll("\\", "/"));
   }
   return execFileSync("unzip", ["-Z1", zipPath], { encoding: "utf8" })
     .split(/\r?\n/)
     .filter(Boolean);
+}
+
+/** .NET FullName may OS-normalize separators; inspect zip bytes for real entry names. */
+function zipBytesContainBackslashPaths(zipPath: string): boolean {
+  const buf = fs.readFileSync(zipPath);
+  return buf.includes(Buffer.from("icons\\")) || buf.includes(Buffer.from("popup-assets\\"));
 }
 
 describe("package-dist-zip.mjs", () => {
@@ -49,6 +61,9 @@ describe("package-dist-zip.mjs", () => {
     const entries = listZipEntries(zipPath);
     expect(entries).toContain("manifest.json");
     expect(entries.every((entry) => !entry.startsWith("./"))).toBe(true);
+    expect(zipBytesContainBackslashPaths(zipPath)).toBe(false);
+    expect(entries).toContain("icons/ppconfigurator_48.png");
+    expect(entries.some((entry) => entry.startsWith("popup-assets/"))).toBe(true);
     expect(entries.filter((entry) => !entry.endsWith("/")).sort()).toEqual(
       listFiles(join(repoRoot, "dist")).sort(),
     );

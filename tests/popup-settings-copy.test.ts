@@ -64,12 +64,12 @@ describe("Power Automate panel copy", () => {
 describe("Power Apps panel reload copy", () => {
   const panel = readSource("src/popup/components/PowerAppsPanel.tsx");
 
-  it("accurately distinguishes the two automatic actions", () => {
+  it("names and distinguishes the two automatic actions", () => {
     expect(panel).toContain("Hidden form elements");
     expect(panel).toContain("Disabled controls");
     expect(panel).toContain("stops automatic");
     expect(panel).not.toContain("stops auto-apply");
-    expect(panel).toMatch(/reload the\s+page on open record forms/i);
+    expect(panel).toMatch(/reload after an undetected same-page record change/i);
     expect(panel).toMatch(/Reload the page to restore/i);
     expect(panel).not.toMatch(/Reload the form to restore/i);
   });
@@ -88,7 +88,7 @@ describe("persist-policy-preference status selection", () => {
 });
 
 describe("powerapps-client error copy", () => {
-  it("asks users to reload the page on inject failures", () => {
+  it("prefers reload-the-page guidance over legacy form-tab wording", () => {
     const client = readSource("src/popup/powerapps-client.ts");
     expect(client).toMatch(/Reload the page and try again/i);
     expect(client).not.toMatch(/Reload the form tab/i);

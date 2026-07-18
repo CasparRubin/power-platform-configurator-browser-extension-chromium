@@ -14,7 +14,7 @@ function readSource(relativePath: string): string {
   return readFileSync(join(repoRoot, relativePath), "utf8");
 }
 
-describe("popup chrome (header + About developer section)", () => {
+describe("popup shell, settings, header, and About section", () => {
   it("PopupHeader bundles the ppconfigurator toolbar artwork from assets/", () => {
     const header = readSource("src/popup/components/PopupHeader.tsx");
     expect(header).toContain("ppconfigurator_48.png");
@@ -209,6 +209,12 @@ describe("popup chrome (header + About developer section)", () => {
     expect(indexHtml).toContain("h-[600px]");
     expect(indexHtml).not.toContain("320px");
 
+    // Body sizing lives only in index.html — Tailwind must scan HTML or those utilities
+    // are dropped and the popup collapses to Chrome's minimum size.
+    const tailwindConfig = readSource("tailwind.config.js");
+    expect(tailwindConfig).toMatch(/["'].*src\/popup\/\*\*\/\*\.\{html,/);
+    expect(tailwindConfig).toMatch(/\.\{html,ts,tsx\}["']/);
+
     const app = readSource("src/popup/App.tsx");
     expect(app).toContain("POPUP_ROOT_CLASS");
     expect(app).toContain("TAB_TRIGGER_CLASS");
@@ -317,7 +323,7 @@ describe("popup notifications (region, alerts, lifted status)", () => {
     expect(app).not.toMatch(/<Loader2[\s\S]{0,80}powerAutomateStatus/);
   });
 
-  it("PowerAppsPanel does not render inline status; persist uses shared message constants", () => {
+  it("PowerAppsPanel source has no inline status region; persist uses shared message constants", () => {
     const panel = readSource("src/popup/components/PowerAppsPanel.tsx");
     expect(panel).toContain("setStatus:");
     expect(panel).not.toContain("<PopupNotificationRegion");

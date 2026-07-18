@@ -5,7 +5,9 @@ import { POWER_APPS_PERSIST_STATUS } from "../src/popup/persist-status-messages"
 describe("formatPowerAppsPreferencesApplyStatus", () => {
   it("reports when enforcement is off", () => {
     const status = formatPowerAppsPreferencesApplyStatus({ ok: true, results: [] });
-    expect(status.message).toContain("Enforcement is off");
+    expect(status.message).toContain("Automatic actions are off");
+    expect(status.message).toContain("Reveal hidden elements");
+    expect(status.message).toContain("Enable disabled controls");
     expect(status.variant).toBe("success");
   });
 
@@ -17,8 +19,8 @@ describe("formatPowerAppsPreferencesApplyStatus", () => {
         { ok: true, action: "unlock", unlocked: 2, framesChecked: 3 },
       ],
     });
-    expect(status.message).toContain("Unhid 1 element");
-    expect(status.message).toContain("Unlocked 2 controls");
+    expect(status.message).toContain("Revealed 1 element");
+    expect(status.message).toContain("Enabled 2 controls");
     expect(status.message).not.toContain("frame");
     expect(status.variant).toBe("success");
   });
@@ -41,7 +43,7 @@ describe("formatPowerAppsPreferencesApplyStatus", () => {
         { ok: false, action: "unlock", error: "no_form_context", framesChecked: 1 },
       ],
     });
-    expect(status.message).toContain("Unhid 2 elements");
+    expect(status.message).toContain("Revealed 2 elements");
     expect(status.message).toContain(POWER_APPS_PERSIST_STATUS.applyFinishRemaining);
     expect(status.variant).toBe("info");
   });
@@ -95,7 +97,7 @@ describe("formatPowerAppsPreferencesApplyStatus", () => {
       ],
     });
     expect(status.variant).toBe("success");
-    expect(status.message).toContain("Unhid 1 element");
+    expect(status.message).toContain("Revealed 1 element");
     expect(status.message).not.toContain(POWER_APPS_PERSIST_STATUS.savedNothingToUnlock);
   });
 

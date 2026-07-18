@@ -4,8 +4,9 @@
  * via `webNavigation` and `tabs.update` when enforcement is not paused. Static DNR JSON only adjusts `v3`;
  * `v3survey` (**Hide** / **Show**) uses the same URL policy as the content script.
  *
- * Power Apps: reads `powerAppsHiddenFields` / `powerAppsReadOnly` from sync and globally enforces **Show** /
- * **Unlock** via `apply-preferences.ts` (`tabs.onUpdated`, `storage.onChanged`, messages from `content-powerapps.js`).
+ * Power Apps: reads `powerAppsHiddenFields` / `powerAppsReadOnly` from sync and applies the
+ * reveal-hidden / enable-disabled modes via `apply-preferences.ts` (`tabs.onUpdated`,
+ * `storage.onChanged`, and messages from `content-powerapps.js`).
  *
  * Main-frame `webNavigation` listeners await `policyQueue.awaitReconcileCaughtUp()` before URL work so
  * URL handling waits for the initial `chrome.storage.sync` reconciliation attempt. If storage cannot be

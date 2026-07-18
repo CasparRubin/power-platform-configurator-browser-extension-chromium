@@ -132,10 +132,15 @@ describe("dist/ bundle (post-build)", () => {
     expect(scripts.every((s) => s.world !== "MAIN")).toBe(true);
   });
 
-  it("compiled popup CSS includes active-tab and reduced-motion behavior", () => {
+  it("compiled popup CSS includes viewport sizing, active-tab, and reduced-motion behavior", () => {
     const cssFiles = readdirSync(popupAssetsDir).filter((name) => name.endsWith(".css"));
     expect(cssFiles).toHaveLength(1);
     const css = cssFiles.map((name) => readFileSync(join(popupAssetsDir, name), "utf8")).join("\n");
+
+    // Body sizing lives only in index.html; Tailwind must scan that file or the popup
+    // collapses to Chrome's minimum size (a black square in dark theme).
+    expect(css).toContain(".h-\\[600px\\]");
+    expect(css).toContain(".w-\\[800px\\]");
 
     // Base UI emits the boolean `data-active` attribute. These generated selectors prove
     // Tailwind compiled the arbitrary attribute variants rather than silently dropping them.

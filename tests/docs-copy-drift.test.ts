@@ -94,6 +94,11 @@ const LEGACY_POWER_APPS_POPUP_UI_PHRASES = [
   /runs one-shot\s+\*\*Unhide/i,
   /\*\*Unhide hidden fields\*\* and \*\*Unlock read-only fields\*\*/i,
   /Unhide hidden fields\s*\/\s*\*\*Unlock read-only fields\*\*/i,
+  /\bShow stays on across tabs/i,
+  /\bUnlock stays on across tabs/i,
+  /choose Show or Unlock/i,
+  /\bUnhid \d+ elements?\b/i,
+  /\bUnlocked \d+ controls?\b/i,
 ];
 
 /** Vague inject failure copy before structured `inject_no_result` / frame diagnostics. */
@@ -125,7 +130,7 @@ const OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES = [
   /only runs once when toggled/i,
 ];
 
-/** Flow Inspector / side panel copy must not return in user-facing docs (not the unit-test index table). */
+/** Flow Inspector / side panel copy must not return in user-facing docs (not the test-suite index table). */
 const FLOW_INSPECTOR_PHRASES = [
   /## Flow Inspector/i,
   /Open Flow Inspector/i,
@@ -347,7 +352,7 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     expect(readme).toMatch(/savedApplyDeferred|could not be applied to the active tab/i);
   });
 
-  it("README and store doc document global persisted Power Apps enforcement", () => {
+  it("README, store doc, and panel document persisted Power Apps actions", () => {
     const readme = readRepoFile("README.md");
     expect(readme).toMatch(/powerAppsHiddenFields|chrome\.storage\.sync/i);
     expect(readme).toMatch(/stays on|auto-apply|persist/i);
@@ -356,14 +361,15 @@ describe("documentation and comment copy (no legacy Editor/Survey tabs or Flow I
     }
 
     const storeDoc = readRepoFile("docs/chrome-web-store.md");
-    expect(storeDoc).toMatch(/choices persist in sync|stay on across tabs/i);
+    expect(storeDoc).toMatch(/choices persist in sync/i);
+    expect(storeDoc).toMatch(/completed tab loads|short-lived watchdog/i);
     for (const pattern of OUTDATED_POWER_APPS_NOT_PERSISTED_PHRASES) {
       expect(storeDoc).not.toMatch(pattern);
     }
     const panel = readRepoFile("src/popup/components/PowerAppsPanel.tsx");
     const app = readRepoFile("src/popup/App.tsx");
     expect(panel).toMatch(/persistPowerAppsPreference|SettingsBusyHint/i);
-    expect(panel).toMatch(/stays on|auto-apply/i);
+    expect(panel).toMatch(/applies on\s+supported form loads and detected navigation/i);
     expect(app).toMatch(/POPUP_SYNC_SETTINGS_KEYS|parsePowerAppsPreferencesFromSync/i);
     expect(panel).not.toMatch(/chrome\.storage\.sync/);
   });

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Power Platform Configurator",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "description": "Choose classic or new designer for Power Automate flow/run URLs. Control survey flags. Reveal or enable Power Apps form elements.",
   "homepage_url": "https://helvety.com/store/products/helvety-power-platform-configurator",
   "permissions": ["declarativeNetRequest", "webNavigation", "scripting", "storage"],

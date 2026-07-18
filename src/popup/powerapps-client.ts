@@ -92,8 +92,8 @@ export function formatPowerAppsActionSuccessForNotification(
 ): string {
   if (action === "unhide") {
     const count = response.unhidden ?? 0;
-    return count === 1 ? "Unhid 1 element." : `Unhid ${count} elements.`;
+    return count === 1 ? "Revealed 1 element." : `Revealed ${count} elements.`;
   }
   const count = response.unlocked ?? 0;
-  return count === 1 ? "Unlocked 1 control." : `Unlocked ${count} controls.`;
+  return count === 1 ? "Enabled 1 control." : `Enabled ${count} controls.`;
 }

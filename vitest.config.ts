@@ -10,7 +10,7 @@ import { defineConfig } from "vitest/config";
  * `tests/popup-layout.test.ts`, `tests/popup-notification-ui.test.ts`,
  * `tests/popup-notification-visibility.test.ts`, `tests/infer-settings-status-variant.test.ts`,
  * `tests/persist-status-messages.test.ts`, `tests/popup-settings-copy.test.ts`,
- * `tests/settings-busy-hint.test.ts`, and docs drift tests. Generated active-tab and reduced-motion
+ * `tests/settings-busy-hint.test.ts`, and docs drift tests. Generated viewport-sizing, active-tab, and reduced-motion
  * CSS is asserted separately by `tests/dist-bundle.test.ts` under `test:dist`, outside coverage.
  * Power Apps is guarded by
  * `tests/powerapps-*.test.ts` (inject script behavior, apply-form-actions, constants,

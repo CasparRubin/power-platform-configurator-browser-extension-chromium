@@ -99,7 +99,7 @@ describe("formatPowerAppsActionErrorForNotification", () => {
     expect(message).toContain("confirm site access");
   });
 
-  it("maps unsupported_host for Dataverse hosts", () => {
+  it("unsupported_host copy lists example supported host families", () => {
     expect(formatPowerAppsActionErrorForNotification("unsupported_host")).toContain("crm17");
     expect(formatPowerAppsActionErrorForNotification("unsupported_host")).toContain("dynamics.cn");
     expect(formatPowerAppsActionErrorForNotification("unsupported_host")).toContain(
@@ -156,7 +156,7 @@ describe("formatPowerAppsActionSuccessForNotification", () => {
         unhidden: 2,
         framesChecked: 4,
       }),
-    ).toBe("Unhid 2 elements.");
+    ).toBe("Revealed 2 elements.");
     expect(
       formatPowerAppsActionSuccessForNotification("unlock", {
         ok: true,
@@ -164,7 +164,7 @@ describe("formatPowerAppsActionSuccessForNotification", () => {
         unlocked: 1,
         framesChecked: 2,
       }),
-    ).toBe("Unlocked 1 control.");
+    ).toBe("Enabled 1 control.");
   });
 
   it("uses singular and plural success copy", () => {
@@ -174,27 +174,27 @@ describe("formatPowerAppsActionSuccessForNotification", () => {
         action: "unhide",
         unhidden: 1,
       }),
-    ).toBe("Unhid 1 element.");
+    ).toBe("Revealed 1 element.");
     expect(
       formatPowerAppsActionSuccessForNotification("unlock", {
         ok: true,
         action: "unlock",
         unlocked: 1,
       }),
-    ).toBe("Unlocked 1 control.");
+    ).toBe("Enabled 1 control.");
     expect(
       formatPowerAppsActionSuccessForNotification("unhide", {
         ok: true,
         action: "unhide",
         unhidden: 3,
       }),
-    ).toBe("Unhid 3 elements.");
+    ).toBe("Revealed 3 elements.");
     expect(
       formatPowerAppsActionSuccessForNotification("unlock", {
         ok: true,
         action: "unlock",
         unlocked: 2,
       }),
-    ).toBe("Unlocked 2 controls.");
+    ).toBe("Enabled 2 controls.");
   });
 });

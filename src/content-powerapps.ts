@@ -1,8 +1,11 @@
 /**
  * ISOLATED-world content script on Dataverse org hosts (`POWERAPPS_URL_PATTERNS` in
  * `powerapps/constants.ts`: one explicit pattern per CRM cluster, sovereign `.de` / `.us` / `.cn`
- * hosts, plus `apps.powerapps.com`). When sync prefs enforce Show/Unlock, asks the service worker
- * to apply on navigation and SPA updates (debounced per tab).
+ * hosts, plus `apps.powerapps.com`). When sync prefs enable revealing hidden elements or enabling
+ * disabled controls, asks the service worker to apply on startup, `popstate`, preference changes,
+ * and URL changes caught by a short-lived poll/MutationObserver watchdog. Because this script runs
+ * in the ISOLATED world, its History API wrappers do not intercept page-world `pushState` /
+ * `replaceState`; background `tabs.onUpdated` also applies after completed tab loads.
  */
 import { POWERAPPS_SYNC_KEYS, parsePowerAppsPreferencesFromSync } from "./constants";
 import { isPowerAppsEnforcementActive } from "./powerapps/apply-preferences";

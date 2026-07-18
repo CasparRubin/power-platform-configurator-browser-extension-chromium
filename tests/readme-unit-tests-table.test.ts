@@ -7,9 +7,9 @@ import { describe, expect, it } from "vitest";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/** Links from the Unit tests markdown table only (ignores inline refs elsewhere in README). */
+/** Links from the Test suites markdown table only (ignores inline refs elsewhere in README). */
 function extractReadmeTestTableLinks(readme: string): string[] {
-  const table = readme.slice(readme.indexOf("## Unit tests"));
+  const table = readme.slice(readme.indexOf("## Test suites"));
   const links = new Set<string>();
   for (const line of table.split("\n")) {
     if (!line.startsWith("| [`tests/")) {
@@ -23,7 +23,7 @@ function extractReadmeTestTableLinks(readme: string): string[] {
   return [...links].sort();
 }
 
-describe("README unit tests table", () => {
+describe("README test suites table", () => {
   const readme = readFileSync(join(repoRoot, "README.md"), "utf8");
   const onDisk = new Set(
     readdirSync(join(repoRoot, "tests"))

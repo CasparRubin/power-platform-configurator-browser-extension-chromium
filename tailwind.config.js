@@ -11,7 +11,7 @@ const alpha = (name) => `color-mix(in oklab, var(${name}) calc(<alpha-value> * 1
 export default {
   darkMode: ["class"],
   content: [
-    "./src/popup/**/*.{ts,tsx}",
+    "./src/popup/**/*.{html,ts,tsx}",
     "./node_modules/@helvety/ui/src/**/*.{ts,tsx}",
     "./.helvety/packages/ui/src/**/*.{ts,tsx}",
   ],

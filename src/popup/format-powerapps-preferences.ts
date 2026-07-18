@@ -31,7 +31,8 @@ export function formatPowerAppsPreferencesApplyStatus(
 ): PowerAppsApplyStatus {
   if (response.results.length === 0) {
     return {
-      message: "Preference saved. Enforcement is off until you choose Show or Unlock.",
+      message:
+        "Preference saved. Automatic actions are off until you choose Reveal hidden elements or Enable disabled controls.",
       variant: "success",
     };
   }

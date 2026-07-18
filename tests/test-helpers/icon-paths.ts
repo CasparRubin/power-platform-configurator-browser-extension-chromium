@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 /** Match icon filenames case-insensitively (Windows-friendly). */
-export function findIconFilename(iconDir: string, expectedName: string): string | undefined {
+function findIconFilename(iconDir: string, expectedName: string): string | undefined {
   const needle = expectedName.toLowerCase();
   return readdirSync(iconDir).find((name) => name.toLowerCase() === needle);
 }
