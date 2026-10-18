@@ -12,7 +12,7 @@ On **model-driven Power Apps** hosts (Dataverse organization suffixes in [Micros
 
 ## License and legal links
 
-- This repository is licensed under the [MIT License](./LICENSE).
+- This repository is licensed under the [GNU Affero General Public License version 3 or later (AGPL-3.0-or-later)](./LICENSE).
 - Warranty and liability disclaimer: this software is provided "AS IS", without warranties or guarantees, and without liability to the maximum extent permitted by law (see `LICENSE`).
 - Official legal pages:
   - Privacy Policy: [https://helvety.com/privacy](https://helvety.com/privacy)
